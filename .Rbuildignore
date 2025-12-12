@@ -1,0 +1,15 @@
+^\.Rproj\.user$
+^.*\.Rproj$
+^\.git$
+^\.gitignore$
+^Vision\.md$
+^Plan\.md$
+^Progress\.md$
+^Architecture\.md$
+^CNS2020_poster_mtw_vs2_small\.pdf$
+^behavioral-oscillations$
+^\.github$
+^\.lintr$
+^_pkgdown\.yml$
+^doc$
+^Meta$

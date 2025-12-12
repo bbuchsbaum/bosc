@@ -1,0 +1,72 @@
+template:
+  bootstrap: 5
+
+destination: docs
+
+navbar:
+  structure:
+    left: [reference, articles]
+  components:
+    reference:
+      text: Reference
+      href: reference/index.html
+    articles:
+      text: Articles
+      menu:
+        - text: Oscillation Score
+          href: articles/oscillation-score.html
+        - text: PPC and Clustering
+          href: articles/ppc-clustering.html
+        - text: Workflow Wrappers
+          href: articles/workflow-wrappers.html
+
+reference:
+  - title: Signal and O-score
+    contents:
+      - make_continuous_trace
+      - autocorr_centered
+      - spectral_peak
+      - oscillation_score
+      - oscillation_score_surrogates
+  - title: Workflow Wrappers
+    contents:
+      - oscillation_score_z
+      - oscillation_score_config
+      - oscillation_score_surrogates_config
+      - phase_at_events
+  - title: Tidy Helpers
+    contents:
+      - oscore_tidy
+      - oscore_spectrum
+      - clusters_tidy
+      - clusters_pixels
+  - title: Phase and Hilbert
+    contents:
+      - narrowband_hilbert
+  - title: Circular Statistics
+    contents:
+      - circ_mean
+      - circ_r
+      - circ_rayleigh
+      - circ_vtest
+  - title: PPC and Statistical Testing
+    contents:
+      - pairwise_phase_consistency
+      - u_score_matrix
+      - paired_tscore
+      - nonparam_pval
+      - fdr_bh
+  - title: Clustering
+    contents:
+      - extract_clusters
+      - detect_clusters
+  - title: Plotting
+    contents:
+      - plot_spectrum
+      - plot_phase_hist
+      - plot_simplebox
+      - plot_cluster_heatmap
+  - title: I/O
+    contents:
+      - read_mat
+      - open_hdf5

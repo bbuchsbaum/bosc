@@ -1,0 +1,358 @@
+---
+title: "Workflow Wrappers"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Workflow Wrappers}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 4
+)
+```
+
+## Introduction
+
+The **bosc** package provides low-level functions for oscillation analysis, but
+also includes high-level workflow wrappers that simplify common analysis patterns.
+These wrappers are designed to:
+- Accept configuration lists for reproducible, programmatic analyses
+- Combine multiple steps (e.g., compute score + surrogates + significance) in one call
+- Provide tidy output formats for easy integration with tidyverse workflows
+
+For the underlying algorithms, see `vignette("oscillation-score")` and
+`vignette("ppc-clustering")`.
+
+```{r load}
+library(bosc)
+```
+
+## Quick Start: One-Call Significance Testing
+
+The most common workflow is computing an oscillation score and testing its
+significance against surrogates. `oscillation_score_z()` does this in one call:
+
+```{r quick-start}
+# Generate a signal with 10 Hz periodicity
+set.seed(42)
+fs <- 1000
+sig <- numeric(fs * 2)
+spike_times <- seq(50, 1950, by = 100) + round(rnorm(20, sd = 5))
+spike_times <- spike_times[spike_times > 0 & spike_times <= length(sig)]
+sig[spike_times] <- 1
+
+# One-call analysis: compute oscore, surrogates, and z-score
+result <- oscillation_score_z(
+  signal = sig,
+  fs = fs,
+  flim = c(5, 20),
+  nrep = 200,
+  alpha = 0.05,
+  taper = "hanning"
+)
+
+cat("Oscillation score:", round(result$oscore, 3), "\n")
+cat("Peak frequency:", round(result$fosc, 2), "Hz\n")
+cat("Z-score:", round(result$z, 2), "\n")
+cat("P-value:", format(result$pval, digits = 3), "\n")
+cat("Significant:", result$significant, "\n")
+```
+
+## Configuration-List Workflows
+
+When running batch analyses across subjects or conditions, it's convenient to
+define parameters once and reuse them. The `_config` wrappers accept named lists:
+
+### Basic Config-Driven Analysis
+
+```{r config-basic}
+# Define analysis parameters
+config <- list(
+  fs = 1000,
+  flim = c(1, 50),
+  quantlim = c(0.05, 0.95),
+  smoothach = TRUE,
+  smoothwind = 0.002,
+  peakwind = 0.008,
+  taper = "hanning",
+  warnings = "off"
+)
+
+# Apply to signal
+os <- oscillation_score_config(config, sig)
+
+cat("Oscillation score:", round(os$oscore, 3), "\n")
+cat("Peak frequency:", round(os$fosc, 2), "Hz\n")
+```
+
+### Surrogate Config Workflow
+
+```{r config-surrogates}
+# Extend config for surrogate analysis
+config_sur <- modifyList(config, list(
+  nrep = 200,
+  fpeak = os$fosc,
+  keep_trend = FALSE
+))
+
+sur <- oscillation_score_surrogates_config(config_sur, sig)
+
+# Compute statistics from surrogate distribution
+z <- (log(os$oscore) - mean(log(sur$oscore_rp), na.rm = TRUE)) /
+     sd(log(sur$oscore_rp), na.rm = TRUE)
+
+cat("Surrogate mean:", round(mean(sur$oscore_rp), 3), "\n")
+cat("Surrogate SD:", round(sd(sur$oscore_rp), 3), "\n")
+cat("Log-Z score:", round(z, 2), "\n")
+```
+
+### Batch Analysis Example
+
+```{r batch-analysis}
+# Simulate multiple subjects with varying oscillation strength
+set.seed(123)
+n_subjects <- 5
+
+# Create subjects with different oscillation strengths
+subjects <- lapply(1:n_subjects, function(i) {
+  sig <- numeric(2000)
+  # Vary jitter: stronger oscillation = less jitter
+  jitter_sd <- 5 + (i - 1) * 3
+  spikes <- seq(50, 1950, by = 100) + round(rnorm(20, sd = jitter_sd))
+  spikes <- spikes[spikes > 0 & spikes <= 2000]
+  sig[spikes] <- 1
+  sig
+})
+
+# Apply same config to all subjects
+results <- lapply(subjects, function(s) {
+  oscillation_score_z(s, fs = 1000, flim = c(5, 20), nrep = 100, tidy = TRUE)
+})
+
+# Combine results
+batch_results <- do.call(rbind, results)
+batch_results$subject <- 1:n_subjects
+print(batch_results[, c("subject", "oscore", "fosc", "z", "significant")])
+```
+
+## Phase at Event Times
+
+A common analysis extracts the instantaneous phase of an oscillation at specific
+event times (e.g., button presses, stimulus onsets). `phase_at_events()` handles
+the full pipeline:
+
+1. Convert event times to a continuous trace
+
+2. Narrowband filter at the frequency of interest
+3. Extract Hilbert phase at each event
+
+```{r phase-events}
+# Event times in seconds (e.g., button presses)
+events <- c(0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95)
+
+# Extract phase at 10 Hz
+phases <- phase_at_events(
+  events = events,
+  dt = 0.001,      # 1 ms time resolution
+  fosc = 10,       # Center frequency
+  bandwidth = 1    # +/- 1 Hz band
+)
+
+cat("Phases at events (radians):\n")
+print(round(phases, 2))
+
+# Check phase consistency
+cat("\nMean resultant length:", round(circ_r(phases), 3), "\n")
+ray <- circ_rayleigh(phases)
+cat("Rayleigh p-value:", format(ray$pval, digits = 3), "\n")
+```
+
+### Leave-One-Out Phase Estimation
+
+For unbiased phase estimation (avoiding circular analysis), use leave-one-out:
+
+```{r loo-phases, eval=FALSE}
+# Each event's phase is computed from a trace excluding that event
+phases_loo <- phase_at_events(
+  events = events,
+  dt = 0.001,
+  fosc = 10,
+  bandwidth = 1,
+  leave_one_out = TRUE
+)
+```
+
+## Tidy Output Helpers
+
+The package includes helper functions to convert results to tidy data.frames,
+making it easy to combine results across analyses or use with ggplot2/dplyr.
+### oscore_tidy: Oscillation Score Summaries
+
+```{r tidy-oscore}
+# Single result
+oscore_tidy(os)
+
+# Can also handle oscillation_score_z output
+z_result <- oscillation_score_z(sig, fs = 1000, flim = c(5, 20), nrep = 50)
+oscore_tidy(z_result)
+```
+
+### oscore_spectrum: Extract Spectrum Data
+
+```{r tidy-spectrum}
+# Get spectrum as a data.frame for plotting
+spec_df <- oscore_spectrum(os)
+head(spec_df)
+
+# Plot with ggplot2
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  library(ggplot2)
+  ggplot(spec_df, aes(x = freq, y = power)) +
+    geom_line() +
+    geom_vline(xintercept = os$fosc, linetype = "dashed", color = "red") +
+    labs(x = "Frequency (Hz)", y = "Power", title = "Oscillation Spectrum") +
+    theme_minimal()
+}
+```
+
+### clusters_tidy: Cluster Summaries
+
+After detecting clusters in time-frequency maps, convert to tidy format:
+
+```{r tidy-clusters}
+# Create example time-frequency data with clusters
+set.seed(456)
+n_freq <- 20
+n_time <- 30
+t_matrix <- matrix(rnorm(n_freq * n_time), nrow = n_freq)
+# Add cluster
+t_matrix[5:8, 10:15] <- t_matrix[5:8, 10:15] + 3
+
+# Detect clusters
+freq_axis <- seq(2, 30, length.out = n_freq)
+time_axis <- seq(-0.2, 0.8, length.out = n_time)
+
+clusters <- detect_clusters(
+  data = t_matrix,
+  threshold = 2.0,
+  method = "extract",
+  smooth = 1,
+  freq_axis = freq_axis,
+  time_axis = time_axis
+)
+
+# Convert to tidy summary
+cluster_summary <- clusters_tidy(clusters)
+print(cluster_summary[, c("cluster", "n_pixels", "freq_min", "freq_max",
+                          "time_min", "time_max", "sumZscore")])
+```
+
+### clusters_pixels: Per-Pixel Data
+
+For detailed analysis or custom plotting, get all cluster pixels:
+
+```{r tidy-pixels}
+# Get all pixels from detected clusters
+pixel_df <- clusters_pixels(clusters)
+head(pixel_df)
+
+# Example: plot cluster extent
+if (requireNamespace("ggplot2", quietly = TRUE) && nrow(pixel_df) > 0) {
+  ggplot(pixel_df, aes(x = time, y = freq, fill = Zscore)) +
+    geom_tile() +
+    scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+    labs(x = "Time (s)", y = "Frequency (Hz)", fill = "Z-score",
+         title = "Cluster Pixels") +
+    theme_minimal()
+}
+```
+
+## Complete Analysis Pipeline
+
+Here's a complete example combining the workflow wrappers:
+
+```{r complete-pipeline}
+set.seed(789)
+
+# 1. Generate behavioral data with oscillatory structure
+fs <- 1000
+duration <- 3
+n_samples <- fs * duration
+
+# Response times with 8 Hz periodicity
+base_times <- seq(0.1, 2.9, by = 0.125)  # 8 Hz
+event_times <- base_times + rnorm(length(base_times), sd = 0.01)
+event_times <- sort(event_times[event_times > 0 & event_times < duration])
+
+# Convert to spike train
+sig <- numeric(n_samples)
+sig[round(event_times * fs)] <- 1
+
+# 2. Compute oscillation score with significance
+config <- list(
+  fs = fs,
+  flim = c(4, 15),
+  nrep = 200,
+  alpha = 0.05,
+  taper = "hanning"
+)
+
+z_result <- oscillation_score_z(
+  signal = sig,
+  fs = config$fs,
+  flim = config$flim,
+  nrep = config$nrep,
+  alpha = config$alpha,
+  taper = config$taper
+)
+
+# 3. Extract phases at response times
+phases <- phase_at_events(
+  events = event_times,
+  dt = 1/fs,
+  fosc = z_result$fosc,
+  bandwidth = 1
+)
+
+# 4. Test phase consistency
+ray <- circ_rayleigh(phases)
+
+# 5. Report results
+cat("=== Oscillation Analysis Results ===\n\n")
+
+cat("Oscillation Score Analysis:\n")
+cat(sprintf("  O-score: %.3f\n", z_result$oscore))
+cat(sprintf("  Peak frequency: %.2f Hz\n", z_result$fosc))
+cat(sprintf("  Z-score: %.2f\n", z_result$z))
+cat(sprintf("  P-value: %.4f\n", z_result$pval))
+cat(sprintf("  Significant: %s\n\n", z_result$significant))
+
+cat("Phase Consistency:\n")
+cat(sprintf("  Mean phase: %.2f rad\n", circ_mean(phases)))
+cat(sprintf("  Resultant length: %.3f\n", circ_r(phases)))
+cat(sprintf("  Rayleigh p-value: %.4f\n", ray$pval))
+```
+
+## Summary of Workflow Functions
+
+| Function | Purpose | Key Benefit |
+|----------|---------|-------------|
+| `oscillation_score_z()` | O-score + surrogates + z-score | One-call significance testing |
+| `oscillation_score_config()` | Config-driven O-score | Batch processing, reproducibility |
+| `oscillation_score_surrogates_config()` | Config-driven surrogates | Batch processing |
+| `phase_at_events()` | Extract phases at event times | Full pipeline in one call |
+| `oscore_tidy()` | Convert results to data.frame | Tidyverse integration |
+| `oscore_spectrum()` | Extract spectrum as data.frame | Easy plotting |
+| `clusters_tidy()` | Summarize clusters | Quick cluster statistics |
+| `clusters_pixels()` | Per-pixel cluster data | Custom analyses/plotting |
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```

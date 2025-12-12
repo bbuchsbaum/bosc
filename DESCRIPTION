@@ -1,0 +1,38 @@
+Package: bosc
+Type: Package
+Title: Behavioral Oscillation Scores and Phase Analysis
+Version: 0.0.0.9000
+Authors@R: c(
+    person("Bradley", "Buchsbaum", role = c("aut", "cre"),
+           email = "brad.buchsbaum@gmail.com")
+    )
+Description: R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et
+    al.) for computing oscillation scores, surrogate tests, phase analyses, PPC
+    metrics, clustering, and plotting for behavioral and neural time series.
+    Methods are described in Ter Wal et al. (2021) <doi:10.1038/s41467-021-25959-7>.
+License: CC BY 4.0
+URL: https://github.com/marijeterwal/behavioral-oscillations
+Encoding: UTF-8
+LazyData: true
+Imports:
+    imager,
+    signal,
+    pracma,
+    fitdistrplus,
+    stats,
+    utils,
+    grDevices
+Suggests:
+    testthat (>= 3.0.0),
+    ggplot2,
+    RColorBrewer,
+    viridis,
+    scales,
+    R.matlab,
+    hdf5r,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+Config/testthat/edition: 3
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3

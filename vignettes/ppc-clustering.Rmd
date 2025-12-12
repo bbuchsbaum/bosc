@@ -1,0 +1,415 @@
+---
+title: "PPC Analysis and Cluster Detection"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{PPC Analysis and Cluster Detection}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7,
+  fig.height = 5
+)
+```
+
+## Introduction
+
+This vignette demonstrates **Pairwise Phase Consistency (PPC)** analysis and
+**cluster-based statistical testing** for time-frequency data. These methods
+are commonly used to analyze phase-locking between behavioral responses and
+neural oscillations.
+
+**PPC** is a bias-free measure of phase consistency that, unlike mean resultant
+length, does not depend on trial count. **Cluster-based testing** provides
+family-wise error correction for time-frequency maps.
+
+For oscillation score analysis, see `vignette("oscillation-score")`.
+
+## Setup
+
+```{r load-library}
+library(bosc)
+```
+
+## Pairwise Phase Consistency (PPC)
+
+### What is PPC?
+PPC measures how consistent phase angles are across trials by computing the
+average cosine of pairwise phase differences:
+
+$$\text{PPC} = \frac{2}{n(n-1)} \sum_{i<j} \cos(\phi_i - \phi_j)$$
+
+- PPC = 1: All phases identical (perfect consistency)
+- PPC = 0: Random phases (no consistency)
+- PPC < 0: Phases clustered at opposite angles
+
+### Basic PPC Computation
+
+```{r ppc-basic}
+set.seed(123)
+
+# Simulate phase data: 20 trials, 10 time points
+n_trials <- 20
+
+# Condition 1: Phases clustered around 0 (high consistency)
+phases_consistent <- matrix(
+  rnorm(n_trials * 10, mean = 0, sd = 0.3),
+  nrow = n_trials
+)
+
+# Condition 2: Random phases (low consistency)
+phases_random <- matrix(
+  runif(n_trials * 10, -pi, pi),
+  nrow = n_trials
+)
+
+# Compute PPC along trial dimension (dim = 1)
+ppc_consistent <- pairwise_phase_consistency(phases_consistent, dim = 1)
+ppc_random <- pairwise_phase_consistency(phases_random, dim = 1)
+
+cat("PPC (consistent phases):", round(mean(ppc_consistent), 3), "\n")
+cat("PPC (random phases):", round(mean(ppc_random), 3), "\n")
+```
+
+### Phase Extraction with Narrowband Hilbert
+
+In real analyses, phases come from narrowband-filtered neural signals:
+
+```{r phase-extraction}
+set.seed(456)
+fs <- 500  # 500 Hz sampling
+
+# Simulate 20 trials of oscillatory data with phase-locked response
+n_trials <- 20
+trial_length <- fs  # 1 second per trial
+
+# Generate trials with consistent phase at response time
+phases_at_response <- numeric(n_trials)
+for (i in seq_len(n_trials)) {
+  # Simulated neural signal: 10 Hz oscillation + noise
+  t <- seq(0, 1, length.out = trial_length)
+  neural <- sin(2 * pi * 10 * t + runif(1, -0.3, 0.3)) + rnorm(trial_length, sd = 0.5)
+
+  # Extract alpha phase using narrowband Hilbert
+  nb <- narrowband_hilbert(data = neural, fs = fs, freqlim = c(8, 12))
+
+  # Get phase at "response time" (sample 250 = 500 ms)
+  phases_at_response[i] <- Arg(nb$analytic[250])
+}
+
+# Compute circular statistics
+cat("Mean phase:", round(circ_mean(phases_at_response), 3), "rad\n")
+cat("Resultant length:", round(circ_r(phases_at_response), 3), "\n")
+
+# Rayleigh test
+ray <- circ_rayleigh(phases_at_response)
+cat("Rayleigh p-value:", format(ray$pval, digits = 3), "\n")
+```
+
+### Circular Statistics Functions
+
+```{r circular-stats}
+# Using the phases from consistent condition
+angles <- phases_consistent[, 1]
+
+# Circular mean direction
+mu <- circ_mean(angles)
+cat("Mean direction:", round(mu, 3), "rad\n")
+
+# Mean resultant length (concentration)
+r <- circ_r(angles)
+cat("Resultant length:", round(r, 3), "\n")
+
+# Rayleigh test for non-uniformity
+rayleigh <- circ_rayleigh(angles)
+cat("Rayleigh p-value:", format(rayleigh$pval, digits = 3), "\n")
+
+# V-test against expected direction of 0
+vtest <- circ_vtest(angles, dir = 0)
+cat("V-test p-value:", format(vtest$pval, digits = 3), "\n")
+```
+
+### Visualizing Phase Distribution
+
+```{r phase-histogram, fig.cap="Phase distribution showing clustering around 0"}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plot_phase_hist(angles, nbins = 16)
+}
+```
+
+## Cluster Detection on Time-Frequency Maps
+
+Cluster-based permutation testing is the standard approach for multiple
+comparison correction in time-frequency analyses. It works by:
+
+1. Thresholding the statistical map to identify contiguous clusters
+2. Computing a cluster statistic (sum of values)
+3. Comparing against a null distribution from permutations
+
+### Simulating Time-Frequency Data
+
+```{r simulate-tf}
+set.seed(789)
+
+# Simulate a time-frequency map with an embedded effect cluster
+n_freq <- 30
+n_time <- 50
+n_subjects <- 15
+
+# Baseline condition: random noise
+baseline <- array(
+  rnorm(n_subjects * n_freq * n_time, mean = 0, sd = 1),
+  dim = c(n_subjects, n_freq, n_time)
+)
+
+# Effect condition: noise + cluster of increased activity
+effect <- array(
+  rnorm(n_subjects * n_freq * n_time, mean = 0, sd = 1),
+  dim = c(n_subjects, n_freq, n_time)
+)
+
+# Add effect cluster (theta band: rows 5-10, time 15-25)
+effect[, 5:10, 15:25] <- effect[, 5:10, 15:25] + 1.5
+
+cat("Data dimensions:", dim(effect), "(subjects x freq x time)\n")
+```
+
+### Computing T-scores
+
+```{r compute-tscores}
+# Paired t-test across subjects (dimension 1)
+tres <- paired_tscore(effect, baseline, dim = 1)
+t_matrix <- matrix(tres$t, nrow = n_freq, ncol = n_time)
+
+cat("T-score range:", round(range(t_matrix, na.rm = TRUE), 2), "\n")
+cat("Max t-score location: freq", which.max(apply(t_matrix, 1, max)),
+    ", time", which.max(apply(t_matrix, 2, max)), "\n")
+```
+
+### Detecting Clusters
+
+```{r detect-clusters}
+# Define frequency and time axes
+freq_axis <- seq(2, 30, length.out = n_freq)
+time_axis <- seq(-0.5, 1.5, length.out = n_time)
+
+# Detect clusters using extract method
+clusters <- detect_clusters(
+  data = t_matrix,
+  threshold = 2.0,  # t-threshold (roughly p < 0.05 uncorrected)
+  method = "extract",
+  smooth = 1,
+  freq_axis = freq_axis,
+  time_axis = time_axis
+)
+
+cat("Number of clusters found:", length(clusters), "\n")
+
+# Examine clusters
+if (length(clusters) > 0) {
+  for (i in seq_along(clusters)) {
+    cl <- clusters[[i]]
+    cat(sprintf("\nCluster %d:\n", i))
+    cat(sprintf("  Frequency: %.1f - %.1f Hz\n", min(cl$freqs), max(cl$freqs)))
+    cat(sprintf("  Time: %.2f - %.2f s\n", min(cl$times), max(cl$times)))
+    cat(sprintf("  Size: %d pixels\n", length(cl$Zscores)))
+    cat(sprintf("  Sum t: %.2f\n", cl$sumZscore))
+    cat(sprintf("  Peak t: %.2f\n", cl$peakZscore))
+  }
+}
+```
+
+### Visualizing Clusters
+
+```{r plot-clusters, fig.cap="Time-frequency map with detected clusters outlined"}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plot_cluster_heatmap(
+    data = t_matrix,
+    clusters = clusters,
+    freq_axis = freq_axis,
+    time_axis = time_axis,
+    zlim = c(-4, 4)
+  )
+}
+```
+
+### Watershed vs Extract Methods
+
+Two clustering methods are available:
+
+| Method | Description | Best for |
+|--------|-------------|----------|
+| `extract` | 8-connectivity connected components | Sharply defined clusters |
+| `watershed` | Watershed segmentation | Smooth, overlapping regions |
+
+```{r watershed-comparison, eval=FALSE}
+# Watershed method (requires smoothing for best results)
+clusters_ws <- detect_clusters(
+  data = t_matrix,
+  threshold = 2.0,
+  method = "watershed",
+  smooth = c(2, 2),  # smooth in both dimensions
+  freq_axis = freq_axis,
+  time_axis = time_axis
+)
+```
+
+## Multiple Comparison Correction
+
+### FDR Correction
+
+For element-wise testing without clustering, use FDR (False Discovery Rate):
+
+```{r fdr-correction}
+# Convert t-scores to p-values
+df <- n_subjects - 1
+p_matrix <- 2 * pt(-abs(t_matrix), df = df)
+
+# Apply Benjamini-Hochberg FDR correction
+fdr_result <- fdr_bh(as.vector(p_matrix), q = 0.05)
+
+cat("Total tests:", length(p_matrix), "\n")
+cat("Significant after FDR:", sum(fdr_result$h), "\n")
+cat("Critical p-value:", format(fdr_result$crit_p, digits = 3), "\n")
+```
+
+### Non-parametric P-values
+
+For permutation-based testing, use `nonparam_pval()`:
+
+```{r nonparam-pval}
+set.seed(111)
+
+# Observed statistics (can be a vector)
+observed_stats <- c(15.5, 12.0, 8.5)
+
+# Null distribution from permutations
+null_distribution <- rnorm(1000, mean = 10, sd = 3)
+
+# Compute p-values
+result <- nonparam_pval(observed_stats, null_distribution)
+cat("Observed values:", observed_stats, "\n")
+cat("P-values:", round(result$p, 4), "\n")
+cat("Significant (alpha=0.05):", result$h, "\n")
+```
+
+## U-Score Matrix (Non-parametric Testing)
+
+For comparing observed values against a permutation distribution across a matrix:
+
+```{r uscore-example}
+set.seed(222)
+
+# Observed values (2D matrix)
+observed <- matrix(rnorm(20, mean = 0.5), nrow = 4, ncol = 5)
+
+# Reference distribution (100 permutations)
+reference <- array(rnorm(100 * 4 * 5), dim = c(100, 4, 5))
+
+# Compute U-scores (position in null distribution)
+u_result <- u_score_matrix(observed, reference, alpha = 0.05)
+
+cat("Significant elements:", sum(u_result$sgnf != 0), "of", length(observed), "\n")
+```
+
+## Complete Analysis Workflow
+
+Here's a complete workflow combining PPC analysis with cluster detection:
+
+```{r complete-workflow}
+set.seed(333)
+
+# 1. Simulate PPC data: correct vs incorrect trials
+n_subjects <- 12
+n_freq <- 20
+n_time <- 30
+
+# Correct trials: higher theta PPC around response time
+ppc_correct <- array(
+  runif(n_subjects * n_freq * n_time, 0, 0.3),
+  dim = c(n_subjects, n_freq, n_time)
+)
+# Add theta effect (freqs 3-6 = theta, times 10-20 = peri-response)
+ppc_correct[, 3:6, 10:20] <- ppc_correct[, 3:6, 10:20] + 0.25
+
+# Incorrect trials: baseline PPC
+ppc_incorrect <- array(
+  runif(n_subjects * n_freq * n_time, 0, 0.3),
+  dim = c(n_subjects, n_freq, n_time)
+)
+
+# 2. Statistical comparison
+diff_t <- paired_tscore(ppc_correct, ppc_incorrect, dim = 1)$t
+diff_matrix <- matrix(diff_t, nrow = n_freq, ncol = n_time)
+
+# 3. Cluster detection
+freq_ax <- seq(2, 30, length.out = n_freq)
+time_ax <- seq(-0.2, 0.8, length.out = n_time)
+
+sig_clusters <- detect_clusters(
+  data = diff_matrix,
+  threshold = 2.0,
+  method = "extract",
+  smooth = 1.5,
+  freq_axis = freq_ax,
+  time_axis = time_ax
+)
+
+# 4. Report
+cat("=== PPC: Correct vs Incorrect Trials ===\n")
+cat("Subjects:", n_subjects, "\n")
+cat("Clusters found:", length(sig_clusters), "\n\n")
+
+for (i in seq_along(sig_clusters)) {
+  cl <- sig_clusters[[i]]
+  cat(sprintf("Cluster %d:\n", i))
+  cat(sprintf("  Frequency: %.1f - %.1f Hz\n", min(cl$freqs), max(cl$freqs)))
+  cat(sprintf("  Time: %.2f - %.2f s\n", min(cl$times), max(cl$times)))
+  cat(sprintf("  Center: %.1f Hz, %.2f s\n", cl$CoMfreq, cl$CoMtime))
+  cat(sprintf("  Cluster t-sum: %.1f\n\n", cl$sumZscore))
+}
+```
+
+## Loading Real Data
+
+For actual experiments, use the I/O utilities:
+
+```{r io-example, eval=FALSE}
+# Load MATLAB .mat file (requires R.matlab package)
+mat_data <- read_mat("path/to/ppc_data.mat")
+
+# Access variables
+ppc_matrix <- mat_data$ppc
+freq_axis <- mat_data$freqs
+time_axis <- mat_data$times
+
+# Load HDF5 file (requires hdf5r package)
+h5_file <- open_hdf5("path/to/data.h5")
+ppc_matrix <- h5_file[["ppc"]][]
+h5_file$close_all()
+```
+
+## Summary
+
+| Function | Purpose |
+|----------|---------|
+| `pairwise_phase_consistency()` | Bias-free phase consistency measure |
+| `circ_mean()`, `circ_r()` | Circular mean and resultant length |
+| `circ_rayleigh()`, `circ_vtest()` | Significance tests for phase clustering |
+| `narrowband_hilbert()` | Extract phase at specific frequency |
+| `paired_tscore()` | Paired t-test across subjects |
+| `detect_clusters()` | Find significant clusters in time-frequency maps |
+| `fdr_bh()` | Benjamini-Hochberg FDR correction |
+| `u_score_matrix()` | Non-parametric significance testing |
+| `plot_phase_hist()` | Visualize phase distributions |
+| `plot_cluster_heatmap()` | Visualize time-frequency clusters |
+
+## Session Info
+
+```{r session-info}
+sessionInfo()
+```
