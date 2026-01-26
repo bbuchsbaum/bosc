@@ -1,0 +1,68 @@
+# bosc
+
+R port of the
+[behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
+MATLAB toolbox (Ter Wal et al.). Provides core functions for oscillation
+scoring, surrogate testing, phase analyses, PPC metrics, clustering, and
+plotting for behavioral and neural time series.
+
+## Install
+
+Install dependencies (`imager`, `signal`, `pracma`, `fitdistrplus`,
+`circular`, `ggplot2`, etc.) first, then:
+
+``` r
+devtools::load_all("bosc")   # for development
+# or install locally
+devtools::install("bosc")
+```
+
+`imager` may require system image libraries (PNG/JPEG); install via your
+package manager before `install.packages("imager")`.
+
+## Modules (current)
+
+- Signal utils: `make_continuous_trace`, `autocorr_centered`,
+  `spectral_peak`.
+- O-score: `oscillation_score`, `oscillation_score_surrogates`.
+- Workflow wrappers: `oscillation_score_config`,
+  `oscillation_score_surrogates_config`, `oscillation_score_z`,
+  `phase_at_events`.
+- Tidy helpers: `oscore_tidy`, `oscore_spectrum`, `clusters_tidy`,
+  `clusters_pixels`.
+- Hilbert: `narrowband_hilbert`.
+- PPC/Stats: `pairwise_phase_consistency`, `u_score_matrix`,
+  `paired_tscore`, `nonparam_pval`.
+- Clustering: `extract_clusters`, `detect_clusters` (imager-based
+  watershed/extract, cluster splitting).
+- Plotting: `plot_spectrum`, `plot_phase_hist`.
+
+## Testing
+
+``` r
+devtools::test("bosc")
+```
+
+## References
+
+This package is an R port of the MATLAB toolbox developed for:
+
+**Ter Wal, M.**, Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L.,
+Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V.,
+Chelvarajah, R., Staresina, B., Hanslmayr, S., & Wimber, M. (2021).
+Theta rhythmicity governs the timing of behavioural and hippocampal
+responses in humans specifically during memory-dependent tasks. *Nature
+Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-25959-7>
+
+- **Original MATLAB code**:
+  <https://github.com/marijeterwal/behavioral-oscillations>
+- **Datasets**: <https://doi.org/10.6084/m9.figshare.c.5192567>
+- **Video walkthrough** (CNS 2020 poster G183):
+  <https://youtu.be/28kpbGDHLuo>
+
+## Roadmap
+
+- Add vignettes mirroring MATLAB scripts (behavioral O-score, PPC
+  contrasts, simulations).
+- Add pkgdown site and CI (R CMD check, lintr).
+- Data I/O helpers for MAT/HDF5 and richer plotting wrappers.

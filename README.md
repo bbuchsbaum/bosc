@@ -2,6 +2,16 @@
 
 R port of the [behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations) MATLAB toolbox (Ter Wal et al.). Provides core functions for oscillation scoring, surrogate testing, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series.
 
+## Documentation
+
+Full pkgdown site: <https://bbuchsbaum.github.io/bosc/>
+
+### Vignettes
+
+- [Oscillation Score Analysis](https://bbuchsbaum.github.io/bosc/articles/oscillation-score.html) -- Computing oscillation scores, surrogate testing, multi-band analysis, and narrowband Hilbert phase extraction.
+- [PPC Analysis and Cluster Detection](https://bbuchsbaum.github.io/bosc/articles/ppc-clustering.html) -- Pairwise phase consistency, circular statistics, cluster-based permutation testing on time-frequency maps.
+- [Workflow Wrappers](https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.html) -- High-level config-driven wrappers, batch analysis, phase-at-events pipeline, and tidy output helpers.
+
 ## Install
 
 Install dependencies (`imager`, `signal`, `pracma`, `fitdistrplus`, `circular`, `ggplot2`, etc.) first, then:
@@ -43,6 +53,5 @@ This package is an R port of the MATLAB toolbox developed for:
 
 ## Roadmap
 
-- Add vignettes mirroring MATLAB scripts (behavioral O-score, PPC contrasts, simulations).
-- Add pkgdown site and CI (R CMD check, lintr).
+- CI (R CMD check, lintr).
 - Data I/O helpers for MAT/HDF5 and richer plotting wrappers.
