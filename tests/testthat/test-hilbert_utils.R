@@ -20,3 +20,28 @@ test_that("narrowband_hilbert flags instability", {
   )
   expect_true(any(is.na(res$analytic)))
 })
+
+# --- narrowband_hilbert additional branches ---
+
+test_that("narrowband_hilbert uses lowpass when freqlim[1] <= 0", {
+  fs <- 200
+  t <- seq(0, 1, by = 1 / fs)
+  sig <- sin(2 * pi * 5 * t)
+  res <- narrowband_hilbert(sig, fs = fs, freqlim = c(0, 10), tol = 1e3)
+  expect_true(length(res$filtered) == length(sig))
+  expect_true(any(is.finite(res$analytic)))
+})
+
+test_that("narrowband_hilbert with demean=FALSE", {
+  fs <- 200
+  t <- seq(0, 1, by = 1 / fs)
+  sig <- sin(2 * pi * 10 * t) + 5  # offset signal
+  res <- narrowband_hilbert(sig, fs = fs, freqlim = c(8, 12), tol = 1e3, demean = FALSE)
+  expect_true(length(res$filtered) == length(sig))
+})
+
+test_that("narrowband_hilbert validates inputs", {
+  expect_error(narrowband_hilbert(1:10, fs = -1, freqlim = c(1, 10)), "positive scalar")
+  expect_error(narrowband_hilbert(1:10, fs = 100, freqlim = c(1)), "length 2")
+  expect_error(narrowband_hilbert(1:10, fs = 100, freqlim = c(1, 10), filtorder = -1), "positive")
+})

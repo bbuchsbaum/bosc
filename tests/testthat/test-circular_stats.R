@@ -104,3 +104,47 @@ test_that("fdr_bh handles edge cases",
   expect_false(any(result$h))
   expect_equal(result$crit_p, 0)
 })
+
+# --- circ_mean matrix input ---
+
+test_that("circ_mean works on matrix along dim=1", {
+  mat <- matrix(c(0, pi/2, 0, pi/2), nrow = 2, ncol = 2)
+  result <- circ_mean(mat, dim = 1)
+  expect_length(result, 2)
+  # Each column is (0, pi/2) -> mean should be pi/4
+  expect_equal(as.numeric(result), rep(pi / 4, 2), tolerance = 1e-10)
+})
+
+test_that("circ_mean errors on weight dimension mismatch", {
+  angles <- c(0, pi/2, pi)
+  w <- c(1, 2)  # wrong length
+  expect_error(circ_mean(angles, w = w), "dimensions do not match")
+})
+
+# --- circ_r matrix input ---
+
+test_that("circ_r works on matrix with d correction", {
+  mat <- matrix(c(0, 0.1, -0.1, 0, 0.1, -0.1), nrow = 3, ncol = 2)
+  r <- circ_r(mat, d = 0.5, dim = 1)
+  expect_length(r, 2)
+  expect_true(all(r > 0))
+})
+
+# --- circ_vtest weight mismatch ---
+
+test_that("circ_vtest errors on weight length mismatch", {
+  angles <- c(0, pi/2, pi)
+  w <- c(1, 2)
+  expect_error(circ_vtest(angles, dir = 0, w = w), "dimensions do not match")
+})
+
+# --- fdr_bh single p-value ---
+
+test_that("fdr_bh handles single p-value", {
+  result <- fdr_bh(0.01, q = 0.05)
+  expect_length(result$h, 1)
+  expect_true(result$h[1])
+
+  result2 <- fdr_bh(0.5, q = 0.05)
+  expect_false(result2$h[1])
+})
