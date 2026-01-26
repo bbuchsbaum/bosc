@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
   fig.width = 7,
   fig.height = 5
 )
+has_imager <- requireNamespace("imager", quietly = TRUE)
 ```
 
 ## Introduction
@@ -192,7 +193,7 @@ cat("Max t-score location: freq", which.max(apply(t_matrix, 1, max)),
 
 ### Detecting Clusters
 
-```{r detect-clusters}
+```{r detect-clusters, eval=has_imager}
 # Define frequency and time axes
 freq_axis <- seq(2, 30, length.out = n_freq)
 time_axis <- seq(-0.5, 1.5, length.out = n_time)
@@ -225,7 +226,7 @@ if (length(clusters) > 0) {
 
 ### Visualizing Clusters
 
-```{r plot-clusters, fig.cap="Time-frequency map with detected clusters outlined"}
+```{r plot-clusters, eval=has_imager, fig.cap="Time-frequency map with detected clusters outlined"}
 if (requireNamespace("ggplot2", quietly = TRUE)) {
   plot_cluster_heatmap(
     data = t_matrix,
@@ -320,7 +321,7 @@ cat("Significant elements:", sum(u_result$sgnf != 0), "of", length(observed), "\
 
 Here's a complete workflow combining PPC analysis with cluster detection:
 
-```{r complete-workflow}
+```{r complete-workflow, eval=has_imager}
 set.seed(333)
 
 # 1. Simulate PPC data: correct vs incorrect trials

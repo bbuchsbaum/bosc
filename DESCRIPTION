@@ -16,7 +16,6 @@ URL: https://github.com/bbuchsbaum/bosc,
 Encoding: UTF-8
 LazyData: true
 Imports:
-    imager,
     signal,
     pracma,
     fitdistrplus,
@@ -24,6 +23,7 @@ Imports:
     utils,
     grDevices
 Suggests:
+    imager,
     testthat (>= 3.0.0),
     ggplot2,
     RColorBrewer,

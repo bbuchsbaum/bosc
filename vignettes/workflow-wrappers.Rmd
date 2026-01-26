@@ -14,6 +14,7 @@ knitr::opts_chunk$set(
   fig.width = 6,
   fig.height = 4
 )
+has_imager <- requireNamespace("imager", quietly = TRUE)
 ```
 
 ## Introduction
@@ -224,7 +225,7 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 
 After detecting clusters in time-frequency maps, convert to tidy format:
 
-```{r tidy-clusters}
+```{r tidy-clusters, eval=has_imager}
 # Create example time-frequency data with clusters
 set.seed(456)
 n_freq <- 20
@@ -256,7 +257,7 @@ print(cluster_summary[, c("cluster", "n_pixels", "freq_min", "freq_max",
 
 For detailed analysis or custom plotting, get all cluster pixels:
 
-```{r tidy-pixels}
+```{r tidy-pixels, eval=has_imager}
 # Get all pixels from detected clusters
 pixel_df <- clusters_pixels(clusters)
 head(pixel_df)

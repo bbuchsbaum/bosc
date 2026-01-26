@@ -85,6 +85,10 @@ detect_clusters <- function(data,
   if (is.null(time_axis)) time_axis <- seq_len(ncol(data))
 
   if (!is.null(smooth)) {
+    if (!requireNamespace("imager", quietly = TRUE)) {
+      stop("The 'imager' package is required for Gaussian smoothing. ",
+           "Install it with install.packages('imager').", call. = FALSE)
+    }
     sigma <- if (length(smooth) == 1) c(smooth, smooth) else smooth
     img <- imager::as.cimg(t(data))
     img <- imager::isoblur(img, sigma = sigma[1])
@@ -99,6 +103,10 @@ detect_clusters <- function(data,
     clusDat <- -clusDatMin + clusDatPlus
   } else {
     # watershed via imager
+    if (!requireNamespace("imager", quietly = TRUE)) {
+      stop("The 'imager' package is required for the 'watershed' method. ",
+           "Install it with install.packages('imager').", call. = FALSE)
+    }
     posmask <- sdata
     posmask[sdata < threshold] <- 0
     posimg <- imager::as.cimg(t(posmask))
