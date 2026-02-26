@@ -4,7 +4,7 @@
 \alias{autocorr_centered}
 \title{Centered autocorrelation (unnormalized)}
 \usage{
-autocorr_centered(x)
+autocorr_centered(x, method = c("auto", "direct", "fft"))
 }
 \arguments{
 \item{x}{numeric vector.}

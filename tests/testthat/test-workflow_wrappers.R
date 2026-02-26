@@ -14,7 +14,7 @@ test_that("oscillation_score_z computes log-Z using returned surrogates", {
   fs <- 500
   sig <- numeric(fs)
   sig[seq(50, 450, 50)] <- 1
-  res <- oscillation_score_z(sig, fs = fs, flim = c(1, 20), nrep = 25)
+  res <- oscillation_score_z(sig, fs = fs, flim = c(1, 20), nrep = 25, ci_nboot = 0)
   valid <- res$surrogates$oscore_rp
   valid <- valid[is.finite(valid) & valid > 0]
   z_manual <- (log(res$oscore) - mean(log(valid))) / sd(log(valid))
@@ -25,9 +25,39 @@ test_that("oscillation_score_z tidy=TRUE returns a data.frame", {
   fs <- 200
   sig <- numeric(400)
   sig[seq(50, 350, 50)] <- 1
-  tidy_res <- oscillation_score_z(sig, fs = fs, flim = c(1, 20), nrep = 10, tidy = TRUE)
+  tidy_res <- oscillation_score_z(sig, fs = fs, flim = c(1, 20), nrep = 10, ci_nboot = 0, tidy = TRUE)
   expect_s3_class(tidy_res, "data.frame")
   expect_true(all(c("oscore", "fosc", "z", "pval", "significant") %in% names(tidy_res)))
+})
+
+test_that("oscillation_score_z returns bootstrap CI fields", {
+  set.seed(9)
+  fs <- 200
+  sig <- numeric(400)
+  sig[seq(50, 350, 50)] <- 1
+  res <- oscillation_score_z(sig, fs = fs, flim = c(1, 20), nrep = 20, ci_nboot = 100)
+  expect_length(res$z_ci, 2)
+  expect_equal(res$ci_level, 0.95)
+  expect_equal(res$ci_nboot, 100)
+})
+
+test_that("oscillation_score_z supports phase-randomized continuous mode", {
+  set.seed(12)
+  fs <- 400
+  t <- seq(0, 2, by = 1 / fs)
+  sig <- sin(2 * pi * 9 * t) + rnorm(length(t), sd = 0.2)
+  res <- oscillation_score_z(
+    sig,
+    fs = fs,
+    flim = c(5, 20),
+    nrep = 15,
+    surrogate_method = "phase_randomized",
+    signal_mode = "continuous",
+    ci_nboot = 50
+  )
+  expect_true(is.finite(res$oscore))
+  expect_true(is.finite(res$fosc))
+  expect_equal(res$surrogates$surrogate_method, "phase_randomized")
 })
 
 test_that("phase_at_events returns phases aligned with events", {
@@ -67,6 +97,25 @@ test_that("oscillation_score_surrogates_config forwards correctly", {
   expect_length(res$oscore_rp, 3)
 })
 
+test_that("oscillation_score_surrogates_config forwards surrogate method args", {
+  set.seed(33)
+  fs <- 200
+  t <- seq(0, 1, by = 1 / fs)
+  sig <- sin(2 * pi * 8 * t) + 0.1 * rnorm(length(t))
+  config <- list(
+    fs = fs,
+    flim = c(4, 20),
+    nrep = 3,
+    fpeak = 8,
+    surrogate_method = "phase_randomized",
+    signal_mode = "continuous",
+    warnings = "off"
+  )
+  res <- oscillation_score_surrogates_config(config, sig)
+  expect_equal(res$surrogate_method, "phase_randomized")
+  expect_equal(res$signal_mode, "continuous")
+})
+
 test_that("oscillation_score_surrogates_config errors on NULL config", {
   expect_error(oscillation_score_surrogates_config(NULL, 1:10), "config must be a list")
 })
@@ -102,11 +151,23 @@ test_that("oscore_z emits deprecation warning", {
 # --- oscillation_score_z early return for invalid oscore ---
 
 test_that("oscillation_score_z returns NA z for all-zero signal", {
-  res <- oscillation_score_z(rep(0, 100), fs = 100, flim = c(1, 10), nrep = 5)
+  res <- oscillation_score_z(rep(0, 100), fs = 100, flim = c(1, 10), nrep = 5, ci_nboot = 0)
   expect_true(is.na(res$z))
   expect_true(is.na(res$pval))
   expect_false(res$significant)
   expect_null(res$surrogates)
+})
+
+test_that("oscillation_score_z validates CI arguments", {
+  sig <- c(0, 1, 0, 1, 0, 1)
+  expect_error(
+    oscillation_score_z(sig, fs = 10, flim = c(1, 4), nrep = 5, ci_nboot = -1),
+    "non-negative"
+  )
+  expect_error(
+    oscillation_score_z(sig, fs = 10, flim = c(1, 4), nrep = 5, ci_level = 1.2),
+    "in \\(0, 1\\)"
+  )
 })
 
 # --- phase_at_events additional branches ---

@@ -17,6 +17,34 @@ test_that("autocorr_centered matches manual convolution", {
   expect_equal(autocorr_centered(x), c(2, 5, 2))
 })
 
+test_that("autocorr_centered fft matches direct across sizes", {
+  set.seed(99)
+  for (n in c(5, 11, 257, 300)) {
+    x <- rnorm(n)
+    expect_equal(
+      autocorr_centered(x, method = "fft"),
+      autocorr_centered(x, method = "direct"),
+      tolerance = 1e-8
+    )
+  }
+})
+
+test_that("autocorr_centered auto path tracks size heuristic", {
+  set.seed(100)
+  x_short <- rnorm(64)
+  x_long <- rnorm(400)
+  expect_equal(
+    autocorr_centered(x_short, method = "auto"),
+    autocorr_centered(x_short, method = "direct"),
+    tolerance = 1e-10
+  )
+  expect_equal(
+    autocorr_centered(x_long, method = "auto"),
+    autocorr_centered(x_long, method = "fft"),
+    tolerance = 1e-10
+  )
+})
+
 test_that("spectral_peak identifies dominant frequency", {
   fs <- 100
   t <- seq(0, 1, by = 1 / fs)
@@ -71,8 +99,17 @@ test_that("spectral_peak applies fcor=TRUE", {
   fs <- 100
   t <- seq(0, 1, by = 1 / fs)
   data <- sin(2 * pi * 10 * t) + rnorm(length(t), sd = 0.1)
-  sp <- spectral_peak(data, fs = fs, flim = c(1, 20), fcor = TRUE)
+  expect_silent(sp <- spectral_peak(data, fs = fs, flim = c(1, 20), fcor = TRUE))
   expect_true(is.numeric(sp$freq))
+})
+
+test_that("spectral_peak fcor handles full band including 0 Hz", {
+  fs <- 100
+  t <- seq(0, 1, by = 1 / fs)
+  data <- sin(2 * pi * 10 * t) + 0.25
+  expect_silent(sp <- spectral_peak(data, fs = fs, flim = NULL, fcor = TRUE))
+  expect_equal(length(sp$fxx), length(sp$spectrum))
+  expect_true(any(is.finite(sp$spectrum)))
 })
 
 test_that("spectral_peak with flim=NULL returns full spectrum", {

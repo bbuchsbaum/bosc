@@ -23,6 +23,10 @@ oscillation_score_stats(cfg, signal)
 
   numeric vector.
 
+- cfg:
+
+  list of settings (deprecated alias for `config`).
+
 ## Value
 
 list as returned by
@@ -31,5 +35,5 @@ list as returned by
 ## Details
 
 Recognized fields include `fs`, `flim`, `nrep`, `fpeak`, `keep_trend`,
-`trend_dist`, `trend_ddt`, `trend_alpha`, `warnings`, `fcor`, and
-`taper`.
+`trend_dist`, `trend_ddt`, `trend_alpha`, `surrogate_method`,
+`signal_mode`, `warnings`, `fcor`, and `taper`.

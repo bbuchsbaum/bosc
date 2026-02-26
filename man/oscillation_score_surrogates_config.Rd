@@ -13,6 +13,8 @@ oscillation_score_stats(cfg, signal)
 \item{config}{list of settings.}
 
 \item{signal}{numeric vector.}
+
+\item{cfg}{list of settings (deprecated alias for \code{config}).}
 }
 \value{
 list as returned by \code{\link{oscillation_score_surrogates}}.
@@ -25,5 +27,6 @@ and forwards it to the surrogate function.
 \details{
 Recognized fields include \code{fs}, \code{flim}, \code{nrep}, \code{fpeak},
 \code{keep_trend}, \code{trend_dist}, \code{trend_ddt}, \code{trend_alpha},
-\code{warnings}, \code{fcor}, and \code{taper}.
+\code{surrogate_method}, \code{signal_mode}, \code{warnings}, \code{fcor},
+and \code{taper}.
 }

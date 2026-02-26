@@ -7,7 +7,7 @@
 #' Recognized fields include \code{fs}, \code{flim}, \code{quantlim},
 #' \code{smoothach}, \code{smoothwind}, \code{peakwind}, \code{thresangle},
 #' \code{mincycles}, \code{minfreqbandwidth}, \code{fpeak}, \code{warnings},
-#' \code{fcor}, \code{taper}, and \code{plot}.
+#' \code{fcor}, \code{taper}, \code{signal_mode}, and \code{plot}.
 #'
 #' @param config list of settings.
 #' @param signal numeric vector (binary or continuous).
@@ -27,7 +27,7 @@ oscillation_score_config <- function(config, signal) {
   allowed <- c(
     "fs", "flim", "quantlim", "smoothach", "smoothwind", "peakwind",
     "thresangle", "mincycles", "minfreqbandwidth", "fpeak", "warnings",
-    "fcor", "taper", "plot"
+    "fcor", "taper", "signal_mode", "plot"
   )
   args <- args[names(args) %in% allowed]
 
@@ -42,7 +42,8 @@ oscillation_score_config <- function(config, signal) {
 #'
 #' Recognized fields include \code{fs}, \code{flim}, \code{nrep}, \code{fpeak},
 #' \code{keep_trend}, \code{trend_dist}, \code{trend_ddt}, \code{trend_alpha},
-#' \code{warnings}, \code{fcor}, and \code{taper}.
+#' \code{surrogate_method}, \code{signal_mode}, \code{warnings}, \code{fcor},
+#' and \code{taper}.
 #'
 #' @param config list of settings.
 #' @param signal numeric vector.
@@ -64,14 +65,15 @@ oscillation_score_surrogates_config <- function(config, signal) {
 
   allowed <- c(
     "fs", "flim", "nrep", "fpeak", "keep_trend",
-    "trend_dist", "trend_ddt", "trend_alpha", "warnings",
-    "fcor", "taper"
+    "trend_dist", "trend_ddt", "trend_alpha", "surrogate_method",
+    "signal_mode", "warnings", "fcor", "taper"
   )
   args <- args[names(args) %in% allowed]
 
   do.call(oscillation_score_surrogates, c(list(signal = signal), args))
 }
 
+#' @param cfg list of settings (deprecated alias for \code{config}).
 #' @export
 #' @rdname oscillation_score_config
 oscillation_score_cfg <- function(cfg, signal) {
@@ -79,6 +81,7 @@ oscillation_score_cfg <- function(cfg, signal) {
   oscillation_score_config(cfg, signal)
 }
 
+#' @param cfg list of settings (deprecated alias for \code{config}).
 #' @export
 #' @rdname oscillation_score_surrogates_config
 oscillation_score_stats <- function(cfg, signal) {
@@ -98,8 +101,12 @@ oscillation_score_stats <- function(cfg, signal) {
 #' @param nrep number of surrogates.
 #' @param alpha significance level for one-tailed Z-thresholding.
 #' @param keep_trend,trend_dist,trend_ddt,trend_alpha passed to surrogates.
+#' @param surrogate_method,signal_mode passed to \code{\link{oscillation_score_surrogates}}.
 #' @param fcor logical; apply 1/f correction.
 #' @param taper taper before FFT.
+#' @param ci_nboot number of bootstrap draws for the log-Z confidence interval.
+#'   Set to 0 to skip CI estimation.
+#' @param ci_level confidence level for bootstrap CI.
 #' @param ... further arguments passed to \code{\link{oscillation_score}}.
 #' @param tidy logical; if TRUE return a one-row data.frame.
 #' @return list (default) or data.frame if \code{tidy=TRUE}.
@@ -113,11 +120,26 @@ oscillation_score_z <- function(signal,
                      trend_dist = c("gamma"),
                      trend_ddt = NULL,
                      trend_alpha = 0.05,
+                     surrogate_method = c(
+                       "auto", "event_shuffle", "event_trend", "phase_randomized"
+                     ),
+                     signal_mode = c("auto", "event", "continuous"),
                      fcor = FALSE,
                      taper = c("none", "hann", "hanning"),
+                     ci_nboot = 0,
+                     ci_level = 0.95,
                      tidy = FALSE,
                      ...) {
   taper <- match.arg(taper)
+  surrogate_method <- match.arg(surrogate_method)
+  signal_mode <- match.arg(signal_mode)
+  if (length(ci_nboot) != 1 || !is.finite(ci_nboot) || ci_nboot < 0) {
+    stop("ci_nboot must be a non-negative scalar.")
+  }
+  if (length(ci_level) != 1 || !is.finite(ci_level) || ci_level <= 0 || ci_level >= 1) {
+    stop("ci_level must be in (0, 1).")
+  }
+  ci_nboot <- as.integer(round(ci_nboot))
 
   os <- oscillation_score(
     signal = signal,
@@ -135,11 +157,28 @@ oscillation_score_z <- function(signal,
       fosc = os$fosc,
       surrogates = NULL,
       z = NA_real_,
+      z_ci = c(NA_real_, NA_real_),
+      ci_level = ci_level,
+      ci_nboot = ci_nboot,
       pval = NA_real_,
       significant = FALSE,
       flim = os$flim
     )
-    if (isTRUE(tidy)) return(as.data.frame(out[setdiff(names(out), "surrogates")]))
+    if (isTRUE(tidy)) {
+      return(data.frame(
+        oscore = out$oscore,
+        fosc = out$fosc,
+        z = out$z,
+        z_ci_lower = out$z_ci[1],
+        z_ci_upper = out$z_ci[2],
+        ci_level = out$ci_level,
+        ci_nboot = out$ci_nboot,
+        pval = out$pval,
+        significant = out$significant,
+        flim_low = if (length(out$flim) == 2) out$flim[1] else NA_real_,
+        flim_high = if (length(out$flim) == 2) out$flim[2] else NA_real_
+      ))
+    }
     return(out)
   }
 
@@ -153,6 +192,8 @@ oscillation_score_z <- function(signal,
     trend_dist = trend_dist,
     trend_ddt = trend_ddt,
     trend_alpha = trend_alpha,
+    surrogate_method = surrogate_method,
+    signal_mode = signal_mode,
     warnings = FALSE,
     fcor = fcor,
     taper = taper
@@ -162,12 +203,34 @@ oscillation_score_z <- function(signal,
   valid <- valid[is.finite(valid) & valid > 0]
 
   z <- NA_real_
+  z_ci <- c(NA_real_, NA_real_)
   pval <- NA_real_
   significant <- FALSE
   if (length(valid) >= 2) {
-    z <- (log(os$oscore) - mean(log(valid))) / stats::sd(log(valid))
-    pval <- 1 - stats::pnorm(z)
-    significant <- is.finite(z) && z >= stats::qnorm(1 - alpha)
+    lvalid <- log(valid)
+    svalid <- stats::sd(lvalid)
+    if (is.finite(svalid) && svalid > 0) {
+      z <- (log(os$oscore) - mean(lvalid)) / svalid
+      pval <- 1 - stats::pnorm(z)
+      significant <- is.finite(z) && z >= stats::qnorm(1 - alpha)
+      if (ci_nboot > 0) {
+        zboot <- replicate(ci_nboot, {
+          b <- sample(lvalid, size = length(lvalid), replace = TRUE)
+          sb <- stats::sd(b)
+          if (!is.finite(sb) || sb <= 0) return(NA_real_)
+          (log(os$oscore) - mean(b)) / sb
+        })
+        zboot <- zboot[is.finite(zboot)]
+        if (length(zboot) >= 2) {
+          alpha_tail <- (1 - ci_level) / 2
+          z_ci <- as.numeric(stats::quantile(
+            zboot,
+            probs = c(alpha_tail, 1 - alpha_tail),
+            names = FALSE
+          ))
+        }
+      }
+    }
   }
 
   out <- list(
@@ -175,12 +238,27 @@ oscillation_score_z <- function(signal,
     fosc = os$fosc,
     surrogates = sur,
     z = z,
+    z_ci = z_ci,
+    ci_level = ci_level,
+    ci_nboot = ci_nboot,
     pval = pval,
     significant = significant,
     flim = os$flim
   )
   if (isTRUE(tidy)) {
-    return(as.data.frame(out[setdiff(names(out), "surrogates")]))
+    return(data.frame(
+      oscore = out$oscore,
+      fosc = out$fosc,
+      z = out$z,
+      z_ci_lower = out$z_ci[1],
+      z_ci_upper = out$z_ci[2],
+      ci_level = out$ci_level,
+      ci_nboot = out$ci_nboot,
+      pval = out$pval,
+      significant = out$significant,
+      flim_low = if (length(out$flim) == 2) out$flim[1] else NA_real_,
+      flim_high = if (length(out$flim) == 2) out$flim[2] else NA_real_
+    ))
   }
   out
 }

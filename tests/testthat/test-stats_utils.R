@@ -60,6 +60,17 @@ test_that("paired_tscore returns NA for zero SD", {
   expect_true(all(is.na(res$t)))
 })
 
+test_that("paired_tscore uses per-slice effective n under missingness", {
+  dat <- matrix(c(
+    1, 2, 3,
+    1, NA, 3
+  ), nrow = 3, ncol = 2)
+  res <- paired_tscore(dat, dim = 1)
+  expect_true(all(dim(res$t) == c(1, 2)))
+  expect_equal(as.numeric(res$nu), c(2, 1))
+  expect_true(all(is.finite(res$t), na.rm = TRUE))
+})
+
 # --- nonparam_pval additional branches ---
 
 test_that("nonparam_pval with value below median", {

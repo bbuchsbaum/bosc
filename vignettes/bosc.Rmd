@@ -1,0 +1,134 @@
+---
+title: Get started with bosc
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Get started with bosc}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+params:
+  family: red
+css: albers.css
+resource_files:
+- albers.css
+- albers.js
+includes:
+  in_header: |-
+    <script src="albers.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('palette-red');});</script>
+
+---
+
+```{r setup, include=FALSE}
+if (requireNamespace("ggplot2", quietly = TRUE) && requireNamespace("albersdown", quietly = TRUE)) ggplot2::theme_set(albersdown::theme_albers(params$family))
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 6,
+  fig.height = 4,
+  message = FALSE,
+  warning = FALSE
+)
+```
+
+## What does bosc do?
+
+You have behavioral time series — reaction times, button presses, spike
+trains — and you want to know whether they contain rhythmic structure. Is
+there a dominant oscillation frequency? Is it statistically significant? At
+what phase of the oscillation do events occur?
+
+**bosc** answers these questions with a small, focused API:
+
+| Verb | Function | What it does |
+|:-----|:---------|:-------------|
+| **Score** | `oscillation_score_z()` | Quantify oscillation strength + significance |
+| **Filter** | `narrowband_hilbert()` | Extract phase and amplitude at a frequency |
+| **Phase** | `phase_at_events()` | Get instantaneous phase at event times |
+| **Cluster** | `detect_clusters()` | Find significant regions in time-frequency maps |
+| **Test** | `circ_rayleigh()` | Test for non-uniform phase distributions |
+
+```{r load-bosc}
+library(bosc)
+```
+
+## Your first oscillation score in 30 seconds
+
+Create a signal with 10 Hz periodicity, compute the score, and test
+significance — all in one call:
+
+```{r first-score}
+set.seed(42)
+fs <- 1000
+sig <- numeric(2000)
+spikes <- seq(50, 1950, by = 100) + round(rnorm(20, sd = 5))
+spikes <- spikes[spikes > 0 & spikes <= 2000]
+sig[spikes] <- 1
+
+result <- oscillation_score_z(sig, fs = fs, flim = c(5, 20), nrep = 200)
+```
+
+```{r show-result}
+cat("Oscillation score:", round(result$oscore, 3), "\n")
+cat("Peak frequency:   ", round(result$fosc, 2), "Hz\n")
+cat("Z-score:          ", round(result$z, 2), "\n")
+cat("Significant:      ", result$significant, "\n")
+```
+
+```{r plot-first-spectrum, echo=FALSE, fig.cap="Power spectrum of the autocorrelogram. The dashed line marks the detected peak at ~10 Hz.", fig.height=3}
+sp <- spectral_peak(sig, fs = fs, flim = c(1, 50))
+plot_spectrum(sp$fxx, sp$spectrum, peak = result$fosc)
+```
+
+The oscillation score is `r round(result$oscore, 2)` with a z-score of
+`r round(result$z, 1)` — a clear 10 Hz rhythm, as expected.
+
+## Extracting phase at behavioral events
+
+Given event times (in seconds), `phase_at_events()` builds a continuous
+trace, filters at the target frequency, and returns the instantaneous phase
+at each event:
+
+```{r phase-events}
+events <- c(0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95)
+phases <- phase_at_events(events, dt = 0.001, fosc = 10, bandwidth = 1)
+```
+
+```{r plot-phases, echo=FALSE, fig.cap="Phase distribution at event times.", fig.height=3}
+plot_phase_hist(phases)
+```
+
+Test whether the phases are non-uniformly distributed:
+
+```{r rayleigh}
+ray <- circ_rayleigh(phases)
+cat("Mean resultant length:", round(circ_r(phases), 3), "\n")
+cat("Rayleigh p-value:     ", format(ray$pval, digits = 3), "\n")
+```
+
+## Where to go next
+
+You've just seen the core three-step pipeline: **score** (`oscillation_score_z()`),
+**extract phase** (`phase_at_events()`), **test** (`circ_rayleigh()`). For
+group-level analyses, add `paired_tscore()` and `detect_clusters()` for
+cluster-based permutation testing on time-frequency maps.
+
+| I want to... | Read this |
+|:-------------|:----------|
+| Understand oscillation scores in depth | `vignette("oscillation-score")` |
+| Analyze phase consistency and clusters | `vignette("ppc-clustering")` |
+| Run batch analyses across subjects | `vignette("workflow-wrappers")` |
+
+## References
+
+**bosc** is an R port of the
+[behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
+MATLAB toolbox. If you use this package in published work, please cite the
+original paper:
+
+> Ter Wal, M., Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L.D.,
+> Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V.,
+> Chelvarajah, R., Staresina, B., Hanslmayr, S., & Wimber, M. (2021).
+> Theta rhythmicity governs the timing of behavioural and hippocampal
+> responses in humans specifically during memory-dependent tasks.
+> *Nature Communications*, 12, 7048.
+> <https://doi.org/10.1038/s41467-021-25959-7>

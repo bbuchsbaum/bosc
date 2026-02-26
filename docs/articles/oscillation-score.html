@@ -10,7 +10,8 @@
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Oscillation Score Analysis">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<script src="../extra.js"></script><meta property="og:title" content="Oscillation Score Analysis">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -43,7 +44,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/marijeterwal/behavioral-oscillations/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/bbuchsbaum/bosc/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -60,41 +61,39 @@
       <h1>Oscillation Score Analysis</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/marijeterwal/behavioral-oscillations/blob/HEAD/vignettes/oscillation-score.Rmd" class="external-link"><code>vignettes/oscillation-score.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/bbuchsbaum/bosc/blob/HEAD/vignettes/oscillation-score.Rmd" class="external-link"><code>vignettes/oscillation-score.Rmd</code></a></small>
       <div class="d-none name"><code>oscillation-score.Rmd</code></div>
     </div>
 
     
     
 <div class="section level2">
-<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+<h2 id="why-oscillation-scores">Why oscillation scores?<a class="anchor" aria-label="anchor" href="#why-oscillation-scores"></a>
 </h2>
-<p>The <strong>oscillation score</strong> quantifies the strength of
-periodic (rhythmic) structure in behavioral data such as spike trains,
-button presses, or continuous response signals. It was developed to
-detect behavioral oscillations in tasks where subjects respond
-rhythmically, potentially phase-locked to neural oscillations.</p>
-<p>This vignette demonstrates:</p>
-<ul>
-<li>Computing oscillation scores from spike trains</li>
-<li>Surrogate testing for statistical significance</li>
-<li>Multi-band analysis</li>
-<li>Narrowband filtering for phase extraction</li>
-</ul>
-<p>For phase consistency analysis and cluster detection, see
-<code><a href="../articles/ppc-clustering.html">vignette("ppc-clustering")</a></code>.</p>
+<p>You’ve recorded behavioral responses — button presses, saccades, or
+reaction times — and you suspect they have a rhythmic structure. Maybe
+they cluster at a particular frequency, phase-locked to an underlying
+neural oscillation. How do you quantify that rhythm and test whether
+it’s real?</p>
+<p>The <strong>oscillation score</strong> answers this by measuring the
+strength of periodic structure in your time series. It works by
+computing an autocorrelogram, removing the central peak, and finding the
+spectral peak in the frequency band of interest. This vignette walks you
+through the full pipeline: computing scores, testing significance with
+surrogates, scanning across frequency bands, and extracting
+instantaneous phase.</p>
 </div>
 <div class="section level2">
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">bosc</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bbuchsbaum/bosc" class="external-link">bosc</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="synthetic-spike-train-example">Synthetic Spike Train Example<a class="anchor" aria-label="anchor" href="#synthetic-spike-train-example"></a>
 </h2>
-<p>We generate a spike train with 10 Hz periodicity embedded in noise to
-demonstrate the oscillation score computation.</p>
+<p>Let’s create a spike train with 10 Hz periodicity embedded in noise
+to demonstrate the oscillation score computation.</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
 <span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fl">1000</span>  <span class="co"># 1 kHz sampling rate</span></span>
@@ -118,6 +117,13 @@ demonstrate the oscillation score computation.</p>
 <span><span class="co">#&gt; Total spikes: 100</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Periodic spikes:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">spike_times</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Periodic spikes: 50</span></span></code></pre></div>
+<p>Here’s what our synthetic signal looks like — periodic spikes at 10
+Hz with some jitter and noise spikes mixed in:</p>
+<div class="figure">
+<img src="oscillation-score_files/figure-html/plot-spikes-1.png" class="r-plt" alt="Synthetic spike train with 10 Hz periodicity." width="576"><p class="caption">
+Synthetic spike train with 10 Hz periodicity.
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="computing-the-oscillation-score">Computing the Oscillation Score<a class="anchor" aria-label="anchor" href="#computing-the-oscillation-score"></a>
@@ -155,9 +161,7 @@ width)</li>
 <code class="sourceCode R"><span><span class="co"># Get spectrum for visualization</span></span>
 <span><span class="va">sp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/spectral_peak.html">spectral_peak</a></span><span class="op">(</span><span class="va">sig</span>, fs <span class="op">=</span> <span class="va">fs</span>, flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">50</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/plot_spectrum.html">plot_spectrum</a></span><span class="op">(</span><span class="va">sp</span><span class="op">$</span><span class="va">fxx</span>, <span class="va">sp</span><span class="op">$</span><span class="va">spectrum</span>, peak <span class="op">=</span> <span class="va">result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
+<span><span class="fu"><a href="../reference/plot_spectrum.html">plot_spectrum</a></span><span class="op">(</span><span class="va">sp</span><span class="op">$</span><span class="va">fxx</span>, <span class="va">sp</span><span class="op">$</span><span class="va">spectrum</span>, peak <span class="op">=</span> <span class="va">result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="oscillation-score_files/figure-html/plot-spectrum-1.png" class="r-plt" alt="Power spectrum of the autocorrelogram showing peak at ~10 Hz" width="576"><p class="caption">
 Power spectrum of the autocorrelogram showing peak at ~10 Hz
@@ -196,6 +200,12 @@ duration) while destroying temporal structure.</p>
 <span><span class="co">#&gt; Z-score: 16.48</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"P-value (one-tailed):"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">pnorm</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">z_score</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; P-value (one-tailed): 0</span></span></code></pre></div>
+<div class="figure">
+<img src="oscillation-score_files/figure-html/plot-surrogates-1.png" class="r-plt" alt="Observed oscillation score (red line) against the surrogate null distribution." width="576"><p class="caption">
+Observed oscillation score (red line) against the surrogate null
+distribution.
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="comparing-different-frequency-bands">Comparing Different Frequency Bands<a class="anchor" aria-label="anchor" href="#comparing-different-frequency-bands"></a>
@@ -209,19 +219,47 @@ frequency bands to identify the dominant rhythm:</p>
 <span>  beta <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">12</span>, <span class="fl">30</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">bands</span>, <span class="kw">function</span><span class="op">(</span><span class="va">flim</span><span class="op">)</span> <span class="op">{</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">bands</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">band_name</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">flim</span> <span class="op">&lt;-</span> <span class="va">bands</span><span class="op">[[</span><span class="va">band_name</span><span class="op">]</span><span class="op">]</span></span>
 <span>  <span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score.html">oscillation_score</a></span><span class="op">(</span><span class="va">sig</span>, fs <span class="op">=</span> <span class="va">fs</span>, flim <span class="op">=</span> <span class="va">flim</span>, warnings <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span>oscore <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">oscore</span>, fosc <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    band <span class="op">=</span> <span class="va">band_name</span>,</span>
+<span>    req_fmin <span class="op">=</span> <span class="va">flim</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>    req_fmax <span class="op">=</span> <span class="va">flim</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>    eff_fmin <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">flim</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="va">res</span><span class="op">$</span><span class="va">flim</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="kw">else</span> <span class="cn">NA_real_</span>,</span>
+<span>    eff_fmax <span class="op">=</span> <span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">res</span><span class="op">$</span><span class="va">flim</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2</span><span class="op">)</span> <span class="va">res</span><span class="op">$</span><span class="va">flim</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="kw">else</span> <span class="cn">NA_real_</span>,</span>
+<span>    oscore <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">oscore</span>,</span>
+<span>    fosc <span class="op">=</span> <span class="va">res</span><span class="op">$</span><span class="va">fosc</span>,</span>
+<span>    stringsAsFactors <span class="op">=</span> <span class="cn">FALSE</span></span>
+<span>  <span class="op">)</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">results_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">results</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">results_df</span>, <span class="fl">3</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;       oscore  fosc</span></span>
-<span><span class="co">#&gt; theta  8.025 6.354</span></span>
-<span><span class="co">#&gt; alpha 43.998 9.785</span></span>
-<span><span class="co">#&gt; beta      NA    NA</span></span></code></pre></div>
+<span><span class="va">results_df_print</span> <span class="op">&lt;-</span> <span class="va">results_df</span></span>
+<span><span class="va">num_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">results_df_print</span>, <span class="va">is.numeric</span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">results_df_print</span><span class="op">[</span><span class="va">num_cols</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">results_df_print</span><span class="op">[</span><span class="va">num_cols</span><span class="op">]</span>, <span class="va">round</span>, <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">results_df_print</span><span class="op">)</span></span>
+<span><span class="co">#&gt;    band req_fmin req_fmax eff_fmin eff_fmax oscore  fosc</span></span>
+<span><span class="co">#&gt; 1 theta        4        8        4    8.000  8.025 6.354</span></span>
+<span><span class="co">#&gt; 2 alpha        8       12        8   12.000 43.998 9.785</span></span>
+<span><span class="co">#&gt; 3  beta       12       30       12   20.412     NA    NA</span></span></code></pre></div>
 <p>As expected, the alpha band (8-12 Hz) shows the highest oscillation
 score since our synthetic signal has 10 Hz periodicity.</p>
+<p><code>beta</code> can legitimately return <code>NA</code> for
+<code>oscore</code>/<code>fosc</code> here. Internally,
+<code><a href="../reference/oscillation_score.html">oscillation_score()</a></code> constrains the requested band to an
+effective range based on the data support:</p>
+<p><code>fmax &lt;- min(flim[2], sum(sigq) / (length(sigq) / fs))</code></p>
+<p>For this sparse spike train, the effective beta range is narrower
+than 12-30 Hz, and no stable local spectral peak is found in that range.
+In that case, the function returns <code>NA</code>, which indicates “no
+detectable beta-band peak” rather than an error.</p>
+<div class="figure">
+<img src="oscillation-score_files/figure-html/plot-bands-1.png" class="r-plt" alt="Oscillation scores across frequency bands. The alpha band (containing our 10 Hz signal) shows the strongest score." width="576"><p class="caption">
+Oscillation scores across frequency bands. The alpha band (containing
+our 10 Hz signal) shows the strongest score.
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="narrowband-hilbert-analysis">Narrowband Hilbert Analysis<a class="anchor" aria-label="anchor" href="#narrowband-hilbert-analysis"></a>
@@ -250,6 +288,12 @@ phase-locking analyses.</p>
 <span><span class="va">phases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/complex.html" class="external-link">Arg</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Phase range:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"radians\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Phase range: -3.14 3.14 radians</span></span></code></pre></div>
+<div class="figure">
+<img src="oscillation-score_files/figure-html/plot-hilbert-1.png" class="r-plt" alt="Narrowband Hilbert decomposition: raw signal (top), filtered 8-12 Hz component (middle), and instantaneous phase (bottom)." width="576"><p class="caption">
+Narrowband Hilbert decomposition: raw signal (top), filtered 8-12 Hz
+component (middle), and instantaneous phase (bottom).
+</p>
+</div>
 </div>
 <div class="section level2">
 <h2 id="using-make_continuous_trace">Using make_continuous_trace<a class="anchor" aria-label="anchor" href="#using-make_continuous_trace"></a>
@@ -277,92 +321,35 @@ continuous time series:</p>
 <span><span class="va">trace_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score.html">oscillation_score</a></span><span class="op">(</span></span>
 <span>  signal <span class="op">=</span> <span class="va">trace</span><span class="op">$</span><span class="va">signal</span>,</span>
 <span>  fs <span class="op">=</span> <span class="fl">1</span> <span class="op">/</span> <span class="fl">0.001</span>,  <span class="co"># fs from dt</span></span>
-<span></span>
 <span>  flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">20</span><span class="op">)</span>,</span>
 <span>  warnings <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score (smoothed):"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Oscillation score (smoothed): NA</span></span></code></pre></div>
+<span><span class="co">#&gt; Oscillation score (smoothed): 94.746</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="summary">Summary<a class="anchor" aria-label="anchor" href="#summary"></a>
+<h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
 </h2>
-<p>Key functions demonstrated:</p>
-<table class="table">
-<colgroup>
-<col width="52%">
-<col width="47%">
-</colgroup>
-<thead><tr class="header">
-<th>Function</th>
-<th>Purpose</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code><a href="../reference/oscillation_score.html">oscillation_score()</a></code></td>
-<td>Compute oscillation score from signal</td>
-</tr>
-<tr class="even">
-<td><code><a href="../reference/oscillation_score_surrogates.html">oscillation_score_surrogates()</a></code></td>
-<td>Generate null distribution for significance testing</td>
-</tr>
-<tr class="odd">
-<td><code><a href="../reference/spectral_peak.html">spectral_peak()</a></code></td>
-<td>Find peak frequency in power spectrum</td>
-</tr>
-<tr class="even">
-<td><code><a href="../reference/narrowband_hilbert.html">narrowband_hilbert()</a></code></td>
-<td>Extract phase/amplitude at specific frequency</td>
-</tr>
-<tr class="odd">
-<td><code><a href="../reference/make_continuous_trace.html">make_continuous_trace()</a></code></td>
-<td>Convert event times to continuous signal</td>
-</tr>
-<tr class="even">
-<td><code><a href="../reference/plot_spectrum.html">plot_spectrum()</a></code></td>
-<td>Visualize power spectrum</td>
-</tr>
-</tbody>
-</table>
+<ul>
+<li>Test significance with config-driven batch workflows:
+<code><a href="../articles/workflow-wrappers.html">vignette("workflow-wrappers")</a></code>
+</li>
+<li>Analyze phase consistency across trials:
+<code><a href="../articles/ppc-clustering.html">vignette("ppc-clustering")</a></code>
+</li>
+<li>See <code><a href="../reference/oscillation_score.html">?oscillation_score</a></code> for the full argument list</li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; R version 4.5.1 (2025-06-13)</span></span>
-<span><span class="co">#&gt; Platform: aarch64-apple-darwin20</span></span>
-<span><span class="co">#&gt; Running under: macOS Sonoma 14.3</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Matrix products: default</span></span>
-<span><span class="co">#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib </span></span>
-<span><span class="co">#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; locale:</span></span>
-<span><span class="co">#&gt; [1] en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; time zone: America/Toronto</span></span>
-<span><span class="co">#&gt; tzcode source: internal</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; attached base packages:</span></span>
-<span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] bosc_0.0.0.9000</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.1.4        compiler_4.5.1    </span></span>
-<span><span class="co">#&gt;  [5] tidyselect_1.2.1   signal_1.8-1       jquerylib_0.1.4    systemfonts_1.3.1 </span></span>
-<span><span class="co">#&gt;  [9] scales_1.4.0       textshaping_1.0.4  yaml_2.3.12        fastmap_1.2.0     </span></span>
-<span><span class="co">#&gt; [13] ggplot2_4.0.1      R6_2.6.1           labeling_0.4.3     generics_0.1.4    </span></span>
-<span><span class="co">#&gt; [17] knitr_1.50         MASS_7.3-65        htmlwidgets_1.6.4  tibble_3.3.0      </span></span>
-<span><span class="co">#&gt; [21] desc_1.4.3         bslib_0.9.0        pillar_1.11.1      RColorBrewer_1.1-3</span></span>
-<span><span class="co">#&gt; [25] rlang_1.1.6        cachem_1.1.0       xfun_0.54          fs_1.6.6          </span></span>
-<span><span class="co">#&gt; [29] sass_0.4.10        S7_0.2.1           cli_3.6.5          pkgdown_2.2.0     </span></span>
-<span><span class="co">#&gt; [33] withr_3.0.2        magrittr_2.0.4     digest_0.6.39      grid_4.5.1        </span></span>
-<span><span class="co">#&gt; [37] lifecycle_1.0.4    vctrs_0.6.5        evaluate_1.0.5     pracma_2.4.6      </span></span>
-<span><span class="co">#&gt; [41] glue_1.8.0         farver_2.1.2       ragg_1.5.0         rmarkdown_2.30    </span></span>
-<span><span class="co">#&gt; [45] tools_4.5.1        pkgconfig_2.0.3    htmltools_0.5.9</span></span></code></pre></div>
+<p>The algorithms in <strong>bosc</strong> are ported from the <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">behavioral-oscillations</a>
+MATLAB toolbox. Please cite:</p>
+<blockquote>
+<p>Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
+behavioural and hippocampal responses in humans specifically during
+memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-25959-7" class="external-link uri">https://doi.org/10.1038/s41467-021-25959-7</a></p>
+</blockquote>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

@@ -6,6 +6,19 @@ MATLAB toolbox (Ter Wal et al.). Provides core functions for oscillation
 scoring, surrogate testing, phase analyses, PPC metrics, clustering, and
 plotting for behavioral and neural time series.
 
+## Documentation
+
+### Vignettes
+
+- **Oscillation Score Analysis** – Computing oscillation scores,
+  surrogate testing, multi-band analysis, and narrowband Hilbert phase
+  extraction.
+- **PPC Analysis and Cluster Detection** – Pairwise phase consistency,
+  circular statistics, cluster-based permutation testing on
+  time-frequency maps.
+- **Workflow Wrappers** – High-level config-driven wrappers, batch
+  analysis, phase-at-events pipeline, and tidy output helpers.
+
 ## Install
 
 Install dependencies (`imager`, `signal`, `pracma`, `fitdistrplus`,
@@ -37,6 +50,39 @@ package manager before `install.packages("imager")`.
   watershed/extract, cluster splitting).
 - Plotting: `plot_spectrum`, `plot_phase_hist`.
 
+## Enhancements Relative to MATLAB Reference
+
+This package closely follows the MATLAB reference implementation, with a
+few small R-oriented enhancements for robustness, configurability, and
+workflow ergonomics:
+
+- `spectral_peak(fcor = TRUE)` uses an explicit, stable log-log
+  fit/predict path in R for improved numerical stability.
+- [`oscillation_score()`](reference/oscillation_score.md) supports
+  explicit `signal_mode`: `event` uses event-rate-based effective bands;
+  `continuous` uses variance-aware checks and Nyquist-limited upper
+  bounds.
+- [`autocorr_centered()`](reference/autocorr_centered.md) now supports
+  both direct and FFT-based linear autocorrelation; `method = "auto"`
+  selects a fast FFT path for longer vectors while preserving centered
+  `xcorr` semantics.
+- [`oscillation_score_surrogates()`](reference/oscillation_score_surrogates.md)
+  supports explicit `surrogate_method`, including phase-randomized
+  surrogates for continuous signals (amplitude-spectrum-preserving
+  nulls), in addition to event shuffle/trend.
+- [`oscillation_score_z()`](reference/oscillation_score_z.md) can return
+  bootstrap confidence intervals for the log-Z statistic (`z_ci`) and
+  exposes CI controls (`ci_nboot`, `ci_level`).
+- [`extract_clusters()`](reference/extract_clusters.md) uses a direct
+  8-connectivity flood-fill implementation for consistent
+  connected-component assignments.
+- [`circ_rayleigh()`](reference/circ_rayleigh.md) uses weighted sample
+  size (`sum(w)`) in weighted mode.
+- [`paired_tscore()`](reference/paired_tscore.md) uses per-slice
+  effective sample sizes under missing values.
+- `detect_clusters(qval=...)` computes adjusted p-values, and optional
+  `filter_by_q=TRUE` can filter clusters by adjusted significance.
+
 ## Testing
 
 ``` r
@@ -62,10 +108,16 @@ Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-25959-7>
 
 ## Roadmap
 
-- Add vignettes mirroring MATLAB scripts (behavioral O-score, PPC
-  contrasts, simulations).
-- Add pkgdown site and CI (R CMD check, lintr).
+- CI (R CMD check, lintr).
 - Data I/O helpers for MAT/HDF5 and richer plotting wrappers.
+
+## Albers theme
+
+This package uses the albersdown theme. Existing vignette theme hooks
+are replaced so `albers.css` and local `albers.js` render consistently
+on CRAN and GitHub Pages. The palette family is provided via
+`params$family` (default ‘red’). The pkgdown site uses
+`template: { package: albersdown }`.
 
 # Package index
 
@@ -157,6 +209,7 @@ Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-25959-7>
 
 ### All vignettes
 
+- [Get started with bosc](bosc.md):
 - [Oscillation Score Analysis](oscillation-score.md):
 - [PPC Analysis and Cluster Detection](ppc-clustering.md):
-- [Workflow Wrappers](workflow-wrappers.md):
+- [Running Batch Analyses and Extracting Phase](workflow-wrappers.md):

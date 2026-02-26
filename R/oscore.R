@@ -18,6 +18,9 @@
 #' @param warnings logical; emit warnings.
 #' @param fcor logical; apply 1/f correction in spectral peak estimation.
 #' @param taper taper applied before FFT; one of \code{"none"}, \code{"hann"}, \code{"hanning"}.
+#' @param signal_mode one of \code{"auto"}, \code{"event"}, or \code{"continuous"}.
+#'   \code{"event"} uses event-count heuristics for effective frequency bounds;
+#'   \code{"continuous"} uses signal-variance heuristics and Nyquist-limited bounds.
 #' @param plot logical; if TRUE, plots intermediate spectra (optional, requires ggplot2).
 #' @return list with \code{oscore}, \code{fosc}, \code{flim}, \code{flimfft}, \code{freqs}.
 #' @export
@@ -35,19 +38,36 @@ oscillation_score <- function(signal,
                               warnings = TRUE,
                               fcor = FALSE,
                               taper = c("none", "hann", "hanning"),
+                              signal_mode = c("auto", "event", "continuous"),
                               plot = FALSE) {
   stopifnot(is.numeric(signal))
   if (length(fs) != 1 || !is.finite(fs) || fs <= 0) stop("fs must be positive scalar.")
   if (length(flim) != 2) stop("flim must be length 2.")
-  taper <- match.arg(taper)
-
-  if (sum(signal, na.rm = TRUE) < 3) {
-    if (warnings) warning("Dataset is (nearly) empty: Oscillation score could not be computed.")
-    return(list(oscore = NA_real_, fosc = NA_real_, flim = numeric(0), flimfft = numeric(0), freqs = numeric(0)))
+  if (any(!is.finite(flim))) stop("flim must contain finite values.")
+  if (flim[1] <= 0 || flim[2] <= 0 || flim[1] >= flim[2]) {
+    stop("flim must be increasing positive frequencies.")
   }
+  taper <- match.arg(taper)
+  signal_mode <- match.arg(signal_mode)
 
   sig <- as.numeric(signal)
   sig[is.na(sig)] <- 0
+
+  if (signal_mode == "auto") {
+    signal_mode <- if (all(sig >= 0, na.rm = TRUE)) "event" else "continuous"
+  }
+
+  if (signal_mode == "event") {
+    if (sum(sig, na.rm = TRUE) < 3) {
+      if (warnings) warning("Dataset is (nearly) empty: Oscillation score could not be computed.")
+      return(list(oscore = NA_real_, fosc = NA_real_, flim = numeric(0), flimfft = numeric(0), freqs = numeric(0)))
+    }
+  } else {
+    if (!is.finite(stats::sd(sig, na.rm = TRUE)) || stats::sd(sig, na.rm = TRUE) < .Machine$double.eps) {
+      if (warnings) warning("Signal has near-zero variance: Oscillation score could not be computed.")
+      return(list(oscore = NA_real_, fosc = NA_real_, flim = numeric(0), flimfft = numeric(0), freqs = numeric(0)))
+    }
+  }
 
   if (!is.null(quantlim)) {
     nz <- which(sig != 0)
@@ -71,8 +91,17 @@ oscillation_score <- function(signal,
   }
 
   fmin <- max(flim[1], mincycles * fs / length(sigq))
-  fmax <- min(flim[2], sum(sigq) / (length(sigq) / fs))
+  if (signal_mode == "event") {
+    fmax <- min(flim[2], sum(sigq, na.rm = TRUE) / (length(sigq) / fs))
+  } else {
+    fmax <- min(flim[2], fs / 2)
+  }
   flim_eff <- c(fmin, fmax)
+
+  if (!all(is.finite(flim_eff)) || fmax <= fmin) {
+    if (warnings) warning("Effective frequency bounds are invalid for this signal.")
+    return(list(oscore = NA_real_, fosc = NA_real_, flim = flim_eff, flimfft = numeric(0), freqs = numeric(0)))
+  }
 
   if (!is.null(minfreqbandwidth) && (fmax - fmin) < minfreqbandwidth) {
     if (warnings) warning("Data not sufficient to meet minimal frequency bandwidth.")
@@ -187,10 +216,16 @@ oscillation_score <- function(signal,
 #' @param trend_dist character vector of distributions for \code{fitdistrplus::fitdist}.
 #' @param trend_ddt step (seconds) for trend generation; defaults to \code{0.5/fs}.
 #' @param trend_alpha p-value threshold to accept fit.
+#' @param surrogate_method surrogate generator; one of \code{"auto"},
+#'   \code{"event_shuffle"}, \code{"event_trend"}, or \code{"phase_randomized"}.
+#'   In \code{"auto"} mode, continuous signals default to phase randomization,
+#'   while event-like signals use shuffle or trend fitting depending on \code{keep_trend}.
+#' @param signal_mode one of \code{"auto"}, \code{"event"}, or \code{"continuous"}.
 #' @param warnings logical; emit warnings.
 #' @param fcor logical; apply 1/f correction in surrogate peak estimation.
 #' @param taper taper applied before FFT; one of \code{"none"}, \code{"hann"}, \code{"hanning"}.
-#' @return list with \code{oscore_rp}, \code{fosc_rp}, \code{trendfit}, and (optionally) \code{signrep}.
+#' @return list with \code{oscore_rp}, \code{fosc_rp}, \code{trendfit},
+#'   \code{surrogate_method}, \code{signal_mode}, and (optionally) \code{signrep}.
 #' @export
 oscillation_score_surrogates <- function(signal,
                                          fs,
@@ -201,30 +236,93 @@ oscillation_score_surrogates <- function(signal,
                                          trend_dist = c("gamma"),
                                          trend_ddt = NULL,
                                          trend_alpha = 0.05,
+                                         surrogate_method = c(
+                                           "auto", "event_shuffle", "event_trend", "phase_randomized"
+                                         ),
+                                         signal_mode = c("auto", "event", "continuous"),
                                          warnings = TRUE,
                                          fcor = FALSE,
                                          taper = c("none", "hann", "hanning")) {
-  if (length(nrep) != 1 || nrep <= 0) stop("nrep must be positive.")
-  if (length(fs) != 1 || fs <= 0) stop("fs must be positive.")
-  if (length(flim) != 2) stop("flim must be length 2.")
-  if (is.null(fpeak)) stop("fpeak must be provided (can be NA to skip trend window).")
+  if (length(nrep) != 1 || !is.finite(nrep) || nrep <= 0) stop("nrep must be positive.")
+  if (length(fs) != 1 || !is.finite(fs) || fs <= 0) stop("fs must be positive.")
+  if (length(flim) != 2 || any(!is.finite(flim)) || flim[1] <= 0 || flim[2] <= 0 || flim[1] >= flim[2]) {
+    stop("flim must be length 2 with increasing positive values.")
+  }
   if (is.null(trend_ddt)) trend_ddt <- 0.5 / fs
   taper <- match.arg(taper)
+  surrogate_method <- match.arg(surrogate_method)
+  signal_mode <- match.arg(signal_mode)
 
   sig <- as.numeric(signal)
   sig[is.na(sig)] <- 0
-  if (sum(sig) < 3) {
-    if (warnings) warning("Oscillation score stats could not be computed.")
-    return(list(oscore_rp = NA_real_, fosc_rp = NA_real_, signrep = NULL, trendfit = NULL))
+  if (signal_mode == "auto") {
+    signal_mode <- if (all(sig >= 0, na.rm = TRUE)) "event" else "continuous"
   }
 
-  tstart <- max(1L, which(sig != 0)[1] - 1L)
-  tend <- min(length(sig), tail(which(sig != 0), 1) + 1L)
+  if (surrogate_method == "auto") {
+    surrogate_method <- if (signal_mode == "continuous") {
+      "phase_randomized"
+    } else if (isTRUE(keep_trend)) {
+      "event_trend"
+    } else {
+      "event_shuffle"
+    }
+  }
+  if (isTRUE(keep_trend) && surrogate_method != "event_trend" && warnings) {
+    warning("keep_trend ignored because surrogate_method != 'event_trend'.")
+  }
+
+  if (surrogate_method != "phase_randomized" && is.null(fpeak)) {
+    stop("fpeak must be provided for event-based surrogate methods (can be NA to use flim[1] window).")
+  }
+
+  if (signal_mode == "event") {
+    if (sum(sig, na.rm = TRUE) < 3) {
+      if (warnings) warning("Oscillation score stats could not be computed.")
+      return(list(
+        oscore_rp = NA_real_,
+        fosc_rp = NA_real_,
+        signrep = NULL,
+        trendfit = NULL,
+        surrogate_method = surrogate_method,
+        signal_mode = signal_mode
+      ))
+    }
+    idx_active <- which(sig != 0)
+  } else {
+    sig_sd <- stats::sd(sig, na.rm = TRUE)
+    if (!is.finite(sig_sd) || sig_sd < .Machine$double.eps) {
+      if (warnings) warning("Signal has near-zero variance: surrogate distribution unavailable.")
+      return(list(
+        oscore_rp = NA_real_,
+        fosc_rp = NA_real_,
+        signrep = NULL,
+        trendfit = NULL,
+        surrogate_method = surrogate_method,
+        signal_mode = signal_mode
+      ))
+    }
+    idx_active <- which(abs(sig) > .Machine$double.eps)
+  }
+  if (length(idx_active) == 0) {
+    if (warnings) warning("No active samples found for surrogate generation.")
+    return(list(
+      oscore_rp = NA_real_,
+      fosc_rp = NA_real_,
+      signrep = NULL,
+      trendfit = NULL,
+      surrogate_method = surrogate_method,
+      signal_mode = signal_mode
+    ))
+  }
+
+  tstart <- max(1L, idx_active[1] - 1L)
+  tend <- min(length(sig), tail(idx_active, 1) + 1L)
   sigq <- sig[tstart:tend]
 
   trendfit <- list(distribution = "Shuffle", pd = NULL, pval = NA_real_, stats = NULL, trace = NULL)
 
-  if (keep_trend) {
+  if (surrogate_method == "event_trend") {
     times <- which(sigq > 0)
     fits <- lapply(trend_dist, function(d) {
       tryCatch({
@@ -236,20 +334,20 @@ oscillation_score_surrogates <- function(signal,
     pvals <- vapply(fits, function(f) f$pval, numeric(1))
     if (all(is.na(pvals))) {
       if (warnings) warning("Cannot fit distribution, shuffling data instead.")
-      keep_trend <- FALSE
+      surrogate_method <- "event_shuffle"
     } else {
       id <- which.max(pvals)
       if (!is.na(pvals[id]) && pvals[id] >= trend_alpha) {
         fd <- fits[[id]]$fd
         xidx <- seq_len(length(sigq))
-        pdf_vals <- do.call(fd$densfun, c(list(xidx), as.list(fd$estimate)))
+        pdf_vals <- fitdist_density(fd, xidx)
         pdf_vals[pdf_vals < 0] <- 0
         trace <- numeric(length(sig))
         trace[tstart:tend] <- pdf_vals / max(sum(pdf_vals), .Machine$double.eps)
         trendfit <- list(distribution = trend_dist[id], pd = fd, pval = pvals[id], stats = NULL, trace = trace)
       } else {
         if (warnings) warning("No suitable reference distribution found, using shuffle.")
-        keep_trend <- FALSE
+        surrogate_method <- "event_shuffle"
       }
     }
   }
@@ -259,10 +357,12 @@ oscillation_score_surrogates <- function(signal,
   signrep <- vector("list", nrep)
 
   for (rp in seq_len(nrep)) {
-    if (keep_trend && !is.null(trendfit$pd)) {
-      n_events <- sum(sigq)
+    if (surrogate_method == "phase_randomized") {
+      sigrp <- phase_randomize_signal(sigq)
+    } else if (surrogate_method == "event_trend" && !is.null(trendfit$pd)) {
+      n_events <- max(0L, as.integer(round(sum(pmax(sigq, 0), na.rm = TRUE))))
       xidx <- seq_len(length(sigq))
-      pdf_vals <- do.call(trendfit$pd$densfun, c(list(xidx), as.list(trendfit$pd$estimate)))
+      pdf_vals <- fitdist_density(trendfit$pd, xidx)
       pdf_vals[pdf_vals < 0] <- 0
       probs <- pdf_vals / max(sum(pdf_vals), .Machine$double.eps)
       sampled <- sample(xidx, size = n_events, replace = TRUE, prob = probs)
@@ -271,9 +371,11 @@ oscillation_score_surrogates <- function(signal,
       sigrp <- numeric(length(sigq))
       events <- which(sigq > 0)
       if (length(events) > 0) {
-        wind <- ifelse(is.na(fpeak), fs / flim[1], fs / fpeak)
-        for (i in events) {
-          j <- round(stats::runif(1) * wind - wind / 2) + i
+        weights <- pmax(1L, as.integer(round(sigq[events])))
+        ev_idx <- rep(events, weights)
+        wind <- if (is.null(fpeak) || is.na(fpeak) || !is.finite(fpeak) || fpeak <= 0) fs / flim[1] else fs / fpeak
+        for (i in ev_idx) {
+          j <- round(stats::runif(1) * wind - wind / 2) + as.integer(i)
           j <- max(1L, min(length(sigrp), j))
           sigrp[j] <- sigrp[j] + 1
         }
@@ -288,11 +390,75 @@ oscillation_score_surrogates <- function(signal,
                              fpeak = fpeak,
                              warnings = FALSE,
                              fcor = fcor,
-                             taper = taper)
+                             taper = taper,
+                             signal_mode = signal_mode)
     oscore_rp[rp] <- res$oscore
     fosc_rp[rp] <- res$fosc
     signrep[[rp]] <- sig_full
   }
 
-  list(oscore_rp = oscore_rp, fosc_rp = fosc_rp, signrep = signrep, trendfit = trendfit)
+  list(
+    oscore_rp = oscore_rp,
+    fosc_rp = fosc_rp,
+    signrep = signrep,
+    trendfit = trendfit,
+    surrogate_method = surrogate_method,
+    signal_mode = signal_mode
+  )
+}
+
+phase_randomize_signal <- function(x) {
+  sig <- as.numeric(x)
+  sig[!is.finite(sig)] <- 0
+  n <- length(sig)
+  if (n <= 2) return(sig)
+
+  mu <- mean(sig)
+  centered <- sig - mu
+  if (!any(abs(centered) > .Machine$double.eps)) {
+    return(sig)
+  }
+
+  X <- fft(centered)
+  if (n %% 2 == 0) {
+    pos <- 2:(n / 2)
+  } else {
+    pos <- 2:((n + 1) / 2)
+  }
+
+  if (length(pos) > 0) {
+    amp <- Mod(X[pos])
+    phi <- stats::runif(length(pos), min = 0, max = 2 * pi)
+    X_pos <- amp * exp(1i * phi)
+    X[pos] <- X_pos
+    X[n - pos + 2] <- Conj(X_pos)
+  }
+
+  X[1] <- Re(X[1])
+  if (n %% 2 == 0) {
+    X[n / 2 + 1] <- Re(X[n / 2 + 1])
+  }
+
+  as.numeric(Re(fft(X, inverse = TRUE) / n) + mu)
+}
+
+fitdist_density <- function(fd, x) {
+  if (is.null(fd) || is.null(fd$estimate)) {
+    stop("Invalid fitdist object: missing estimates.")
+  }
+
+  densfun <- NULL
+  if (!is.null(fd$densfun) && (is.function(fd$densfun) || is.character(fd$densfun))) {
+    densfun <- fd$densfun
+  } else if (!is.null(fd$distname) && nzchar(fd$distname)) {
+    cand <- paste0("d", fd$distname)
+    if (exists(cand, mode = "function")) {
+      densfun <- get(cand, mode = "function")
+    }
+  }
+  if (is.null(densfun)) {
+    stop("Could not resolve density function from fitdist object.")
+  }
+
+  do.call(densfun, c(list(x), as.list(fd$estimate)))
 }

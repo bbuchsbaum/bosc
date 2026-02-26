@@ -6,7 +6,7 @@ equivalent to MATLAB `xcorr(x)`.
 ## Usage
 
 ``` r
-autocorr_centered(x)
+autocorr_centered(x, method = c("auto", "direct", "fft"))
 ```
 
 ## Arguments

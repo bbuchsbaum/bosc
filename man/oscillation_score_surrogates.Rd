@@ -14,6 +14,8 @@ oscillation_score_surrogates(
   trend_dist = c("gamma"),
   trend_ddt = NULL,
   trend_alpha = 0.05,
+  surrogate_method = c("auto", "event_shuffle", "event_trend", "phase_randomized"),
+  signal_mode = c("auto", "event", "continuous"),
   warnings = TRUE,
   fcor = FALSE,
   taper = c("none", "hann", "hanning")
@@ -38,6 +40,13 @@ oscillation_score_surrogates(
 
 \item{trend_alpha}{p-value threshold to accept fit.}
 
+\item{surrogate_method}{surrogate generator; one of \code{"auto"},
+\code{"event_shuffle"}, \code{"event_trend"}, or \code{"phase_randomized"}.
+In \code{"auto"} mode, continuous signals default to phase randomization,
+while event-like signals use shuffle or trend fitting depending on \code{keep_trend}.}
+
+\item{signal_mode}{one of \code{"auto"}, \code{"event"}, or \code{"continuous"}.}
+
 \item{warnings}{logical; emit warnings.}
 
 \item{fcor}{logical; apply 1/f correction in surrogate peak estimation.}
@@ -45,7 +54,8 @@ oscillation_score_surrogates(
 \item{taper}{taper applied before FFT; one of \code{"none"}, \code{"hann"}, \code{"hanning"}.}
 }
 \value{
-list with \code{oscore_rp}, \code{fosc_rp}, \code{trendfit}, and (optionally) \code{signrep}.
+list with \code{oscore_rp}, \code{fosc_rp}, \code{trendfit},
+\code{surrogate_method}, \code{signal_mode}, and (optionally) \code{signrep}.
 }
 \description{
 Generates surrogate signals and computes oscillation scores for reference distributions.

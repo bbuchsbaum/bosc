@@ -18,7 +18,8 @@ detect_clusters(
   time_axis = NULL,
   data2 = NULL,
   dataRef = NULL,
-  qval = NULL
+  qval = NULL,
+  filter_by_q = FALSE
 )
 }
 \arguments{
@@ -45,6 +46,9 @@ detect_clusters(
 \item{dataRef}{optional reference matrix for computing reference statistics per cluster.}
 
 \item{qval}{optional FDR q for p-value adjustments.}
+
+\item{filter_by_q}{logical; if TRUE and \code{qval} is provided, keep only
+clusters with at least one pixel passing \code{pAdj <= qval}.}
 }
 \value{
 list of cluster structs with coordinates and stats.

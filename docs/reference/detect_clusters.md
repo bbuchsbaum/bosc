@@ -19,7 +19,8 @@ detect_clusters(
   time_axis = NULL,
   data2 = NULL,
   dataRef = NULL,
-  qval = NULL
+  qval = NULL,
+  filter_by_q = FALSE
 )
 ```
 
@@ -73,6 +74,11 @@ detect_clusters(
 - qval:
 
   optional FDR q for p-value adjustments.
+
+- filter_by_q:
+
+  logical; if TRUE and `qval` is provided, keep only clusters with at
+  least one pixel passing `pAdj <= qval`.
 
 ## Value
 

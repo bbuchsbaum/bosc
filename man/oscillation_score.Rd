@@ -19,6 +19,7 @@ oscillation_score(
   warnings = TRUE,
   fcor = FALSE,
   taper = c("none", "hann", "hanning"),
+  signal_mode = c("auto", "event", "continuous"),
   plot = FALSE
 )
 }
@@ -50,6 +51,10 @@ oscillation_score(
 \item{fcor}{logical; apply 1/f correction in spectral peak estimation.}
 
 \item{taper}{taper applied before FFT; one of \code{"none"}, \code{"hann"}, \code{"hanning"}.}
+
+\item{signal_mode}{one of \code{"auto"}, \code{"event"}, or \code{"continuous"}.
+\code{"event"} uses event-count heuristics for effective frequency bounds;
+\code{"continuous"} uses signal-variance heuristics and Nyquist-limited bounds.}
 
 \item{plot}{logical; if TRUE, plots intermediate spectra (optional, requires ggplot2).}
 }

@@ -4,13 +4,11 @@ R port of the [behavioral-oscillations](https://github.com/marijeterwal/behavior
 
 ## Documentation
 
-Full pkgdown site: <https://bbuchsbaum.github.io/bosc/>
-
 ### Vignettes
 
-- [Oscillation Score Analysis](https://bbuchsbaum.github.io/bosc/articles/oscillation-score.html) -- Computing oscillation scores, surrogate testing, multi-band analysis, and narrowband Hilbert phase extraction.
-- [PPC Analysis and Cluster Detection](https://bbuchsbaum.github.io/bosc/articles/ppc-clustering.html) -- Pairwise phase consistency, circular statistics, cluster-based permutation testing on time-frequency maps.
-- [Workflow Wrappers](https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.html) -- High-level config-driven wrappers, batch analysis, phase-at-events pipeline, and tidy output helpers.
+- **Oscillation Score Analysis** -- Computing oscillation scores, surrogate testing, multi-band analysis, and narrowband Hilbert phase extraction.
+- **PPC Analysis and Cluster Detection** -- Pairwise phase consistency, circular statistics, cluster-based permutation testing on time-frequency maps.
+- **Workflow Wrappers** -- High-level config-driven wrappers, batch analysis, phase-at-events pipeline, and tidy output helpers.
 
 ## Install
 
@@ -35,6 +33,32 @@ devtools::install("bosc")
 - Clustering: `extract_clusters`, `detect_clusters` (imager-based watershed/extract, cluster splitting).
 - Plotting: `plot_spectrum`, `plot_phase_hist`.
 
+## Enhancements Relative to MATLAB Reference
+
+This package closely follows the MATLAB reference implementation, with a few
+small R-oriented enhancements for robustness, configurability, and workflow
+ergonomics:
+
+- `spectral_peak(fcor = TRUE)` uses an explicit, stable log-log fit/predict path
+  in R for improved numerical stability.
+- `oscillation_score()` supports explicit `signal_mode`:
+  `event` uses event-rate-based effective bands; `continuous` uses
+  variance-aware checks and Nyquist-limited upper bounds.
+- `autocorr_centered()` now supports both direct and FFT-based linear
+  autocorrelation; `method = "auto"` selects a fast FFT path for longer vectors
+  while preserving centered `xcorr` semantics.
+- `oscillation_score_surrogates()` supports explicit `surrogate_method`,
+  including phase-randomized surrogates for continuous signals
+  (amplitude-spectrum-preserving nulls), in addition to event shuffle/trend.
+- `oscillation_score_z()` can return bootstrap confidence intervals for the
+  log-Z statistic (`z_ci`) and exposes CI controls (`ci_nboot`, `ci_level`).
+- `extract_clusters()` uses a direct 8-connectivity flood-fill implementation
+  for consistent connected-component assignments.
+- `circ_rayleigh()` uses weighted sample size (`sum(w)`) in weighted mode.
+- `paired_tscore()` uses per-slice effective sample sizes under missing values.
+- `detect_clusters(qval=...)` computes adjusted p-values, and optional
+  `filter_by_q=TRUE` can filter clusters by adjusted significance.
+
 ## Testing
 
 ```r
@@ -55,3 +79,8 @@ This package is an R port of the MATLAB toolbox developed for:
 
 - CI (R CMD check, lintr).
 - Data I/O helpers for MAT/HDF5 and richer plotting wrappers.
+
+<!-- albersdown:theme-note:start -->
+## Albers theme
+This package uses the albersdown theme. Existing vignette theme hooks are replaced so `albers.css` and local `albers.js` render consistently on CRAN and GitHub Pages. The palette family is provided via `params$family` (default 'red'). The pkgdown site uses `template: { package: albersdown }`.
+<!-- albersdown:theme-note:end -->

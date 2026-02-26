@@ -22,6 +22,7 @@ oscillation_score(
   warnings = TRUE,
   fcor = FALSE,
   taper = c("none", "hann", "hanning"),
+  signal_mode = c("auto", "event", "continuous"),
   plot = FALSE
 )
 ```
@@ -84,6 +85,12 @@ oscillation_score(
 - taper:
 
   taper applied before FFT; one of `"none"`, `"hann"`, `"hanning"`.
+
+- signal_mode:
+
+  one of `"auto"`, `"event"`, or `"continuous"`. `"event"` uses
+  event-count heuristics for effective frequency bounds; `"continuous"`
+  uses signal-variance heuristics and Nyquist-limited bounds.
 
 - plot:
 

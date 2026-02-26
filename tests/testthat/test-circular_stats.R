@@ -74,6 +74,19 @@ test_that("circ_rayleigh detects non-uniformity", {
   expect_true(result_uniform$pval > 0.1)
 })
 
+test_that("circ_rayleigh weighted results match replicated samples", {
+  alpha <- c(0, pi / 2)
+  w <- c(10, 1)
+  weighted <- circ_rayleigh(alpha, w = w)
+  replicated <- circ_rayleigh(rep(alpha, w))
+  expect_equal(weighted$z, replicated$z, tolerance = 1e-10)
+  expect_equal(weighted$pval, replicated$pval, tolerance = 1e-10)
+})
+
+test_that("circ_rayleigh validates weight length", {
+  expect_error(circ_rayleigh(c(0, pi / 2), w = c(1)), "dimensions do not match")
+})
+
 test_that("fdr_bh correctly identifies significant tests", {
   pvals <- c(0.001, 0.01, 0.02, 0.03, 0.05, 0.1, 0.5)
 

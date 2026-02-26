@@ -1,24 +1,28 @@
-# Workflow Wrappers
+# Running Batch Analyses and Extracting Phase
 
-## Introduction
+## When you have many subjects and conditions
 
-The **bosc** package provides low-level functions for oscillation
-analysis, but also includes high-level workflow wrappers that simplify
-common analysis patterns. These wrappers are designed to: - Accept
-configuration lists for reproducible, programmatic analyses - Combine
-multiple steps (e.g., compute score + surrogates + significance) in one
-call - Provide tidy output formats for easy integration with tidyverse
-workflows
+In a real experiment, you don’t analyze one signal — you analyze dozens
+of subjects across multiple conditions and frequency bands. Doing this
+with the low-level
+[`oscillation_score()`](../reference/oscillation_score.md) and
+[`oscillation_score_surrogates()`](../reference/oscillation_score_surrogates.md)
+functions means writing the same boilerplate over and over: compute the
+score, run surrogates, calculate the z-score, test significance.
 
-For the underlying algorithms, see
-[`vignette("oscillation-score")`](../articles/oscillation-score.md) and
-[`vignette("ppc-clustering")`](../articles/ppc-clustering.md).
+The workflow wrappers in **bosc** solve this by bundling common
+multi-step analyses into single calls.
+[`oscillation_score_z()`](../reference/oscillation_score_z.md) gives you
+a score, surrogates, z-score, and p-value in one call. Config-list
+wrappers let you define parameters once and apply them across subjects.
+And [`phase_at_events()`](../reference/phase_at_events.md) handles the
+full pipeline from event times to instantaneous phase.
 
 ``` r
 library(bosc)
 ```
 
-## Quick Start: One-Call Significance Testing
+## One call: score, surrogates, and significance
 
 The most common workflow is computing an oscillation score and testing
 its significance against surrogates.
@@ -56,13 +60,13 @@ cat("Significant:", result$significant, "\n")
 #> Significant: FALSE
 ```
 
-## Configuration-List Workflows
+## How do you run the same analysis across subjects?
 
 When running batch analyses across subjects or conditions, it’s
 convenient to define parameters once and reuse them. The `_config`
 wrappers accept named lists:
 
-### Basic Config-Driven Analysis
+### Define parameters once, apply everywhere
 
 ``` r
 # Define analysis parameters
@@ -86,7 +90,7 @@ cat("Peak frequency:", round(os$fosc, 2), "Hz\n")
 #> Peak frequency: 10.13 Hz
 ```
 
-### Surrogate Config Workflow
+### Adding surrogates to your config
 
 ``` r
 # Extend config for surrogate analysis
@@ -110,7 +114,7 @@ cat("Log-Z score:", round(z, 2), "\n")
 #> Log-Z score: 3.13
 ```
 
-### Batch Analysis Example
+### Processing multiple subjects
 
 ``` r
 # Simulate multiple subjects with varying oscillation strength
@@ -137,20 +141,22 @@ results <- lapply(subjects, function(s) {
 batch_results <- do.call(rbind, results)
 batch_results$subject <- 1:n_subjects
 print(batch_results[, c("subject", "oscore", "fosc", "z", "significant")])
-#>    subject   oscore     fosc        z significant
-#> 1        1 44.81143 9.775171 4.058299        TRUE
-#> 2        2 44.81143 9.775171 4.058299        TRUE
-#> 3        3 48.91388 9.775171 4.222812        TRUE
-#> 4        4 48.91388 9.775171 4.222812        TRUE
-#> 5        5 40.35858 9.775171 3.303521        TRUE
-#> 6        1 40.35858 9.775171 3.303521        TRUE
-#> 7        2 26.09299 9.775171 2.600084        TRUE
-#> 8        3 26.09299 9.775171 2.600084        TRUE
-#> 9        4 26.60936 9.775171 2.669158        TRUE
-#> 10       5 26.60936 9.775171 2.669158        TRUE
+#>   subject   oscore     fosc        z significant
+#> 1       1 44.81143 9.775171 4.058299        TRUE
+#> 2       2 48.91388 9.775171 4.222812        TRUE
+#> 3       3 40.35858 9.775171 3.303521        TRUE
+#> 4       4 26.09299 9.775171 2.600084        TRUE
+#> 5       5 26.60936 9.775171 2.669158        TRUE
 ```
 
-## Phase at Event Times
+![Oscillation scores decrease as jitter increases (subjects 1-5). Dashed
+line shows z = 1.65 significance
+threshold.](workflow-wrappers_files/figure-html/plot-batch-1.png)
+
+Oscillation scores decrease as jitter increases (subjects 1-5). Dashed
+line shows z = 1.65 significance threshold.
+
+## How do you extract phase at behavioral events?
 
 A common analysis extracts the instantaneous phase of an oscillation at
 specific event times (e.g., button presses, stimulus onsets).
@@ -189,6 +195,13 @@ cat("Rayleigh p-value:", format(ray$pval, digits = 3), "\n")
 #> Rayleigh p-value: 2.93e-05
 ```
 
+![Phase distribution at event times. Clustering indicates phase-locked
+behavioral
+responses.](workflow-wrappers_files/figure-html/plot-event-phases-1.png)
+
+Phase distribution at event times. Clustering indicates phase-locked
+behavioral responses.
+
 ### Leave-One-Out Phase Estimation
 
 For unbiased phase estimation (avoiding circular analysis), use
@@ -205,7 +218,7 @@ phases_loo <- phase_at_events(
 )
 ```
 
-## Tidy Output Helpers
+## Getting results into data frames
 
 The package includes helper functions to convert results to tidy
 data.frames, making it easy to combine results across analyses or use
@@ -238,16 +251,12 @@ head(spec_df)
 #> 5 2.197802 7.682177e-05
 #> 6 2.319902 6.915301e-05
 
-# Plot with ggplot2
-if (requireNamespace("ggplot2", quietly = TRUE)) {
-  library(ggplot2)
-  ggplot(spec_df, aes(x = freq, y = power)) +
-    geom_line() +
-    geom_vline(xintercept = os$fosc, linetype = "dashed", color = "red") +
-    labs(x = "Frequency (Hz)", y = "Power", title = "Oscillation Spectrum") +
-    theme_minimal()
-}
-#> Warning: package 'ggplot2' was built under R version 4.5.2
+library(ggplot2)
+ggplot(spec_df, aes(x = freq, y = power)) +
+  geom_line(color = "#1B75BB") +
+  geom_vline(xintercept = os$fosc, linetype = "dashed", color = "red") +
+  labs(x = "Frequency (Hz)", y = "Power") +
+  theme_minimal()
 ```
 
 ![](workflow-wrappers_files/figure-html/tidy-spectrum-1.png)
@@ -302,20 +311,16 @@ head(pixel_df)
 #> 5       1 0.1448276 12.315789 3.129383   NA
 #> 6       1 0.1793103  9.368421 3.600278   NA
 
-# Example: plot cluster extent
-if (requireNamespace("ggplot2", quietly = TRUE) && nrow(pixel_df) > 0) {
-  ggplot(pixel_df, aes(x = time, y = freq, fill = Zscore)) +
-    geom_tile() +
-    scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
-    labs(x = "Time (s)", y = "Frequency (Hz)", fill = "Z-score",
-         title = "Cluster Pixels") +
-    theme_minimal()
-}
+ggplot(pixel_df, aes(x = time, y = freq, fill = Zscore)) +
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  labs(x = "Time (s)", y = "Frequency (Hz)", fill = "Z-score") +
+  theme_minimal()
 ```
 
 ![](workflow-wrappers_files/figure-html/tidy-pixels-1.png)
 
-## Complete Analysis Pipeline
+## Putting it all together
 
 Here’s a complete example combining the workflow wrappers:
 
@@ -392,57 +397,30 @@ cat(sprintf("  Rayleigh p-value: %.4f\n", ray$pval))
 #>   Rayleigh p-value: 0.0000
 ```
 
-## Summary of Workflow Functions
+![Power spectrum from the complete pipeline. The dashed line marks the
+detected peak
+frequency.](workflow-wrappers_files/figure-html/plot-pipeline-spectrum-1.png)
 
-| Function | Purpose | Key Benefit |
-|----|----|----|
-| [`oscillation_score_z()`](../reference/oscillation_score_z.md) | O-score + surrogates + z-score | One-call significance testing |
-| [`oscillation_score_config()`](../reference/oscillation_score_config.md) | Config-driven O-score | Batch processing, reproducibility |
-| [`oscillation_score_surrogates_config()`](../reference/oscillation_score_surrogates_config.md) | Config-driven surrogates | Batch processing |
-| [`phase_at_events()`](../reference/phase_at_events.md) | Extract phases at event times | Full pipeline in one call |
-| [`oscore_tidy()`](../reference/oscore_tidy.md) | Convert results to data.frame | Tidyverse integration |
-| [`oscore_spectrum()`](../reference/oscore_spectrum.md) | Extract spectrum as data.frame | Easy plotting |
-| [`clusters_tidy()`](../reference/clusters_tidy.md) | Summarize clusters | Quick cluster statistics |
-| [`clusters_pixels()`](../reference/clusters_pixels.md) | Per-pixel cluster data | Custom analyses/plotting |
+Power spectrum from the complete pipeline. The dashed line marks the
+detected peak frequency.
 
-## Session Info
+## Next steps
 
-``` r
-sessionInfo()
-#> R version 4.5.1 (2025-06-13)
-#> Platform: aarch64-apple-darwin20
-#> Running under: macOS Sonoma 14.3
-#> 
-#> Matrix products: default
-#> BLAS:   /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib 
-#> LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
-#> 
-#> locale:
-#> [1] en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8
-#> 
-#> time zone: America/Toronto
-#> tzcode source: internal
-#> 
-#> attached base packages:
-#> [1] stats     graphics  grDevices utils     datasets  methods   base     
-#> 
-#> other attached packages:
-#> [1] ggplot2_4.0.1   bosc_0.0.0.9000
-#> 
-#> loaded via a namespace (and not attached):
-#>  [1] sass_0.4.10        generics_0.1.4     tiff_0.1-12        jpeg_0.1-11       
-#>  [5] stringi_1.8.7      pracma_2.4.6       digest_0.6.39      magrittr_2.0.4    
-#>  [9] evaluate_1.0.5     grid_4.5.1         RColorBrewer_1.1-3 fastmap_1.2.0     
-#> [13] jsonlite_2.0.0     purrr_1.2.0        scales_1.4.0       textshaping_1.0.4 
-#> [17] jquerylib_0.1.4    cli_3.6.5          rlang_1.1.6        withr_3.0.2       
-#> [21] cachem_1.1.0       yaml_2.3.12        tools_4.5.1        dplyr_1.1.4       
-#> [25] vctrs_0.6.5        R6_2.6.1           png_0.1-8          bmp_0.3.1         
-#> [29] lifecycle_1.0.4    stringr_1.6.0      fs_1.6.6           htmlwidgets_1.6.4 
-#> [33] MASS_7.3-65        ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3        
-#> [37] pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0        gtable_0.3.6      
-#> [41] glue_1.8.0         Rcpp_1.1.0         systemfonts_1.3.1  xfun_0.54         
-#> [45] tibble_3.3.0       tidyselect_1.2.1   knitr_1.50         farver_2.1.2      
-#> [49] readbitmap_0.1.5   htmltools_0.5.9    imager_1.0.5       igraph_2.2.1      
-#> [53] rmarkdown_2.30     labeling_0.4.3     signal_1.8-1       compiler_4.5.1    
-#> [57] S7_0.2.1
-```
+- Compute oscillation scores from scratch:
+  [`vignette("oscillation-score")`](../articles/oscillation-score.md)
+- Analyze phase consistency and clusters:
+  [`vignette("ppc-clustering")`](../articles/ppc-clustering.md)
+- See [`?oscillation_score_z`](../reference/oscillation_score_z.md) and
+  [`?phase_at_events`](../reference/phase_at_events.md) for full
+  argument lists
+
+## References
+
+The algorithms in **bosc** are ported from the
+[behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
+MATLAB toolbox. Please cite:
+
+> Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
+> behavioural and hippocampal responses in humans specifically during
+> memory-dependent tasks. *Nature Communications*, 12, 7048.
+> <https://doi.org/10.1038/s41467-021-25959-7>

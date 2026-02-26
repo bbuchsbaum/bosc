@@ -67,20 +67,33 @@ u_score_matrix <- function(dat, ref, alpha = 0.05) {
 paired_tscore <- function(dat1, dat2 = NULL, dim = 1) {
   if (!is.null(dat2) && !all(dim(dat1) == dim(dat2))) stop("dat1 and dat2 must match.")
   dat <- if (is.null(dat2)) dat1 else dat1 - dat2
-  n <- dim(dat)[dim]
-  tvals <- apply(dat, setdiff(seq_along(dim(dat)), dim), function(x) {
-    xvec <- as.numeric(x)
-    mn <- mean(xvec, na.rm = TRUE)
-    sdv <- stats::sd(xvec, na.rm = TRUE)
-    if (is.na(sdv) || sdv == 0) return(NA_real_)
-    mn / (sdv / sqrt(n))
-  })
-  # reshape back
-  out_dim <- dim(dat)
+  d <- dim(dat)
+  if (is.null(d) || length(d) == 0) stop("dat must be at least 1D.")
+  if (dim < 1 || dim > length(d)) stop("dim out of bounds.")
+
+  perm <- c(dim, setdiff(seq_along(d), dim))
+  dperm <- aperm(dat, perm)
+  n <- dim(dperm)[1]
+  rest_dim <- dim(dperm)[-1]
+  ncols <- if (length(rest_dim) == 0) 1L else prod(rest_dim)
+  m <- matrix(dperm, nrow = n, ncol = ncols)
+
+  n_eff <- colSums(is.finite(m))
+  mn <- colMeans(m, na.rm = TRUE)
+  sdv <- apply(m, 2, stats::sd, na.rm = TRUE)
+
+  tvals <- rep(NA_real_, ncols)
+  ok <- n_eff >= 2 & is.finite(sdv) & sdv > 0
+  tvals[ok] <- mn[ok] / (sdv[ok] / sqrt(n_eff[ok]))
+
+  nu_vals <- rep(NA_real_, ncols)
+  nu_vals[n_eff >= 2] <- n_eff[n_eff >= 2] - 1
+
+  out_dim <- d
   out_dim[dim] <- 1
   t_arr <- array(tvals, dim = out_dim)
-  nu <- (n - 1) * array(1, dim = out_dim)
-  list(t = t_arr, nu = nu)
+  nu_arr <- array(nu_vals, dim = out_dim)
+  list(t = t_arr, nu = nu_arr)
 }
 
 #' Non-parametric p-values vs reference

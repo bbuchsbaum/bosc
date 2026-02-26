@@ -2,7 +2,8 @@ pandoc: 3.7.0.2
 pkgdown: 2.2.0
 pkgdown_sha: ~
 articles:
+  bosc: bosc.html
   oscillation-score: oscillation-score.html
   ppc-clustering: ppc-clustering.html
   workflow-wrappers: workflow-wrappers.html
-last_built: 2025-12-12T02:11Z
+last_built: 2026-02-26T20:27Z

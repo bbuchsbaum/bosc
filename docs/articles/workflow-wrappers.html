@@ -5,12 +5,13 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Workflow Wrappers • bosc</title>
+<title>Running Batch Analyses and Extracting Phase • bosc</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Workflow Wrappers">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
+<script src="../extra.js"></script><meta property="og:title" content="Running Batch Analyses and Extracting Phase">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -43,7 +44,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/marijeterwal/behavioral-oscillations/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/bbuchsbaum/bosc/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -57,33 +58,36 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Workflow Wrappers</h1>
+      <h1>Running Batch Analyses and Extracting Phase</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/marijeterwal/behavioral-oscillations/blob/HEAD/vignettes/workflow-wrappers.Rmd" class="external-link"><code>vignettes/workflow-wrappers.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/bbuchsbaum/bosc/blob/HEAD/vignettes/workflow-wrappers.Rmd" class="external-link"><code>vignettes/workflow-wrappers.Rmd</code></a></small>
       <div class="d-none name"><code>workflow-wrappers.Rmd</code></div>
     </div>
 
     
     
 <div class="section level2">
-<h2 id="introduction">Introduction<a class="anchor" aria-label="anchor" href="#introduction"></a>
+<h2 id="when-you-have-many-subjects-and-conditions">When you have many subjects and conditions<a class="anchor" aria-label="anchor" href="#when-you-have-many-subjects-and-conditions"></a>
 </h2>
-<p>The <strong>bosc</strong> package provides low-level functions for
-oscillation analysis, but also includes high-level workflow wrappers
-that simplify common analysis patterns. These wrappers are designed to:
-- Accept configuration lists for reproducible, programmatic analyses -
-Combine multiple steps (e.g., compute score + surrogates + significance)
-in one call - Provide tidy output formats for easy integration with
-tidyverse workflows</p>
-<p>For the underlying algorithms, see
-<code><a href="../articles/oscillation-score.html">vignette("oscillation-score")</a></code> and
-<code><a href="../articles/ppc-clustering.html">vignette("ppc-clustering")</a></code>.</p>
+<p>In a real experiment, you don’t analyze one signal — you analyze
+dozens of subjects across multiple conditions and frequency bands. Doing
+this with the low-level <code><a href="../reference/oscillation_score.html">oscillation_score()</a></code> and
+<code><a href="../reference/oscillation_score_surrogates.html">oscillation_score_surrogates()</a></code> functions means writing the
+same boilerplate over and over: compute the score, run surrogates,
+calculate the z-score, test significance.</p>
+<p>The workflow wrappers in <strong>bosc</strong> solve this by bundling
+common multi-step analyses into single calls.
+<code><a href="../reference/oscillation_score_z.html">oscillation_score_z()</a></code> gives you a score, surrogates,
+z-score, and p-value in one call. Config-list wrappers let you define
+parameters once and apply them across subjects. And
+<code><a href="../reference/phase_at_events.html">phase_at_events()</a></code> handles the full pipeline from event
+times to instantaneous phase.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">bosc</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bbuchsbaum/bosc" class="external-link">bosc</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="quick-start-one-call-significance-testing">Quick Start: One-Call Significance Testing<a class="anchor" aria-label="anchor" href="#quick-start-one-call-significance-testing"></a>
+<h2 id="one-call-score-surrogates-and-significance">One call: score, surrogates, and significance<a class="anchor" aria-label="anchor" href="#one-call-score-surrogates-and-significance"></a>
 </h2>
 <p>The most common workflow is computing an oscillation score and
 testing its significance against surrogates.
@@ -119,13 +123,13 @@ testing its significance against surrogates.
 <span><span class="co">#&gt; Significant: FALSE</span></span></code></pre></div>
 </div>
 <div class="section level2">
-<h2 id="configuration-list-workflows">Configuration-List Workflows<a class="anchor" aria-label="anchor" href="#configuration-list-workflows"></a>
+<h2 id="how-do-you-run-the-same-analysis-across-subjects">How do you run the same analysis across subjects?<a class="anchor" aria-label="anchor" href="#how-do-you-run-the-same-analysis-across-subjects"></a>
 </h2>
 <p>When running batch analyses across subjects or conditions, it’s
 convenient to define parameters once and reuse them. The
 <code>_config</code> wrappers accept named lists:</p>
 <div class="section level3">
-<h3 id="basic-config-driven-analysis">Basic Config-Driven Analysis<a class="anchor" aria-label="anchor" href="#basic-config-driven-analysis"></a>
+<h3 id="define-parameters-once-apply-everywhere">Define parameters once, apply everywhere<a class="anchor" aria-label="anchor" href="#define-parameters-once-apply-everywhere"></a>
 </h3>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Define analysis parameters</span></span>
@@ -149,7 +153,7 @@ convenient to define parameters once and reuse them. The
 <span><span class="co">#&gt; Peak frequency: 10.13 Hz</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="surrogate-config-workflow">Surrogate Config Workflow<a class="anchor" aria-label="anchor" href="#surrogate-config-workflow"></a>
+<h3 id="adding-surrogates-to-your-config">Adding surrogates to your config<a class="anchor" aria-label="anchor" href="#adding-surrogates-to-your-config"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Extend config for surrogate analysis</span></span>
@@ -173,7 +177,7 @@ convenient to define parameters once and reuse them. The
 <span><span class="co">#&gt; Log-Z score: 3.13</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="batch-analysis-example">Batch Analysis Example<a class="anchor" aria-label="anchor" href="#batch-analysis-example"></a>
+<h3 id="processing-multiple-subjects">Processing multiple subjects<a class="anchor" aria-label="anchor" href="#processing-multiple-subjects"></a>
 </h3>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Simulate multiple subjects with varying oscillation strength</span></span>
@@ -200,21 +204,22 @@ convenient to define parameters once and reuse them. The
 <span><span class="va">batch_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">results</span><span class="op">)</span></span>
 <span><span class="va">batch_results</span><span class="op">$</span><span class="va">subject</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_subjects</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">batch_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject"</span>, <span class="st">"oscore"</span>, <span class="st">"fosc"</span>, <span class="st">"z"</span>, <span class="st">"significant"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    subject   oscore     fosc        z significant</span></span>
-<span><span class="co">#&gt; 1        1 44.81143 9.775171 4.058299        TRUE</span></span>
-<span><span class="co">#&gt; 2        2 44.81143 9.775171 4.058299        TRUE</span></span>
-<span><span class="co">#&gt; 3        3 48.91388 9.775171 4.222812        TRUE</span></span>
-<span><span class="co">#&gt; 4        4 48.91388 9.775171 4.222812        TRUE</span></span>
-<span><span class="co">#&gt; 5        5 40.35858 9.775171 3.303521        TRUE</span></span>
-<span><span class="co">#&gt; 6        1 40.35858 9.775171 3.303521        TRUE</span></span>
-<span><span class="co">#&gt; 7        2 26.09299 9.775171 2.600084        TRUE</span></span>
-<span><span class="co">#&gt; 8        3 26.09299 9.775171 2.600084        TRUE</span></span>
-<span><span class="co">#&gt; 9        4 26.60936 9.775171 2.669158        TRUE</span></span>
-<span><span class="co">#&gt; 10       5 26.60936 9.775171 2.669158        TRUE</span></span></code></pre></div>
+<span><span class="co">#&gt;   subject   oscore     fosc        z significant</span></span>
+<span><span class="co">#&gt; 1       1 44.81143 9.775171 4.058299        TRUE</span></span>
+<span><span class="co">#&gt; 2       2 48.91388 9.775171 4.222812        TRUE</span></span>
+<span><span class="co">#&gt; 3       3 40.35858 9.775171 3.303521        TRUE</span></span>
+<span><span class="co">#&gt; 4       4 26.09299 9.775171 2.600084        TRUE</span></span>
+<span><span class="co">#&gt; 5       5 26.60936 9.775171 2.669158        TRUE</span></span></code></pre></div>
+<div class="figure">
+<img src="workflow-wrappers_files/figure-html/plot-batch-1.png" class="r-plt" alt="Oscillation scores decrease as jitter increases (subjects 1-5). Dashed line shows z = 1.65 significance threshold." width="576"><p class="caption">
+Oscillation scores decrease as jitter increases (subjects 1-5). Dashed
+line shows z = 1.65 significance threshold.
+</p>
+</div>
 </div>
 </div>
 <div class="section level2">
-<h2 id="phase-at-event-times">Phase at Event Times<a class="anchor" aria-label="anchor" href="#phase-at-event-times"></a>
+<h2 id="how-do-you-extract-phase-at-behavioral-events">How do you extract phase at behavioral events?<a class="anchor" aria-label="anchor" href="#how-do-you-extract-phase-at-behavioral-events"></a>
 </h2>
 <p>A common analysis extracts the instantaneous phase of an oscillation
 at specific event times (e.g., button presses, stimulus onsets).
@@ -248,6 +253,12 @@ at specific event times (e.g., button presses, stimulus onsets).
 <span><span class="va">ray</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/circ_rayleigh.html">circ_rayleigh</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Rayleigh p-value:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">ray</span><span class="op">$</span><span class="va">pval</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Rayleigh p-value: 2.93e-05</span></span></code></pre></div>
+<div class="figure">
+<img src="workflow-wrappers_files/figure-html/plot-event-phases-1.png" class="r-plt" alt="Phase distribution at event times. Clustering indicates phase-locked behavioral responses." width="576"><p class="caption">
+Phase distribution at event times. Clustering indicates phase-locked
+behavioral responses.
+</p>
+</div>
 <div class="section level3">
 <h3 id="leave-one-out-phase-estimation">Leave-One-Out Phase Estimation<a class="anchor" aria-label="anchor" href="#leave-one-out-phase-estimation"></a>
 </h3>
@@ -265,7 +276,7 @@ leave-one-out:</p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="tidy-output-helpers">Tidy Output Helpers<a class="anchor" aria-label="anchor" href="#tidy-output-helpers"></a>
+<h2 id="getting-results-into-data-frames">Getting results into data frames<a class="anchor" aria-label="anchor" href="#getting-results-into-data-frames"></a>
 </h2>
 <p>The package includes helper functions to convert results to tidy
 data.frames, making it easy to combine results across analyses or use
@@ -296,17 +307,13 @@ with ggplot2/dplyr. ### oscore_tidy: Oscillation Score Summaries</p>
 <span><span class="co">#&gt; 5 2.197802 7.682177e-05</span></span>
 <span><span class="co">#&gt; 6 2.319902 6.915301e-05</span></span>
 <span></span>
-<span><span class="co"># Plot with ggplot2</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">spec_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">freq</span>, y <span class="op">=</span> <span class="va">power</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">os</span><span class="op">$</span><span class="va">fosc</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Frequency (Hz)"</span>, y <span class="op">=</span> <span class="st">"Power"</span>, title <span class="op">=</span> <span class="st">"Oscillation Spectrum"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">}</span></span>
-<span><span class="co">#&gt; Warning: package 'ggplot2' was built under R version 4.5.2</span></span></code></pre></div>
-<p><img src="workflow-wrappers_files/figure-html/tidy-spectrum-1.png" class="r-plt" width="576"></p>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">spec_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">freq</span>, y <span class="op">=</span> <span class="va">power</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#1B75BB"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">os</span><span class="op">$</span><span class="va">fosc</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Frequency (Hz)"</span>, y <span class="op">=</span> <span class="st">"Power"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="workflow-wrappers_files/figure-html/tidy-spectrum-1.png" class="r-plt" alt="" width="576"></p>
 </div>
 <div class="section level3">
 <h3 id="clusters_tidy-cluster-summaries">clusters_tidy: Cluster Summaries<a class="anchor" aria-label="anchor" href="#clusters_tidy-cluster-summaries"></a>
@@ -358,20 +365,16 @@ format:</p>
 <span><span class="co">#&gt; 5       1 0.1448276 12.315789 3.129383   NA</span></span>
 <span><span class="co">#&gt; 6       1 0.1793103  9.368421 3.600278   NA</span></span>
 <span></span>
-<span><span class="co"># Example: plot cluster extent</span></span>
-<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pixel_df</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pixel_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">freq</span>, fill <span class="op">=</span> <span class="va">Zscore</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>low <span class="op">=</span> <span class="st">"blue"</span>, mid <span class="op">=</span> <span class="st">"white"</span>, high <span class="op">=</span> <span class="st">"red"</span>, midpoint <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time (s)"</span>, y <span class="op">=</span> <span class="st">"Frequency (Hz)"</span>, fill <span class="op">=</span> <span class="st">"Z-score"</span>,</span>
-<span>         title <span class="op">=</span> <span class="st">"Cluster Pixels"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>    <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="op">}</span></span></code></pre></div>
-<p><img src="workflow-wrappers_files/figure-html/tidy-pixels-1.png" class="r-plt" width="576"></p>
+<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pixel_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">freq</span>, fill <span class="op">=</span> <span class="va">Zscore</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>low <span class="op">=</span> <span class="st">"blue"</span>, mid <span class="op">=</span> <span class="st">"white"</span>, high <span class="op">=</span> <span class="st">"red"</span>, midpoint <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time (s)"</span>, y <span class="op">=</span> <span class="st">"Frequency (Hz)"</span>, fill <span class="op">=</span> <span class="st">"Z-score"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<p><img src="workflow-wrappers_files/figure-html/tidy-pixels-1.png" class="r-plt" alt="" width="576"></p>
 </div>
 </div>
 <div class="section level2">
-<h2 id="complete-analysis-pipeline">Complete Analysis Pipeline<a class="anchor" aria-label="anchor" href="#complete-analysis-pipeline"></a>
+<h2 id="putting-it-all-together">Putting it all together<a class="anchor" aria-label="anchor" href="#putting-it-all-together"></a>
 </h2>
 <p>Here’s a complete example combining the workflow wrappers:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
@@ -445,106 +448,37 @@ format:</p>
 <span><span class="co">#&gt;   Resultant length: 0.904</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Rayleigh p-value: %.4f\n"</span>, <span class="va">ray</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Rayleigh p-value: 0.0000</span></span></code></pre></div>
+<div class="figure">
+<img src="workflow-wrappers_files/figure-html/plot-pipeline-spectrum-1.png" class="r-plt" alt="Power spectrum from the complete pipeline. The dashed line marks the detected peak frequency." width="576"><p class="caption">
+Power spectrum from the complete pipeline. The dashed line marks the
+detected peak frequency.
+</p>
+</div>
 </div>
 <div class="section level2">
-<h2 id="summary-of-workflow-functions">Summary of Workflow Functions<a class="anchor" aria-label="anchor" href="#summary-of-workflow-functions"></a>
+<h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
 </h2>
-<table class="table">
-<colgroup>
-<col width="31%">
-<col width="28%">
-<col width="40%">
-</colgroup>
-<thead><tr class="header">
-<th>Function</th>
-<th>Purpose</th>
-<th>Key Benefit</th>
-</tr></thead>
-<tbody>
-<tr class="odd">
-<td><code><a href="../reference/oscillation_score_z.html">oscillation_score_z()</a></code></td>
-<td>O-score + surrogates + z-score</td>
-<td>One-call significance testing</td>
-</tr>
-<tr class="even">
-<td><code><a href="../reference/oscillation_score_config.html">oscillation_score_config()</a></code></td>
-<td>Config-driven O-score</td>
-<td>Batch processing, reproducibility</td>
-</tr>
-<tr class="odd">
-<td><code><a href="../reference/oscillation_score_surrogates_config.html">oscillation_score_surrogates_config()</a></code></td>
-<td>Config-driven surrogates</td>
-<td>Batch processing</td>
-</tr>
-<tr class="even">
-<td><code><a href="../reference/phase_at_events.html">phase_at_events()</a></code></td>
-<td>Extract phases at event times</td>
-<td>Full pipeline in one call</td>
-</tr>
-<tr class="odd">
-<td><code><a href="../reference/oscore_tidy.html">oscore_tidy()</a></code></td>
-<td>Convert results to data.frame</td>
-<td>Tidyverse integration</td>
-</tr>
-<tr class="even">
-<td><code><a href="../reference/oscore_spectrum.html">oscore_spectrum()</a></code></td>
-<td>Extract spectrum as data.frame</td>
-<td>Easy plotting</td>
-</tr>
-<tr class="odd">
-<td><code><a href="../reference/clusters_tidy.html">clusters_tidy()</a></code></td>
-<td>Summarize clusters</td>
-<td>Quick cluster statistics</td>
-</tr>
-<tr class="even">
-<td><code><a href="../reference/clusters_pixels.html">clusters_pixels()</a></code></td>
-<td>Per-pixel cluster data</td>
-<td>Custom analyses/plotting</td>
-</tr>
-</tbody>
-</table>
+<ul>
+<li>Compute oscillation scores from scratch:
+<code><a href="../articles/oscillation-score.html">vignette("oscillation-score")</a></code>
+</li>
+<li>Analyze phase consistency and clusters:
+<code><a href="../articles/ppc-clustering.html">vignette("ppc-clustering")</a></code>
+</li>
+<li>See <code><a href="../reference/oscillation_score_z.html">?oscillation_score_z</a></code> and
+<code><a href="../reference/phase_at_events.html">?phase_at_events</a></code> for full argument lists</li>
+</ul>
 </div>
 <div class="section level2">
-<h2 id="session-info">Session Info<a class="anchor" aria-label="anchor" href="#session-info"></a>
+<h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html" class="external-link">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; R version 4.5.1 (2025-06-13)</span></span>
-<span><span class="co">#&gt; Platform: aarch64-apple-darwin20</span></span>
-<span><span class="co">#&gt; Running under: macOS Sonoma 14.3</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Matrix products: default</span></span>
-<span><span class="co">#&gt; BLAS:   /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib </span></span>
-<span><span class="co">#&gt; LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; locale:</span></span>
-<span><span class="co">#&gt; [1] en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; time zone: America/Toronto</span></span>
-<span><span class="co">#&gt; tzcode source: internal</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; attached base packages:</span></span>
-<span><span class="co">#&gt; [1] stats     graphics  grDevices utils     datasets  methods   base     </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; other attached packages:</span></span>
-<span><span class="co">#&gt; [1] ggplot2_4.0.1   bosc_0.0.0.9000</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; loaded via a namespace (and not attached):</span></span>
-<span><span class="co">#&gt;  [1] sass_0.4.10        generics_0.1.4     tiff_0.1-12        jpeg_0.1-11       </span></span>
-<span><span class="co">#&gt;  [5] stringi_1.8.7      pracma_2.4.6       digest_0.6.39      magrittr_2.0.4    </span></span>
-<span><span class="co">#&gt;  [9] evaluate_1.0.5     grid_4.5.1         RColorBrewer_1.1-3 fastmap_1.2.0     </span></span>
-<span><span class="co">#&gt; [13] jsonlite_2.0.0     purrr_1.2.0        scales_1.4.0       textshaping_1.0.4 </span></span>
-<span><span class="co">#&gt; [17] jquerylib_0.1.4    cli_3.6.5          rlang_1.1.6        withr_3.0.2       </span></span>
-<span><span class="co">#&gt; [21] cachem_1.1.0       yaml_2.3.12        tools_4.5.1        dplyr_1.1.4       </span></span>
-<span><span class="co">#&gt; [25] vctrs_0.6.5        R6_2.6.1           png_0.1-8          bmp_0.3.1         </span></span>
-<span><span class="co">#&gt; [29] lifecycle_1.0.4    stringr_1.6.0      fs_1.6.6           htmlwidgets_1.6.4 </span></span>
-<span><span class="co">#&gt; [33] MASS_7.3-65        ragg_1.5.0         pkgconfig_2.0.3    desc_1.4.3        </span></span>
-<span><span class="co">#&gt; [37] pkgdown_2.2.0      pillar_1.11.1      bslib_0.9.0        gtable_0.3.6      </span></span>
-<span><span class="co">#&gt; [41] glue_1.8.0         Rcpp_1.1.0         systemfonts_1.3.1  xfun_0.54         </span></span>
-<span><span class="co">#&gt; [45] tibble_3.3.0       tidyselect_1.2.1   knitr_1.50         farver_2.1.2      </span></span>
-<span><span class="co">#&gt; [49] readbitmap_0.1.5   htmltools_0.5.9    imager_1.0.5       igraph_2.2.1      </span></span>
-<span><span class="co">#&gt; [53] rmarkdown_2.30     labeling_0.4.3     signal_1.8-1       compiler_4.5.1    </span></span>
-<span><span class="co">#&gt; [57] S7_0.2.1</span></span></code></pre></div>
+<p>The algorithms in <strong>bosc</strong> are ported from the <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">behavioral-oscillations</a>
+MATLAB toolbox. Please cite:</p>
+<blockquote>
+<p>Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
+behavioural and hippocampal responses in humans specifically during
+memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-25959-7" class="external-link uri">https://doi.org/10.1038/s41467-021-25959-7</a></p>
+</blockquote>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside>

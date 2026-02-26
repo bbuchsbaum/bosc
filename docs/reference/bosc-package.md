@@ -22,7 +22,7 @@ Original MATLAB toolbox:
 
 Useful links:
 
-- <https://github.com/marijeterwal/behavioral-oscillations>
+- <https://github.com/bbuchsbaum/bosc>
 
 ## Author
 

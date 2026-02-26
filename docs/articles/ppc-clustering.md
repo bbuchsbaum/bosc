@@ -1,15 +1,23 @@
 # PPC Analysis and Cluster Detection
 
-## Introduction
+## The problem: finding rhythmic structure in noisy data
 
-This vignette demonstrates **Pairwise Phase Consistency (PPC)** analysis
-and **cluster-based statistical testing** for time-frequency data. These
-methods are commonly used to analyze phase-locking between behavioral
-responses and neural oscillations.
+You’ve collected phase angles from neural recordings across many trials
+— perhaps from narrowband-filtered EEG time-locked to a behavioral
+response. Two questions arise:
 
-**PPC** is a bias-free measure of phase consistency that, unlike mean
-resultant length, does not depend on trial count. **Cluster-based
-testing** provides family-wise error correction for time-frequency maps.
+1.  **Are the phases consistent across trials?** If subjects respond at
+    a preferred oscillatory phase, the phase distribution will be
+    non-uniform.
+2.  **Where in time-frequency space is the effect?** With data at many
+    frequencies and time points, you need cluster-based correction to
+    control for multiple comparisons.
+
+This vignette covers both: **Pairwise Phase Consistency (PPC)** for
+bias-free phase-locking measurement, and **cluster-based permutation
+testing** for time-frequency maps. PPC avoids the trial-count bias of
+mean resultant length, making it the preferred metric for comparing
+conditions with unequal trial numbers.
 
 For oscillation score analysis, see
 [`vignette("oscillation-score")`](../articles/oscillation-score.md).
@@ -65,6 +73,13 @@ cat("PPC (random phases):", round(mean(ppc_random), 3), "\n")
 #> PPC (random phases): -0.015
 ```
 
+![PPC values across time points: consistent phases (blue) vs random
+phases
+(grey).](ppc-clustering_files/figure-html/plot-ppc-comparison-1.png)
+
+PPC values across time points: consistent phases (blue) vs random phases
+(grey).
+
 ### Phase Extraction with Narrowband Hilbert
 
 In real analyses, phases come from narrowband-filtered neural signals:
@@ -103,6 +118,13 @@ cat("Rayleigh p-value:", format(ray$pval, digits = 3), "\n")
 #> Rayleigh p-value: 1.33e-08
 ```
 
+![Phase angles at response time across 20 trials. Clustering near 0
+indicates
+phase-locking.](ppc-clustering_files/figure-html/plot-phase-rose-1.png)
+
+Phase angles at response time across 20 trials. Clustering near 0
+indicates phase-locking.
+
 ### Circular Statistics Functions
 
 ``` r
@@ -133,9 +155,7 @@ cat("V-test p-value:", format(vtest$pval, digits = 3), "\n")
 ### Visualizing Phase Distribution
 
 ``` r
-if (requireNamespace("ggplot2", quietly = TRUE)) {
-  plot_phase_hist(angles, nbins = 16)
-}
+plot_phase_hist(angles, nbins = 16)
 ```
 
 ![Phase distribution showing clustering around
@@ -143,7 +163,7 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 
 Phase distribution showing clustering around 0
 
-## Cluster Detection on Time-Frequency Maps
+## How do you find significant clusters in time-frequency maps?
 
 Cluster-based permutation testing is the standard approach for multiple
 comparison correction in time-frequency analyses. It works by:
@@ -154,31 +174,49 @@ comparison correction in time-frequency analyses. It works by:
 
 ### Simulating Time-Frequency Data
 
+We start by creating two conditions for 15 subjects across a
+30-frequency × 50-timepoint grid. The baseline condition is pure noise;
+we will add a localized effect in the second step.
+
 ``` r
 set.seed(789)
 
-# Simulate a time-frequency map with an embedded effect cluster
 n_freq <- 30
 n_time <- 50
 n_subjects <- 15
 
-# Baseline condition: random noise
+# Baseline condition: random noise across all subjects, frequencies, and times
 baseline <- array(
   rnorm(n_subjects * n_freq * n_time, mean = 0, sd = 1),
   dim = c(n_subjects, n_freq, n_time)
 )
 
-# Effect condition: noise + cluster of increased activity
+# Effect condition starts identical in structure
 effect <- array(
   rnorm(n_subjects * n_freq * n_time, mean = 0, sd = 1),
   dim = c(n_subjects, n_freq, n_time)
 )
 
+cat("Data dimensions:", dim(effect), "(subjects x freq x time)\n")
+#> Data dimensions: 15 30 50 (subjects x freq x time)
+```
+
+Now we inject a spatially compact effect into the theta band (frequency
+rows 5–10) around the response window (time points 15–25). This mimics a
+real neural effect that cluster detection should recover.
+
+``` r
 # Add effect cluster (theta band: rows 5-10, time 15-25)
 effect[, 5:10, 15:25] <- effect[, 5:10, 15:25] + 1.5
 
-cat("Data dimensions:", dim(effect), "(subjects x freq x time)\n")
-#> Data dimensions: 15 30 50 (subjects x freq x time)
+cat("Effect magnitude added to rows 5:10, times 15:25\n")
+#> Effect magnitude added to rows 5:10, times 15:25
+cat("Mean in effect region (effect):",
+    round(mean(effect[, 5:10, 15:25]), 3), "\n")
+#> Mean in effect region (effect): 1.578
+cat("Mean in effect region (baseline):",
+    round(mean(baseline[, 5:10, 15:25]), 3), "\n")
+#> Mean in effect region (baseline): 0.011
 ```
 
 ### Computing T-scores
@@ -194,6 +232,13 @@ cat("Max t-score location: freq", which.max(apply(t_matrix, 1, max)),
     ", time", which.max(apply(t_matrix, 2, max)), "\n")
 #> Max t-score location: freq 9 , time 15
 ```
+
+![T-score map across frequency and time. The embedded effect cluster is
+visible in the theta range (rows 5-10, time
+15-25).](ppc-clustering_files/figure-html/plot-tscores-1.png)
+
+T-score map across frequency and time. The embedded effect cluster is
+visible in the theta range (rows 5-10, time 15-25).
 
 ### Detecting Clusters
 
@@ -239,15 +284,13 @@ if (length(clusters) > 0) {
 ### Visualizing Clusters
 
 ``` r
-if (requireNamespace("ggplot2", quietly = TRUE)) {
-  plot_cluster_heatmap(
-    data = t_matrix,
-    clusters = clusters,
-    freq_axis = freq_axis,
-    time_axis = time_axis,
-    zlim = c(-4, 4)
-  )
-}
+plot_cluster_heatmap(
+  data = t_matrix,
+  clusters = clusters,
+  freq_axis = freq_axis,
+  time_axis = time_axis,
+  zlim = c(-4, 4)
+)
 ```
 
 ![Time-frequency map with detected clusters
@@ -276,7 +319,7 @@ clusters_ws <- detect_clusters(
 )
 ```
 
-## Multiple Comparison Correction
+## How do you correct for multiple comparisons?
 
 ### FDR Correction
 
@@ -344,7 +387,7 @@ cat("Significant elements:", sum(u_result$sgnf != 0), "of", length(observed), "\
 #> Significant elements: 3 of 20
 ```
 
-## Complete Analysis Workflow
+## Putting it all together
 
 Here’s a complete workflow combining PPC analysis with cluster
 detection:
@@ -411,7 +454,7 @@ for (i in seq_along(sig_clusters)) {
 #>   Cluster t-sum: 356.4
 ```
 
-## Loading Real Data
+## Working with real data
 
 For actual experiments, use the I/O utilities:
 
@@ -430,59 +473,25 @@ ppc_matrix <- h5_file[["ppc"]][]
 h5_file$close_all()
 ```
 
-## Summary
+## Next steps
 
-| Function | Purpose |
-|----|----|
-| [`pairwise_phase_consistency()`](../reference/pairwise_phase_consistency.md) | Bias-free phase consistency measure |
-| [`circ_mean()`](../reference/circ_mean.md), [`circ_r()`](../reference/circ_r.md) | Circular mean and resultant length |
-| [`circ_rayleigh()`](../reference/circ_rayleigh.md), [`circ_vtest()`](../reference/circ_vtest.md) | Significance tests for phase clustering |
-| [`narrowband_hilbert()`](../reference/narrowband_hilbert.md) | Extract phase at specific frequency |
-| [`paired_tscore()`](../reference/paired_tscore.md) | Paired t-test across subjects |
-| [`detect_clusters()`](../reference/detect_clusters.md) | Find significant clusters in time-frequency maps |
-| [`fdr_bh()`](../reference/fdr_bh.md) | Benjamini-Hochberg FDR correction |
-| [`u_score_matrix()`](../reference/u_score_matrix.md) | Non-parametric significance testing |
-| [`plot_phase_hist()`](../reference/plot_phase_hist.md) | Visualize phase distributions |
-| [`plot_cluster_heatmap()`](../reference/plot_cluster_heatmap.md) | Visualize time-frequency clusters |
+- Use [`oscillation_score_z()`](../reference/oscillation_score_z.md) for
+  one-call significance testing:
+  [`vignette("workflow-wrappers")`](../articles/workflow-wrappers.md)
+- Compute oscillation scores from spike trains:
+  [`vignette("oscillation-score")`](../articles/oscillation-score.md)
+- See
+  [`?pairwise_phase_consistency`](../reference/pairwise_phase_consistency.md)
+  and [`?detect_clusters`](../reference/detect_clusters.md) for full
+  argument lists
 
-## Session Info
+## References
 
-``` r
-sessionInfo()
-#> R version 4.5.1 (2025-06-13)
-#> Platform: aarch64-apple-darwin20
-#> Running under: macOS Sonoma 14.3
-#> 
-#> Matrix products: default
-#> BLAS:   /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRblas.0.dylib 
-#> LAPACK: /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/lib/libRlapack.dylib;  LAPACK version 3.12.1
-#> 
-#> locale:
-#> [1] en_CA.UTF-8/en_CA.UTF-8/en_CA.UTF-8/C/en_CA.UTF-8/en_CA.UTF-8
-#> 
-#> time zone: America/Toronto
-#> tzcode source: internal
-#> 
-#> attached base packages:
-#> [1] stats     graphics  grDevices utils     datasets  methods   base     
-#> 
-#> other attached packages:
-#> [1] bosc_0.0.0.9000
-#> 
-#> loaded via a namespace (and not attached):
-#>  [1] gtable_0.3.6       jsonlite_2.0.0     dplyr_1.1.4        compiler_4.5.1    
-#>  [5] Rcpp_1.1.0         tidyselect_1.2.1   stringr_1.6.0      bmp_0.3.1         
-#>  [9] signal_1.8-1       jquerylib_0.1.4    png_0.1-8          systemfonts_1.3.1 
-#> [13] scales_1.4.0       textshaping_1.0.4  yaml_2.3.12        fastmap_1.2.0     
-#> [17] ggplot2_4.0.1      R6_2.6.1           labeling_0.4.3     generics_0.1.4    
-#> [21] igraph_2.2.1       knitr_1.50         htmlwidgets_1.6.4  MASS_7.3-65       
-#> [25] tibble_3.3.0       imager_1.0.5       desc_1.4.3         readbitmap_0.1.5  
-#> [29] tiff_0.1-12        bslib_0.9.0        pillar_1.11.1      RColorBrewer_1.1-3
-#> [33] rlang_1.1.6        stringi_1.8.7      cachem_1.1.0       xfun_0.54         
-#> [37] fs_1.6.6           sass_0.4.10        S7_0.2.1           cli_3.6.5         
-#> [41] pkgdown_2.2.0      withr_3.0.2        magrittr_2.0.4     digest_0.6.39     
-#> [45] grid_4.5.1         lifecycle_1.0.4    vctrs_0.6.5        evaluate_1.0.5    
-#> [49] glue_1.8.0         farver_2.1.2       ragg_1.5.0         purrr_1.2.0       
-#> [53] rmarkdown_2.30     jpeg_0.1-11        tools_4.5.1        pkgconfig_2.0.3   
-#> [57] htmltools_0.5.9
-```
+The algorithms in **bosc** are ported from the
+[behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
+MATLAB toolbox. Please cite:
+
+> Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
+> behavioural and hippocampal responses in humans specifically during
+> memory-dependent tasks. *Nature Communications*, 12, 7048.
+> <https://doi.org/10.1038/s41467-021-25959-7>

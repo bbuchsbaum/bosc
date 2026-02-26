@@ -13,3 +13,9 @@
 ^_pkgdown\.yml$
 ^doc$
 ^Meta$
+^\.Rlib$
+^docs$
+^\.omc$
+^CLAUDE\.md$
+^\.claude$
+^data-raw$

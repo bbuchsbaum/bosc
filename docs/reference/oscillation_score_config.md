@@ -23,6 +23,10 @@ oscillation_score_cfg(cfg, signal)
 
   numeric vector (binary or continuous).
 
+- cfg:
+
+  list of settings (deprecated alias for `config`).
+
 ## Value
 
 list as returned by [`oscillation_score`](oscillation_score.md).
@@ -31,4 +35,4 @@ list as returned by [`oscillation_score`](oscillation_score.md).
 
 Recognized fields include `fs`, `flim`, `quantlim`, `smoothach`,
 `smoothwind`, `peakwind`, `thresangle`, `mincycles`, `minfreqbandwidth`,
-`fpeak`, `warnings`, `fcor`, `taper`, and `plot`.
+`fpeak`, `warnings`, `fcor`, `taper`, `signal_mode`, and `plot`.

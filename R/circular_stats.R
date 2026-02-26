@@ -199,20 +199,31 @@ circ_vtest <- function(alpha, dir, w = NULL, d = 0) {
 circ_rayleigh <- function(alpha, w = NULL) {
   alpha <- as.numeric(alpha)
   n <- length(alpha)
-
   if (is.null(w)) {
     w <- rep(1, n)
+  } else {
+    w <- as.numeric(w)
+    if (length(w) != n) stop("Input dimensions do not match.")
   }
 
+  valid <- is.finite(alpha) & is.finite(w) & w > 0
+  if (!any(valid)) return(list(pval = NA_real_, z = NA_real_))
+  alpha <- alpha[valid]
+  w <- w[valid]
+
+  n_eff <- sum(w)
+  if (!is.finite(n_eff) || n_eff <= 0) return(list(pval = NA_real_, z = NA_real_))
+
   r <- circ_r(alpha, w)
-  R <- n * r
+  R <- n_eff * r
 
   # Rayleigh's Z
-  z <- R^2 / n
+  z <- R^2 / n_eff
 
   # p-value approximation (Zar, 2010)
-  pval <- exp(-z) * (1 + (2 * z - z^2) / (4 * n) -
-                       (24 * z - 132 * z^2 + 76 * z^3 - 9 * z^4) / (288 * n^2))
+  pval <- exp(-z) * (1 + (2 * z - z^2) / (4 * n_eff) -
+                       (24 * z - 132 * z^2 + 76 * z^3 - 9 * z^4) / (288 * n_eff^2))
+  pval <- max(min(pval, 1), 0)
 
   list(pval = pval, z = z)
 }

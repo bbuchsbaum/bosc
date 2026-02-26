@@ -10,7 +10,8 @@
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Behavioral Oscillation Scores and Phase Analysis">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
+<script src="extra.js"></script><meta property="og:title" content="Behavioral Oscillation Scores and Phase Analysis">
 <meta name="description" content="R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et al.) for computing oscillation scores, surrogate tests, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series. Methods are described in Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-25959-7&gt;.">
 <meta property="og:description" content="R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et al.) for computing oscillation scores, surrogate tests, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series. Methods are described in Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-25959-7&gt;.">
 </head>
@@ -45,7 +46,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
 </form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/marijeterwal/behavioral-oscillations/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/bbuchsbaum/bosc/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -57,6 +58,22 @@
 <div class="page-header"><h1 id="bosc">bosc<a class="anchor" aria-label="anchor" href="#bosc"></a>
 </h1></div>
 <p>R port of the <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">behavioral-oscillations</a> MATLAB toolbox (Ter Wal et al.). Provides core functions for oscillation scoring, surrogate testing, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series.</p>
+<div class="section level2">
+<h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
+</h2>
+<div class="section level3">
+<h3 id="vignettes">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes"></a>
+</h3>
+<ul>
+<li>
+<strong>Oscillation Score Analysis</strong> – Computing oscillation scores, surrogate testing, multi-band analysis, and narrowband Hilbert phase extraction.</li>
+<li>
+<strong>PPC Analysis and Cluster Detection</strong> – Pairwise phase consistency, circular statistics, cluster-based permutation testing on time-frequency maps.</li>
+<li>
+<strong>Workflow Wrappers</strong> – High-level config-driven wrappers, batch analysis, phase-at-events pipeline, and tidy output helpers.</li>
+</ul>
+</div>
+</div>
 <div class="section level2">
 <h2 id="install">Install<a class="anchor" aria-label="anchor" href="#install"></a>
 </h2>
@@ -79,6 +96,31 @@
 <li>PPC/Stats: <code>pairwise_phase_consistency</code>, <code>u_score_matrix</code>, <code>paired_tscore</code>, <code>nonparam_pval</code>.</li>
 <li>Clustering: <code>extract_clusters</code>, <code>detect_clusters</code> (imager-based watershed/extract, cluster splitting).</li>
 <li>Plotting: <code>plot_spectrum</code>, <code>plot_phase_hist</code>.</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="enhancements-relative-to-matlab-reference">Enhancements Relative to MATLAB Reference<a class="anchor" aria-label="anchor" href="#enhancements-relative-to-matlab-reference"></a>
+</h2>
+<p>This package closely follows the MATLAB reference implementation, with a few small R-oriented enhancements for robustness, configurability, and workflow ergonomics:</p>
+<ul>
+<li>
+<code>spectral_peak(fcor = TRUE)</code> uses an explicit, stable log-log fit/predict path in R for improved numerical stability.</li>
+<li>
+<code><a href="reference/oscillation_score.html">oscillation_score()</a></code> supports explicit <code>signal_mode</code>: <code>event</code> uses event-rate-based effective bands; <code>continuous</code> uses variance-aware checks and Nyquist-limited upper bounds.</li>
+<li>
+<code><a href="reference/autocorr_centered.html">autocorr_centered()</a></code> now supports both direct and FFT-based linear autocorrelation; <code>method = "auto"</code> selects a fast FFT path for longer vectors while preserving centered <code>xcorr</code> semantics.</li>
+<li>
+<code><a href="reference/oscillation_score_surrogates.html">oscillation_score_surrogates()</a></code> supports explicit <code>surrogate_method</code>, including phase-randomized surrogates for continuous signals (amplitude-spectrum-preserving nulls), in addition to event shuffle/trend.</li>
+<li>
+<code><a href="reference/oscillation_score_z.html">oscillation_score_z()</a></code> can return bootstrap confidence intervals for the log-Z statistic (<code>z_ci</code>) and exposes CI controls (<code>ci_nboot</code>, <code>ci_level</code>).</li>
+<li>
+<code><a href="reference/extract_clusters.html">extract_clusters()</a></code> uses a direct 8-connectivity flood-fill implementation for consistent connected-component assignments.</li>
+<li>
+<code><a href="reference/circ_rayleigh.html">circ_rayleigh()</a></code> uses weighted sample size (<code>sum(w)</code>) in weighted mode.</li>
+<li>
+<code><a href="reference/paired_tscore.html">paired_tscore()</a></code> uses per-slice effective sample sizes under missing values.</li>
+<li>
+<code>detect_clusters(qval=...)</code> computes adjusted p-values, and optional <code>filter_by_q=TRUE</code> can filter clusters by adjusted significance.</li>
 </ul>
 </div>
 <div class="section level2">
@@ -108,16 +150,21 @@
 <h2 id="roadmap">Roadmap<a class="anchor" aria-label="anchor" href="#roadmap"></a>
 </h2>
 <ul>
-<li>Add vignettes mirroring MATLAB scripts (behavioral O-score, PPC contrasts, simulations).</li>
-<li>Add pkgdown site and CI (R CMD check, lintr).</li>
+<li>CI (R CMD check, lintr).</li>
 <li>Data I/O helpers for MAT/HDF5 and richer plotting wrappers.</li>
 </ul>
+<!-- albersdown:theme-note:start -->
+</div>
+<div class="section level2">
+<h2 id="albers-theme">Albers theme<a class="anchor" aria-label="anchor" href="#albers-theme"></a>
+</h2>
+<p>This package uses the albersdown theme. Existing vignette theme hooks are replaced so <code>albers.css</code> and local <code>albers.js</code> render consistently on CRAN and GitHub Pages. The palette family is provided via <code>params$family</code> (default ‘red’). The pkgdown site uses <code>template: { package: albersdown }</code>. <!-- albersdown:theme-note:end --></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
-<li><a href="https://github.com/marijeterwal/behavioral-oscillations/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/bbuchsbaum/bosc/" class="external-link">Browse source code</a></li>
 </ul>
 </div>
 

@@ -1,36 +1,48 @@
 ---
-title: "Oscillation Score Analysis"
+title: Oscillation Score Analysis
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Oscillation Score Analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+params:
+  family: red
+css: albers.css
+resource_files:
+- albers.css
+- albers.js
+includes:
+  in_header: |-
+    <script src="albers.js"></script>
+    <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('palette-red');});</script>
+
 ---
 
 ```{r setup, include=FALSE}
+if (requireNamespace("ggplot2", quietly = TRUE) && requireNamespace("albersdown", quietly = TRUE)) ggplot2::theme_set(albersdown::theme_albers(params$family))
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
   fig.width = 6,
-  fig.height = 4
+  fig.height = 4,
+  message = FALSE,
+  warning = FALSE
 )
 ```
 
-## Introduction
+## Why oscillation scores?
 
-The **oscillation score** quantifies the strength of periodic (rhythmic) structure
-in behavioral data such as spike trains, button presses, or continuous response
-signals. It was developed to detect behavioral oscillations in tasks where
-subjects respond rhythmically, potentially phase-locked to neural oscillations.
+You've recorded behavioral responses — button presses, saccades, or reaction
+times — and you suspect they have a rhythmic structure. Maybe they cluster at a
+particular frequency, phase-locked to an underlying neural oscillation. How do
+you quantify that rhythm and test whether it's real?
 
-This vignette demonstrates:
-
-- Computing oscillation scores from spike trains
-- Surrogate testing for statistical significance
-- Multi-band analysis
-- Narrowband filtering for phase extraction
-
-For phase consistency analysis and cluster detection, see `vignette("ppc-clustering")`.
+The **oscillation score** answers this by measuring the strength of periodic
+structure in your time series. It works by computing an autocorrelogram,
+removing the central peak, and finding the spectral peak in the frequency band
+of interest. This vignette walks you through the full pipeline: computing
+scores, testing significance with surrogates, scanning across frequency bands,
+and extracting instantaneous phase.
 
 ## Setup
 
@@ -40,8 +52,9 @@ library(bosc)
 
 ## Synthetic Spike Train Example
 
-We generate a spike train with 10 Hz periodicity embedded in noise to demonstrate
+Let's create a spike train with 10 Hz periodicity embedded in noise to demonstrate
 the oscillation score computation.
+
 ```{r generate-data}
 set.seed(42)
 fs <- 1000  # 1 kHz sampling rate
@@ -63,6 +76,15 @@ sig[noise_times] <- 1
 
 cat("Total spikes:", sum(sig), "\n")
 cat("Periodic spikes:", length(spike_times), "\n")
+```
+
+Here's what our synthetic signal looks like — periodic spikes at 10 Hz with some
+jitter and noise spikes mixed in:
+
+```{r plot-spikes, echo=FALSE, fig.cap="Synthetic spike train with 10 Hz periodicity.", fig.height=2.5}
+plot(seq_len(n_samples) / fs, sig, type = "h", col = "#1B75BB",
+     xlab = "Time (s)", ylab = "Spike", main = "",
+     lwd = 0.5, las = 1)
 ```
 
 ## Computing the Oscillation Score
@@ -96,9 +118,7 @@ cat("Effective frequency limits:", round(result$flim, 2), "Hz\n")
 # Get spectrum for visualization
 sp <- spectral_peak(sig, fs = fs, flim = c(1, 50))
 
-if (requireNamespace("ggplot2", quietly = TRUE)) {
-  plot_spectrum(sp$fxx, sp$spectrum, peak = result$fosc)
-}
+plot_spectrum(sp$fxx, sp$spectrum, peak = result$fosc)
 ```
 
 ## Surrogate Testing
@@ -131,6 +151,17 @@ cat("Z-score:", round(z_score, 2), "\n")
 cat("P-value (one-tailed):", round(pnorm(-abs(z_score)), 4), "\n")
 ```
 
+```{r plot-surrogates, echo=FALSE, fig.cap="Observed oscillation score (red line) against the surrogate null distribution.", fig.height=3}
+xlim_range <- range(c(surrogates$oscore_rp, result$oscore), na.rm = TRUE)
+xlim_range <- xlim_range + c(-1, 1) * diff(xlim_range) * 0.05
+hist(surrogates$oscore_rp, breaks = 20, col = "grey80", border = "white",
+     main = "", xlab = "Oscillation Score", ylab = "Count", las = 1,
+     xlim = xlim_range)
+abline(v = result$oscore, col = "red", lwd = 2, lty = 2)
+legend("topright", legend = c("Observed", "Surrogates"),
+       col = c("red", "grey60"), lwd = c(2, 10), lty = c(2, 1), bty = "n")
+```
+
 ## Comparing Different Frequency Bands
 
 A common analysis examines oscillation scores across canonical frequency bands
@@ -143,17 +174,47 @@ bands <- list(
   beta = c(12, 30)
 )
 
-results <- lapply(bands, function(flim) {
+results <- lapply(names(bands), function(band_name) {
+  flim <- bands[[band_name]]
   res <- oscillation_score(sig, fs = fs, flim = flim, warnings = FALSE)
-  c(oscore = res$oscore, fosc = res$fosc)
+  data.frame(
+    band = band_name,
+    req_fmin = flim[1],
+    req_fmax = flim[2],
+    eff_fmin = if (length(res$flim) == 2) res$flim[1] else NA_real_,
+    eff_fmax = if (length(res$flim) == 2) res$flim[2] else NA_real_,
+    oscore = res$oscore,
+    fosc = res$fosc,
+    stringsAsFactors = FALSE
+  )
 })
 
 results_df <- do.call(rbind, results)
-print(round(results_df, 3))
+results_df_print <- results_df
+num_cols <- vapply(results_df_print, is.numeric, logical(1))
+results_df_print[num_cols] <- lapply(results_df_print[num_cols], round, 3)
+print(results_df_print)
 ```
 
 As expected, the alpha band (8-12 Hz) shows the highest oscillation score since
 our synthetic signal has 10 Hz periodicity.
+
+`beta` can legitimately return `NA` for `oscore`/`fosc` here. Internally,
+`oscillation_score()` constrains the requested band to an effective range based
+on the data support:
+
+`fmax <- min(flim[2], sum(sigq) / (length(sigq) / fs))`
+
+For this sparse spike train, the effective beta range is narrower than
+12-30 Hz, and no stable local spectral peak is found in that range. In that
+case, the function returns `NA`, which indicates "no detectable beta-band peak"
+rather than an error.
+
+```{r plot-bands, echo=FALSE, fig.cap="Oscillation scores across frequency bands. The alpha band (containing our 10 Hz signal) shows the strongest score.", fig.height=3}
+scores <- setNames(results_df$oscore, results_df$band)
+barplot(scores, names.arg = names(scores), col = "#1B75BB",
+        ylab = "Oscillation Score", las = 1, border = NA)
+```
 
 ## Narrowband Hilbert Analysis
 
@@ -180,6 +241,18 @@ phases <- Arg(nb$analytic)
 cat("Phase range:", round(range(phases), 2), "radians\n")
 ```
 
+```{r plot-hilbert, echo=FALSE, fig.cap="Narrowband Hilbert decomposition: raw signal (top), filtered 8-12 Hz component (middle), and instantaneous phase (bottom).", fig.height=5}
+t_plot <- t[1:500]
+par(mfrow = c(3, 1), mar = c(3, 4, 1.5, 1))
+plot(t_plot, continuous_sig[1:500], type = "l", col = "grey50",
+     xlab = "", ylab = "Amplitude", main = "Raw signal", las = 1)
+plot(t_plot, nb$filtered[1:500], type = "l", col = "#1B75BB",
+     xlab = "", ylab = "Amplitude", main = "Filtered (8-12 Hz)", las = 1)
+plot(t_plot, phases[1:500], type = "l", col = "#D35400",
+     xlab = "Time (s)", ylab = "Phase (rad)", main = "Instantaneous phase", las = 1)
+abline(h = c(-pi, 0, pi), col = "grey80", lty = 3)
+```
+
 ## Using make_continuous_trace
 
 If your data consists of event times (in seconds) rather than a binary signal,
@@ -203,28 +276,25 @@ cat("Time span:", round(range(trace$tspan), 2), "seconds\n")
 trace_result <- oscillation_score(
   signal = trace$signal,
   fs = 1 / 0.001,  # fs from dt
-
   flim = c(5, 20),
   warnings = FALSE
 )
 cat("Oscillation score (smoothed):", round(trace_result$oscore, 3), "\n")
 ```
 
-## Summary
+## Next steps
 
-Key functions demonstrated:
+- Test significance with config-driven batch workflows: `vignette("workflow-wrappers")`
+- Analyze phase consistency across trials: `vignette("ppc-clustering")`
+- See `?oscillation_score` for the full argument list
 
-| Function | Purpose |
-|----------|---------|
-| `oscillation_score()` | Compute oscillation score from signal |
-| `oscillation_score_surrogates()` | Generate null distribution for significance testing |
-| `spectral_peak()` | Find peak frequency in power spectrum |
-| `narrowband_hilbert()` | Extract phase/amplitude at specific frequency |
-| `make_continuous_trace()` | Convert event times to continuous signal |
-| `plot_spectrum()` | Visualize power spectrum |
+## References
 
-## Session Info
+The algorithms in **bosc** are ported from the
+[behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
+MATLAB toolbox. Please cite:
 
-```{r session-info}
-sessionInfo()
-```
+> Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
+> behavioural and hippocampal responses in humans specifically during
+> memory-dependent tasks. *Nature Communications*, 12, 7048.
+> <https://doi.org/10.1038/s41467-021-25959-7>

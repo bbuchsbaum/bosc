@@ -24,7 +24,7 @@ Original MATLAB toolbox: \url{https://github.com/marijeterwal/behavioral-oscilla
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://github.com/marijeterwal/behavioral-oscillations}
+  \item \url{https://github.com/bbuchsbaum/bosc}
 }
 
 }

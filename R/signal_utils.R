@@ -77,20 +77,36 @@ make_continuous_trace <- function(events,
 #' @param x numeric vector.
 #' @return numeric vector of length \code{2*length(x) - 1}.
 #' @export
-autocorr_centered <- function(x) {
+autocorr_centered <- function(x, method = c("auto", "direct", "fft")) {
   n <- length(x)
   if (n == 0) return(numeric(0))
-  lags <- seq(-(n - 1), n - 1)
-  res <- numeric(length(lags))
-  for (i in seq_along(lags)) {
-    lag <- lags[i]
-    if (lag >= 0) {
-      res[i] <- sum(x[(1 + lag):n] * x[1:(n - lag)])
-    } else {
-      res[i] <- sum(x[1:(n + lag)] * x[(1 - lag):n])
-    }
+  x <- as.numeric(x)
+  method <- match.arg(method)
+  if (method == "auto") {
+    method <- if (n >= 256L) "fft" else "direct"
   }
-  res
+
+  if (method == "direct") {
+    lags <- seq(-(n - 1), n - 1)
+    res <- numeric(length(lags))
+    for (i in seq_along(lags)) {
+      lag <- lags[i]
+      if (lag >= 0) {
+        res[i] <- sum(x[(1 + lag):n] * x[1:(n - lag)])
+      } else {
+        res[i] <- sum(x[1:(n + lag)] * x[(1 - lag):n])
+      }
+    }
+    return(res)
+  }
+
+  # FFT-based linear autocorrelation (centered), matching direct definition.
+  nfft <- 2 ^ ceiling(log2(2 * n - 1))
+  xp <- c(x, rep(0, nfft - n))
+  X <- fft(xp)
+  acf_full <- Re(fft(Mod(X)^2, inverse = TRUE) / nfft)
+  acf_pos <- acf_full[seq_len(n)]
+  c(rev(acf_pos[2:n]), acf_pos)
 }
 
 #' Find spectral peak within bounds
@@ -141,11 +157,17 @@ spectral_peak <- function(data,
 
   corfft <- datfft
   if (fcor) {
-    valid <- corfft > 0 & fxx > 0
+    valid <- is.finite(corfft) & corfft > 0 & is.finite(fxx) & fxx > 0
     if (sum(valid) >= 2) {
-      fit <- stats::lm(log10(corfft[valid]) ~ log10(fxx[valid]))
-      trend <- 10 ^ stats::predict(fit, newdata = data.frame(fxx = fxx))
-      corfft <- corfft - trend
+      # Use explicit x/y vectors so prediction is aligned with the model domain.
+      x <- log10(fxx[valid])
+      y <- log10(corfft[valid])
+      fit <- stats::lm(y ~ x)
+      coef_fit <- stats::coef(fit)
+      pos <- is.finite(fxx) & fxx > 0
+      trend <- rep(NA_real_, length(fxx))
+      trend[pos] <- 10 ^ (coef_fit[1] + coef_fit[2] * log10(fxx[pos]))
+      corfft[pos] <- corfft[pos] - trend[pos]
     } else {
       warning("Insufficient positive values for 1/f correction; returning uncorrected spectrum.")
     }

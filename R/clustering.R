@@ -12,41 +12,60 @@ extract_clusters <- function(data, thres = NULL) {
     dat <- matrix(0, nrow = nrow(data), ncol = ncol(data))
     dat[data >= thres] <- 1
   }
+  nr <- nrow(dat)
+  nc <- ncol(dat)
+  if (is.null(nr) || is.null(nc)) stop("data must be a matrix.")
+
   # pad boundaries with zeros
   dat[1, ] <- 0
-  dat[nrow(dat), ] <- 0
+  dat[nr, ] <- 0
   dat[, 1] <- 0
-  dat[, ncol(dat)] <- 0
+  dat[, nc] <- 0
 
-  label <- 2L
-  labels <- matrix(0L, nrow = nrow(dat), ncol = ncol(dat))
-  parent <- list()
+  labels <- matrix(0L, nrow = nr, ncol = nc)
+  if (nr < 3 || nc < 3) return(labels)
 
-  for (r in 2:(nrow(dat) - 1)) {
-    for (c in 2:(ncol(dat) - 1)) {
-      if (dat[r, c] != 0) {
-        neighbors <- c(labels[r - 1, (c - 1):(c + 1)], labels[r, c - 1])
-        neighbors <- neighbors[neighbors != 0]
-        if (length(neighbors) == 0) {
-          labels[r, c] <- label
-          parent[[label]] <- label
-          label <- label + 1L
-        } else {
-          labels[r, c] <- min(neighbors)
-          ul <- unique(neighbors)
-          for (u in ul) parent[[u]] <- min(c(parent[[u]], ul))
+  neigh <- as.matrix(expand.grid(dr = -1:1, dc = -1:1))
+  neigh <- neigh[!(neigh[, 1] == 0 & neigh[, 2] == 0), , drop = FALSE]
+
+  current_label <- 2L
+  # Queue buffers for flood fill (8-connectivity)
+  qmax <- nr * nc
+  qr <- integer(qmax)
+  qc <- integer(qmax)
+
+  for (r in 2:(nr - 1)) {
+    for (c in 2:(nc - 1)) {
+      if (dat[r, c] != 0 && labels[r, c] == 0L) {
+        head <- 1L
+        tail <- 1L
+        qr[tail] <- r
+        qc[tail] <- c
+        labels[r, c] <- current_label
+
+        while (head <= tail) {
+          rr <- qr[head]
+          cc <- qc[head]
+          head <- head + 1L
+
+          for (k in seq_len(nrow(neigh))) {
+            r2 <- rr + neigh[k, 1]
+            c2 <- cc + neigh[k, 2]
+            if (r2 >= 2 && r2 <= (nr - 1) && c2 >= 2 && c2 <= (nc - 1) &&
+                dat[r2, c2] != 0 && labels[r2, c2] == 0L) {
+              tail <- tail + 1L
+              qr[tail] <- r2
+              qc[tail] <- c2
+              labels[r2, c2] <- current_label
+            }
+          }
         }
+
+        current_label <- current_label + 1L
       }
     }
   }
-  # second pass: flatten parents
-  if (length(parent) > 0) {
-    for (r in 2:(nrow(dat) - 1)) {
-      for (c in 2:(ncol(dat) - 1)) {
-        if (labels[r, c] != 0) labels[r, c] <- parent[[labels[r, c]]]
-      }
-    }
-  }
+
   labels
 }
 
@@ -64,6 +83,8 @@ extract_clusters <- function(data, thres = NULL) {
 #' @param data2 optional secondary matrix for peak value extraction.
 #' @param dataRef optional reference matrix for computing reference statistics per cluster.
 #' @param qval optional FDR q for p-value adjustments.
+#' @param filter_by_q logical; if TRUE and \code{qval} is provided, keep only
+#'   clusters with at least one pixel passing \code{pAdj <= qval}.
 #' @return list of cluster structs with coordinates and stats.
 #' @export
 detect_clusters <- function(data,
@@ -79,10 +100,17 @@ detect_clusters <- function(data,
                             time_axis = NULL,
                             data2 = NULL,
                             dataRef = NULL,
-                            qval = NULL) {
+                            qval = NULL,
+                            filter_by_q = FALSE) {
   method <- match.arg(method)
   if (is.null(freq_axis)) freq_axis <- seq_len(nrow(data))
   if (is.null(time_axis)) time_axis <- seq_len(ncol(data))
+  if (!is.null(qval) && (!is.finite(qval) || qval <= 0 || qval > 1)) {
+    stop("qval must be in (0, 1].")
+  }
+  if (isTRUE(filter_by_q) && is.null(qval)) {
+    stop("filter_by_q=TRUE requires qval.")
+  }
 
   if (!is.null(smooth)) {
     if (!requireNamespace("imager", quietly = TRUE)) {
@@ -110,12 +138,12 @@ detect_clusters <- function(data,
     posmask <- sdata
     posmask[sdata < threshold] <- 0
     posimg <- imager::as.cimg(t(posmask))
-    clusPos <- t(as.matrix(imager::watershed(posimg)))
+    clusPos <- t(as.matrix(imager::watershed(posimg, priority = posimg)))
 
     negmask <- sdata
     negmask[-sdata > threshold] <- 0
     negimg <- imager::as.cimg(t(negmask))
-    clusNeg <- -t(as.matrix(imager::watershed(negimg)))
+    clusNeg <- -t(as.matrix(imager::watershed(negimg, priority = negimg)))
     clusDat <- clusPos + clusNeg
     clusDat[!is.finite(clusDat)] <- 0
   }
@@ -131,7 +159,8 @@ detect_clusters <- function(data,
       for (ph in peak_height) {
         dataRed <- fact * sdata - mm * ph
         dataRed[!mask] <- 0
-        subClus <- extract_clusters(dataRed, thres = 0)
+        # Use a strict positive threshold so zero background does not become cluster mass.
+        subClus <- extract_clusters(dataRed, thres = .Machine$double.eps)
         newLabs <- setdiff(unique(subClus), 0)
         sizes <- vapply(newLabs, function(l) sum(subClus == l), numeric(1))
         if (sum(sizes / sum(mask) > min_new_cluster_size) >= 2) {
@@ -146,8 +175,12 @@ detect_clusters <- function(data,
             for (j in seq_along(keepLabs)) {
               pts <- which(subMask == keepLabs[j], arr.ind = TRUE)
               for (k in seq_len(nrow(coords))) {
-                df <- (freq_axis[coords[k, 1]] - freq_axis[pts[, 1]]) / (max(freq_axis) - min(freq_axis))
-                dt <- (time_axis[coords[k, 2]] - time_axis[pts[, 2]]) / (max(time_axis) - min(time_axis))
+                fspan <- max(freq_axis) - min(freq_axis)
+                tspan <- max(time_axis) - min(time_axis)
+                if (!is.finite(fspan) || fspan == 0) fspan <- 1
+                if (!is.finite(tspan) || tspan == 0) tspan <- 1
+                df <- (freq_axis[coords[k, 1]] - freq_axis[pts[, 1]]) / fspan
+                dt <- (time_axis[coords[k, 2]] - time_axis[pts[, 2]]) / tspan
                 distmat[k, j] <- min(sqrt(freqweight * df ^ 2 + timeweight * dt ^ 2))
               }
             }
@@ -167,6 +200,12 @@ detect_clusters <- function(data,
   clusLabels <- setdiff(unique(clusDat), 0)
   if (length(clusLabels) == 0) return(list())
 
+  pAdj <- NULL
+  if (!is.null(qval)) {
+    p <- stats::pnorm(-abs(data))
+    pAdj <- matrix(stats::p.adjust(p, method = "BH"), nrow = nrow(data))
+  }
+
   out <- vector("list", length(clusLabels))
   for (i in seq_along(clusLabels)) {
     clusid <- clusLabels[i]
@@ -175,11 +214,8 @@ detect_clusters <- function(data,
     peak_val <- peak_src[clusDat == clusid]
     peak_idx <- which.max(abs(peak_val))
     sumZ <- sum(data[clusDat == clusid])
-    pAdj <- NA_real_
-    if (!is.null(qval)) {
-      p <- stats::pnorm(-abs(data))
-      pAdj <- matrix(stats::p.adjust(p, method = "BH"), nrow = nrow(data))
-    }
+    clus_padj <- if (is.matrix(pAdj)) pAdj[clusDat == clusid] else NA_real_
+    clus_ids <- which(clusDat == clusid)
     out[[i]] <- list(
       blobID = clusid,
       times = time_axis[locs[, 2]],
@@ -187,10 +223,10 @@ detect_clusters <- function(data,
       Zscores = data[clusDat == clusid],
       CoMtime = time_axis[round(mean(locs[, 2]))],
       CoMfreq = freq_axis[round(mean(locs[, 1]))],
-      pAdj = if (is.matrix(pAdj)) pAdj[clusDat == clusid] else NA_real_,
+      pAdj = clus_padj,
       peakZscore = peak_val[peak_idx],
       sumZscore = sumZ,
-      peakpAdj = if (is.matrix(pAdj)) pAdj[which(clusDat == clusid)[peak_idx]] else NA_real_
+      peakpAdj = if (is.matrix(pAdj)) pAdj[clus_ids[peak_idx]] else NA_real_
     )
     if (!is.null(dataRef)) {
       refvals <- dataRef[clusDat == clusid]
@@ -198,6 +234,9 @@ detect_clusters <- function(data,
       out[[i]]$maxZscoreRef <- max(refvals, na.rm = TRUE)
       out[[i]]$avgZscoreRef <- mean(refvals, na.rm = TRUE)
     }
+  }
+  if (isTRUE(filter_by_q) && !is.null(qval)) {
+    out <- Filter(function(cl) any(is.finite(cl$pAdj) & cl$pAdj <= qval), out)
   }
   out
 }

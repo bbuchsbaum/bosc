@@ -13,6 +13,8 @@ oscillation_score_cfg(cfg, signal)
 \item{config}{list of settings.}
 
 \item{signal}{numeric vector (binary or continuous).}
+
+\item{cfg}{list of settings (deprecated alias for \code{config}).}
 }
 \value{
 list as returned by \code{\link{oscillation_score}}.
@@ -26,5 +28,5 @@ configs programmatically.
 Recognized fields include \code{fs}, \code{flim}, \code{quantlim},
 \code{smoothach}, \code{smoothwind}, \code{peakwind}, \code{thresangle},
 \code{mincycles}, \code{minfreqbandwidth}, \code{fpeak}, \code{warnings},
-\code{fcor}, \code{taper}, and \code{plot}.
+\code{fcor}, \code{taper}, \code{signal_mode}, and \code{plot}.
 }
