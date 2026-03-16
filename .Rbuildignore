@@ -7,10 +7,12 @@
 ^Progress\.md$
 ^Architecture\.md$
 ^CNS2020_poster_mtw_vs2_small\.pdf$
-^behavioral-oscillations$
+^behavioral-oscillations($|/)
+^MBO_shared($|/)
 ^\.github$
 ^\.lintr$
 ^_pkgdown\.yml$
+^pkgdown$
 ^doc$
 ^Meta$
 ^\.Rlib$
@@ -19,3 +21,6 @@
 ^CLAUDE\.md$
 ^\.claude$
 ^data-raw$
+^\.rcmdcheck_result\.rds$
+^\.tmpcheck$
+^.*\.Rcheck$

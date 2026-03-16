@@ -1,3 +1,4 @@
+url: https://bbuchsbaum.github.io/bosc/
 template:
   bootstrap: 5
   package: albersdown
@@ -5,6 +6,7 @@ destination: docs
 navbar:
   structure:
     left:
+    - intro
     - reference
     - articles
   components:
@@ -59,6 +61,19 @@ reference:
   contents:
   - extract_clusters
   - detect_clusters
+- title: Grouped Data Preparation
+  contents:
+  - align_time_bins
+  - residualize_trials
+  - aggregate_by_bin
+- title: Grouped Analysis
+  contents:
+  - group_spectrum
+  - group_spectrum_test
+  - group_tfr
+  - group_tfr_test
+  - group_phase_consistency
+  - group_phase_difference
 - title: Plotting
   contents:
   - plot_spectrum

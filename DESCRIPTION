@@ -9,9 +9,10 @@ Authors@R: c(
 Description: R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et
     al.) for computing oscillation scores, surrogate tests, phase analyses, PPC
     metrics, clustering, and plotting for behavioral and neural time series.
-    Methods are described in Ter Wal et al. (2021) <doi:10.1038/s41467-021-25959-7>.
+    Methods are described in Ter Wal et al. (2021) <doi:10.1038/s41467-021-27323-3>.
 License: CC BY 4.0
-URL: https://github.com/bbuchsbaum/bosc
+URL: https://bbuchsbaum.github.io/bosc/,
+    https://github.com/bbuchsbaum/bosc
 Encoding: UTF-8
 LazyData: false
 Imports:
@@ -22,6 +23,7 @@ Imports:
     utils,
     grDevices
 Suggests:
+    albersdown,
     imager,
     testthat (>= 3.0.0),
     ggplot2,
