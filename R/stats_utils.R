@@ -101,6 +101,13 @@ paired_tscore <- function(dat1, dat2 = NULL, dim = 1) {
 #' @param data numeric vector.
 #' @param ref numeric vector of reference samples.
 #' @param alpha significance level.
+#' @details
+#' For each value in \code{data}, the p-value is computed as an empirical
+#' one-sided tail proportion with respect to \code{ref}. Values below the
+#' reference median use the lower tail (strictly smaller reference values),
+#' while values at or above the median use the upper tail (strictly larger
+#' reference values). Ties at the observed value are excluded from the tail
+#' count by construction.
 #' @return list with \code{h} significance (0/1) and \code{p} p-values.
 #' @export
 nonparam_pval <- function(data, ref, alpha = 0.05) {

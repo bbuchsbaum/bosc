@@ -1,9 +1,10 @@
 # Configuration-list wrapper for surrogate O-scores
 
-Companion to [`oscillation_score_config`](oscillation_score_config.md)
+Companion to
+[`oscillation_score_config`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_config.md)
 for surrogate testing. Accepts a config list (named like
-[`oscillation_score_surrogates`](oscillation_score_surrogates.md)) and
-forwards it to the surrogate function.
+[`oscillation_score_surrogates`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_surrogates.md))
+and forwards it to the surrogate function.
 
 ## Usage
 
@@ -30,7 +31,7 @@ oscillation_score_stats(cfg, signal)
 ## Value
 
 list as returned by
-[`oscillation_score_surrogates`](oscillation_score_surrogates.md).
+[`oscillation_score_surrogates`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_surrogates.md).
 
 ## Details
 

@@ -27,31 +27,35 @@ make_continuous_trace <- function(events,
   if (length(dt) != 1 || !is.finite(dt) || dt <= 0) {
     stop("dt must be a positive scalar.")
   }
-  if (length(events) == 0) {
+  raw_ev <- as.numeric(events)
+  if (length(raw_ev) == 0) {
     return(list(signal = numeric(0), tspan = numeric(0)))
   }
 
-  ev <- as.numeric(events)
+  max_ev <- suppressWarnings(max(raw_ev, na.rm = TRUE))
+  if (!is.finite(max_ev)) {
+    return(list(signal = numeric(0), tspan = numeric(0)))
+  }
+
+  tspan <- seq(0, max_ev + dt, by = dt)
+  counts <- numeric(length(tspan))
+
+  ev <- raw_ev[is.finite(raw_ev)]
   if (!is.null(remove_val)) {
     keep <- abs(ev - remove_val) > dt
     if (warn && any(!keep)) warning("Dropped ", sum(!keep), " events at remove_val.")
     ev <- ev[keep]
   }
-  ev <- ev[!is.na(ev)]
-  if (length(ev) == 0) {
-    return(list(signal = numeric(0), tspan = numeric(0)))
+  if (length(ev) > 0) {
+    idx <- pmax(1L, pmin(length(tspan), round(ev / dt) + 1L))
+    for (i in idx) counts[i] <- counts[i] + 1
   }
-
-  tspan <- seq(0, max(ev) + dt, by = dt)
-  counts <- numeric(length(tspan))
-  idx <- pmax(1L, pmin(length(tspan), round(ev / dt) + 1L))
-  for (i in idx) counts[i] <- counts[i] + 1
 
   if (!is.null(quantlim)) {
     if (length(quantlim) != 2) stop("quantlim must be length 2.")
     nz <- which(counts > 0)
     if (length(nz) > 0) {
-      qs <- as.integer(stats::quantile(nz, probs = quantlim, type = 1))
+      qs <- as.integer(stats::quantile(nz, probs = quantlim, names = FALSE))
       qs[1] <- max(1L, qs[1])
       qs[2] <- min(length(counts), qs[2])
       counts <- counts[qs[1]:qs[2]]
@@ -75,6 +79,9 @@ make_continuous_trace <- function(events,
 #' equivalent to MATLAB \code{xcorr(x)}.
 #'
 #' @param x numeric vector.
+#' @param method autocorrelation backend: \code{"direct"} (explicit summation),
+#'   \code{"fft"} (FFT-based linear autocorrelation), or \code{"auto"}
+#'   (uses \code{"direct"} for short vectors and \code{"fft"} for longer vectors).
 #' @return numeric vector of length \code{2*length(x) - 1}.
 #' @export
 autocorr_centered <- function(x, method = c("auto", "direct", "fft")) {
@@ -118,6 +125,11 @@ autocorr_centered <- function(x, method = c("auto", "direct", "fft")) {
 #' @param fs sampling rate (Hz).
 #' @param flim optional length-2 frequency bounds \code{c(fmin, fmax)} in Hz.
 #' @param fcor logical; apply crude 1/f correction.
+#' @param pad_to optional integer length for zero-padding before the FFT. When
+#'   \code{NULL}, no zero-padding is applied.
+#' @param spectrum spectrum scaling. \code{"amplitude"} returns the current
+#'   normalized single-sided amplitude spectrum. \code{"raw_power"} returns raw
+#'   FFT power \code{|FFT(x)|^2} on the retained positive-frequency bins.
 #' @param taper taper to apply; one of \code{"none"}, \code{"hann"}, \code{"hanning"}.
 #' @return list with \code{freq} (peak frequency or NA), \code{fxx} (freq axis),
 #'   and \code{spectrum} (power values aligned with \code{fxx}).
@@ -126,24 +138,42 @@ spectral_peak <- function(data,
                           fs,
                           flim = NULL,
                           fcor = FALSE,
+                          pad_to = NULL,
+                          spectrum = c("amplitude", "raw_power"),
                           taper = c("none", "hann", "hanning")) {
   if (length(fs) != 1 || !is.finite(fs) || fs <= 0) stop("fs must be a positive scalar.")
+  spectrum <- match.arg(spectrum)
   taper <- match.arg(taper)
   x <- as.numeric(data)
   L <- length(x)
   if (L == 0) return(list(freq = NA_real_, fxx = numeric(0), spectrum = numeric(0)))
+  if (!is.null(pad_to)) {
+    if (length(pad_to) != 1 || !is.finite(pad_to) || pad_to < L) {
+      stop("pad_to must be NULL or a scalar greater than or equal to length(data).")
+    }
+    pad_to <- as.integer(round(pad_to))
+  }
 
   if (taper != "none") {
     tap <- hanning_window(L)
     x <- x * tap
   }
+  if (!is.null(pad_to) && pad_to > L) {
+    x <- c(x, rep(0, pad_to - L))
+  }
 
   tmp <- fft(x)
-  ps <- Mod(tmp[seq_len(ceiling(L / 2))]) / L
-  if (length(ps) > 2) {
-    ps[2:(length(ps) - 1)] <- 2 * ps[2:(length(ps) - 1)]
+  n_fft <- length(x)
+  keep <- seq_len(floor(n_fft / 2))
+  if (spectrum == "amplitude") {
+    ps <- Mod(tmp[keep]) / n_fft
+    if (length(ps) > 2) {
+      ps[2:(length(ps) - 1)] <- 2 * ps[2:(length(ps) - 1)]
+    }
+  } else {
+    ps <- Mod(tmp[keep])^2
   }
-  fx <- seq(0, fs / 2, length.out = length(ps))
+  fx <- ((keep - 1) * fs) / n_fft
 
   if (!is.null(flim)) {
     if (length(flim) != 2) stop("flim must be length 2.")
@@ -208,7 +238,8 @@ conv_same <- function(x, kernel) {
   if (length(x) == 0 || length(kernel) == 0) return(numeric(0))
   y_full <- stats::convolve(x, rev(kernel), type = "open")
   k <- length(kernel)
-  start <- floor((k - 1) / 2) + 1
+  # Match MATLAB conv(x, k, "same") indexing for odd and even kernels.
+  start <- floor(k / 2) + 1
   end <- start + length(x) - 1
   as.numeric(y_full[start:end])
 }

@@ -14,7 +14,7 @@ clusters_pixels(clusters)
 - clusters:
 
   list of clusters as returned by
-  [`detect_clusters`](detect_clusters.md).
+  [`detect_clusters`](https://bbuchsbaum.github.io/bosc/reference/detect_clusters.md).
 
 ## Value
 

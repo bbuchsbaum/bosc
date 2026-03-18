@@ -44,7 +44,8 @@ Zar JH (2010). Biostatistical Analysis. 5th ed. Prentice Hall. (Equation
 
 ## See also
 
-[`circ_mean`](circ_mean.md), [`circ_vtest`](circ_vtest.md)
+[`circ_mean`](https://bbuchsbaum.github.io/bosc/reference/circ_mean.md),
+[`circ_vtest`](https://bbuchsbaum.github.io/bosc/reference/circ_vtest.md)
 
 ## Examples
 

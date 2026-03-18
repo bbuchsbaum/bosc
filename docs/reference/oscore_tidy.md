@@ -1,9 +1,11 @@
 # Tidy summary of oscillation score results
 
-Converts an [`oscillation_score`](oscillation_score.md) or
-[`oscillation_score_z`](oscillation_score_z.md) result into a one-row
-data.frame. If a list of results is provided, returns one row per
-element.
+Converts an
+[`oscillation_score`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md)
+or
+[`oscillation_score_z`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_z.md)
+result into a one-row data.frame. If a list of results is provided,
+returns one row per element.
 
 ## Usage
 

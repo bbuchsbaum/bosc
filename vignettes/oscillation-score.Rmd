@@ -1,12 +1,13 @@
 ---
 title: Oscillation Score Analysis
 output: rmarkdown::html_vignette
-vignette: >
+vignette: |
   %\VignetteIndexEntry{Oscillation Score Analysis}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 params:
   family: red
+  preset: homage
 css: albers.css
 resource_files:
 - albers.css
@@ -14,12 +15,13 @@ resource_files:
 includes:
   in_header: |-
     <script src="albers.js"></script>
-    <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('palette-red');});</script>
+    <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('palette-lapis');});</script>
 
 ---
 
 ```{r setup, include=FALSE}
 if (requireNamespace("ggplot2", quietly = TRUE) && requireNamespace("albersdown", quietly = TRUE)) ggplot2::theme_set(albersdown::theme_albers(params$family))
+if (requireNamespace("ggplot2", quietly = TRUE)) ggplot2::theme_set(ggplot2::theme_minimal())
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -74,6 +76,12 @@ n_noise <- 50
 noise_times <- sample(setdiff(seq_len(n_samples), spike_times), n_noise)
 sig[noise_times] <- 1
 
+stopifnot(
+  all(sig %in% c(0, 1)),
+  sum(sig) > 0,
+  length(spike_times) > 0
+)
+
 cat("Total spikes:", sum(sig), "\n")
 cat("Periodic spikes:", length(spike_times), "\n")
 ```
@@ -105,6 +113,17 @@ result <- oscillation_score(
   flim = c(5, 20),
   smoothach = TRUE,
   warnings = TRUE
+)
+
+stopifnot(
+  is.finite(result$oscore),
+  result$oscore > 0,
+  is.finite(result$fosc),
+  result$fosc >= 5,
+  result$fosc <= 20,
+  length(result$flim) == 2,
+  all(is.finite(result$flim)),
+  result$flim[1] < result$flim[2]
 )
 
 cat("Oscillation Score:", round(result$oscore, 3), "\n")
@@ -141,14 +160,27 @@ surrogates <- oscillation_score_surrogates(
 )
 
 # Compute z-score against null distribution
-mean_sur <- mean(surrogates$oscore_rp, na.rm = TRUE)
-sd_sur <- sd(surrogates$oscore_rp, na.rm = TRUE)
+valid_sur <- surrogates$oscore_rp[is.finite(surrogates$oscore_rp)]
+mean_sur <- mean(valid_sur)
+sd_sur <- sd(valid_sur)
 z_score <- (result$oscore - mean_sur) / sd_sur
+p_upper <- pnorm(z_score, lower.tail = FALSE)
+
+stopifnot(
+  length(valid_sur) >= 80,
+  is.finite(mean_sur),
+  is.finite(sd_sur),
+  sd_sur > 0,
+  is.finite(z_score),
+  is.finite(p_upper),
+  p_upper >= 0,
+  p_upper <= 1
+)
 
 cat("Surrogate mean:", round(mean_sur, 3), "\n")
 cat("Surrogate SD:", round(sd_sur, 3), "\n")
 cat("Z-score:", round(z_score, 2), "\n")
-cat("P-value (one-tailed):", round(pnorm(-abs(z_score)), 4), "\n")
+cat("P-value (upper-tail):", format(p_upper, digits = 4), "\n")
 ```
 
 ```{r plot-surrogates, echo=FALSE, fig.cap="Observed oscillation score (red line) against the surrogate null distribution.", fig.height=3}
@@ -190,6 +222,16 @@ results <- lapply(names(bands), function(band_name) {
 })
 
 results_df <- do.call(rbind, results)
+alpha_row <- results_df[results_df$band == "alpha", ]
+stopifnot(
+  nrow(results_df) == length(bands),
+  nrow(alpha_row) == 1,
+  is.finite(alpha_row$oscore),
+  is.finite(alpha_row$fosc),
+  alpha_row$fosc >= 8,
+  alpha_row$fosc <= 12
+)
+
 results_df_print <- results_df
 num_cols <- vapply(results_df_print, is.numeric, logical(1))
 results_df_print[num_cols] <- lapply(results_df_print[num_cols], round, 3)
@@ -233,11 +275,23 @@ nb <- narrowband_hilbert(
   freqlim = c(8, 12)
 )
 
-cat("Analytic signal length:", length(nb$analytic), "\n")
-cat("Mean amplitude:", round(mean(Mod(nb$analytic)), 3), "\n")
-
-# Phase extraction
+# Validate narrowband output before interpreting phase/amplitude.
+amp <- Mod(nb$analytic)
 phases <- Arg(nb$analytic)
+stopifnot(
+  length(nb$analytic) == length(continuous_sig),
+  length(nb$filtered) == length(continuous_sig),
+  all(is.finite(Re(nb$analytic))),
+  all(is.finite(Im(nb$analytic))),
+  all(is.finite(amp)),
+  mean(amp) > 0,
+  all(is.finite(phases)),
+  all(phases >= -pi),
+  all(phases <= pi)
+)
+
+cat("Analytic signal length:", length(nb$analytic), "\n")
+cat("Mean amplitude:", round(mean(amp), 3), "\n")
 cat("Phase range:", round(range(phases), 2), "radians\n")
 ```
 
@@ -269,6 +323,14 @@ trace <- make_continuous_trace(
   sd_smooth = 0.005  # 5 ms Gaussian smoothing
 )
 
+stopifnot(
+  length(trace$signal) > 0,
+  length(trace$tspan) == length(trace$signal),
+  all(is.finite(trace$signal)),
+  all(is.finite(trace$tspan)),
+  all(diff(trace$tspan) > 0)
+)
+
 cat("Trace length:", length(trace$signal), "samples\n")
 cat("Time span:", round(range(trace$tspan), 2), "seconds\n")
 
@@ -279,7 +341,19 @@ trace_result <- oscillation_score(
   flim = c(5, 20),
   warnings = FALSE
 )
-cat("Oscillation score (smoothed):", round(trace_result$oscore, 3), "\n")
+
+stopifnot(
+  is.numeric(trace_result$oscore),
+  length(trace_result$oscore) == 1,
+  is.numeric(trace_result$fosc),
+  length(trace_result$fosc) == 1
+)
+if (is.finite(trace_result$oscore) && is.finite(trace_result$fosc)) {
+  stopifnot(trace_result$oscore > 0, trace_result$fosc >= 5, trace_result$fosc <= 20)
+  cat("Oscillation score (smoothed):", round(trace_result$oscore, 3), "\n")
+} else {
+  cat("Oscillation score (smoothed): NA (no stable peak detected in this draw)\n")
+}
 ```
 
 ## Next steps
@@ -297,4 +371,4 @@ MATLAB toolbox. Please cite:
 > Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 > behavioural and hippocampal responses in humans specifically during
 > memory-dependent tasks. *Nature Communications*, 12, 7048.
-> <https://doi.org/10.1038/s41467-021-25959-7>
+> <https://doi.org/10.1038/s41467-021-27323-3>

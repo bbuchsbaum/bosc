@@ -20,7 +20,7 @@ mean resultant length, making it the preferred metric for comparing
 conditions with unequal trial numbers.
 
 For oscillation score analysis, see
-[`vignette("oscillation-score")`](../articles/oscillation-score.md).
+[`vignette("oscillation-score")`](https://bbuchsbaum.github.io/bosc/articles/oscillation-score.md).
 
 ## Setup
 
@@ -66,10 +66,22 @@ phases_random <- matrix(
 # Compute PPC along trial dimension (dim = 1)
 ppc_consistent <- pairwise_phase_consistency(phases_consistent, dim = 1)
 ppc_random <- pairwise_phase_consistency(phases_random, dim = 1)
+mean_ppc_consistent <- mean(ppc_consistent)
+mean_ppc_random <- mean(ppc_random)
 
-cat("PPC (consistent phases):", round(mean(ppc_consistent), 3), "\n")
+stopifnot(
+  all(is.finite(ppc_consistent)),
+  all(is.finite(ppc_random)),
+  all(ppc_consistent <= 1),
+  all(ppc_consistent >= -1),
+  all(ppc_random <= 1),
+  all(ppc_random >= -1),
+  mean_ppc_consistent > mean_ppc_random
+)
+
+cat("PPC (consistent phases):", round(mean_ppc_consistent, 3), "\n")
 #> PPC (consistent phases): 0.923
-cat("PPC (random phases):", round(mean(ppc_random), 3), "\n")
+cat("PPC (random phases):", round(mean_ppc_random, 3), "\n")
 #> PPC (random phases): -0.015
 ```
 
@@ -114,6 +126,15 @@ cat("Resultant length:", round(circ_r(phases_at_response), 3), "\n")
 
 # Rayleigh test
 ray <- circ_rayleigh(phases_at_response)
+stopifnot(
+  all(is.finite(phases_at_response)),
+  all(phases_at_response >= -pi),
+  all(phases_at_response <= pi),
+  is.finite(ray$pval),
+  ray$pval >= 0,
+  ray$pval <= 1
+)
+
 cat("Rayleigh p-value:", format(ray$pval, digits = 3), "\n")
 #> Rayleigh p-value: 1.33e-08
 ```
@@ -148,6 +169,19 @@ cat("Rayleigh p-value:", format(rayleigh$pval, digits = 3), "\n")
 
 # V-test against expected direction of 0
 vtest <- circ_vtest(angles, dir = 0)
+stopifnot(
+  is.finite(mu),
+  is.finite(r),
+  r >= 0,
+  r <= 1,
+  is.finite(rayleigh$pval),
+  rayleigh$pval >= 0,
+  rayleigh$pval <= 1,
+  is.finite(vtest$pval),
+  vtest$pval >= 0,
+  vtest$pval <= 1
+)
+
 cat("V-test p-value:", format(vtest$pval, digits = 3), "\n")
 #> V-test p-value: 6.48e-10
 ```
@@ -197,6 +231,13 @@ effect <- array(
   dim = c(n_subjects, n_freq, n_time)
 )
 
+stopifnot(
+  all(dim(baseline) == c(n_subjects, n_freq, n_time)),
+  all(dim(effect) == c(n_subjects, n_freq, n_time)),
+  all(is.finite(baseline)),
+  all(is.finite(effect))
+)
+
 cat("Data dimensions:", dim(effect), "(subjects x freq x time)\n")
 #> Data dimensions: 15 30 50 (subjects x freq x time)
 ```
@@ -208,14 +249,16 @@ real neural effect that cluster detection should recover.
 ``` r
 # Add effect cluster (theta band: rows 5-10, time 15-25)
 effect[, 5:10, 15:25] <- effect[, 5:10, 15:25] + 1.5
+effect_mean <- mean(effect[, 5:10, 15:25])
+baseline_mean <- mean(baseline[, 5:10, 15:25])
+
+stopifnot(is.finite(effect_mean), is.finite(baseline_mean), effect_mean > baseline_mean)
 
 cat("Effect magnitude added to rows 5:10, times 15:25\n")
 #> Effect magnitude added to rows 5:10, times 15:25
-cat("Mean in effect region (effect):",
-    round(mean(effect[, 5:10, 15:25]), 3), "\n")
+cat("Mean in effect region (effect):", round(effect_mean, 3), "\n")
 #> Mean in effect region (effect): 1.578
-cat("Mean in effect region (baseline):",
-    round(mean(baseline[, 5:10, 15:25]), 3), "\n")
+cat("Mean in effect region (baseline):", round(baseline_mean, 3), "\n")
 #> Mean in effect region (baseline): 0.011
 ```
 
@@ -225,6 +268,13 @@ cat("Mean in effect region (baseline):",
 # Paired t-test across subjects (dimension 1)
 tres <- paired_tscore(effect, baseline, dim = 1)
 t_matrix <- matrix(tres$t, nrow = n_freq, ncol = n_time)
+signal_window <- t_matrix[5:10, 15:25]
+
+stopifnot(
+  all(dim(t_matrix) == c(n_freq, n_time)),
+  all(is.finite(t_matrix)),
+  mean(signal_window) > 0
+)
 
 cat("T-score range:", round(range(t_matrix, na.rm = TRUE), 2), "\n")
 #> T-score range: -3.94 9.06
@@ -257,6 +307,8 @@ clusters <- detect_clusters(
   time_axis = time_axis
 )
 
+stopifnot(is.list(clusters))
+
 cat("Number of clusters found:", length(clusters), "\n")
 #> Number of clusters found: 1
 
@@ -264,6 +316,14 @@ cat("Number of clusters found:", length(clusters), "\n")
 if (length(clusters) > 0) {
   for (i in seq_along(clusters)) {
     cl <- clusters[[i]]
+    stopifnot(
+      length(cl$freqs) > 0,
+      length(cl$times) > 0,
+      all(is.finite(cl$freqs)),
+      all(is.finite(cl$times)),
+      is.finite(cl$sumZscore),
+      is.finite(cl$peakZscore)
+    )
     cat(sprintf("\nCluster %d:\n", i))
     cat(sprintf("  Frequency: %.1f - %.1f Hz\n", min(cl$freqs), max(cl$freqs)))
     cat(sprintf("  Time: %.2f - %.2f s\n", min(cl$times), max(cl$times)))
@@ -333,6 +393,15 @@ p_matrix <- 2 * pt(-abs(t_matrix), df = df)
 
 # Apply Benjamini-Hochberg FDR correction
 fdr_result <- fdr_bh(as.vector(p_matrix), q = 0.05)
+stopifnot(
+  all(is.finite(p_matrix)),
+  all(p_matrix >= 0),
+  all(p_matrix <= 1),
+  length(fdr_result$h) == length(p_matrix),
+  is.finite(fdr_result$crit_p),
+  fdr_result$crit_p >= 0,
+  fdr_result$crit_p <= 1
+)
 
 cat("Total tests:", length(p_matrix), "\n")
 #> Total tests: 1500
@@ -345,7 +414,7 @@ cat("Critical p-value:", format(fdr_result$crit_p, digits = 3), "\n")
 ### Non-parametric P-values
 
 For permutation-based testing, use
-[`nonparam_pval()`](../reference/nonparam_pval.md):
+[`nonparam_pval()`](https://bbuchsbaum.github.io/bosc/reference/nonparam_pval.md):
 
 ``` r
 set.seed(111)
@@ -358,6 +427,14 @@ null_distribution <- rnorm(1000, mean = 10, sd = 3)
 
 # Compute p-values
 result <- nonparam_pval(observed_stats, null_distribution)
+stopifnot(
+  length(result$p) == length(observed_stats),
+  length(result$h) == length(observed_stats),
+  all(is.finite(result$p)),
+  all(result$p >= 0),
+  all(result$p <= 1)
+)
+
 cat("Observed values:", observed_stats, "\n")
 #> Observed values: 15.5 12 8.5
 cat("P-values:", round(result$p, 4), "\n")
@@ -382,6 +459,11 @@ reference <- array(rnorm(100 * 4 * 5), dim = c(100, 4, 5))
 
 # Compute U-scores (position in null distribution)
 u_result <- u_score_matrix(observed, reference, alpha = 0.05)
+stopifnot(
+  all(dim(u_result$Z) == dim(observed)),
+  all(dim(u_result$sgnf) == dim(observed)),
+  all(is.finite(u_result$Z))
+)
 
 cat("Significant elements:", sum(u_result$sgnf != 0), "of", length(observed), "\n")
 #> Significant elements: 3 of 20
@@ -417,6 +499,7 @@ ppc_incorrect <- array(
 # 2. Statistical comparison
 diff_t <- paired_tscore(ppc_correct, ppc_incorrect, dim = 1)$t
 diff_matrix <- matrix(diff_t, nrow = n_freq, ncol = n_time)
+stopifnot(all(dim(diff_matrix) == c(n_freq, n_time)), all(is.finite(diff_matrix)))
 
 # 3. Cluster detection
 freq_ax <- seq(2, 30, length.out = n_freq)
@@ -430,6 +513,7 @@ sig_clusters <- detect_clusters(
   freq_axis = freq_ax,
   time_axis = time_ax
 )
+stopifnot(is.list(sig_clusters))
 
 # 4. Report
 cat("=== PPC: Correct vs Incorrect Trials ===\n")
@@ -475,15 +559,17 @@ h5_file$close_all()
 
 ## Next steps
 
-- Use [`oscillation_score_z()`](../reference/oscillation_score_z.md) for
-  one-call significance testing:
-  [`vignette("workflow-wrappers")`](../articles/workflow-wrappers.md)
+- Use
+  [`oscillation_score_z()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_z.md)
+  for one-call significance testing:
+  [`vignette("workflow-wrappers")`](https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.md)
 - Compute oscillation scores from spike trains:
-  [`vignette("oscillation-score")`](../articles/oscillation-score.md)
+  [`vignette("oscillation-score")`](https://bbuchsbaum.github.io/bosc/articles/oscillation-score.md)
 - See
-  [`?pairwise_phase_consistency`](../reference/pairwise_phase_consistency.md)
-  and [`?detect_clusters`](../reference/detect_clusters.md) for full
-  argument lists
+  [`?pairwise_phase_consistency`](https://bbuchsbaum.github.io/bosc/reference/pairwise_phase_consistency.md)
+  and
+  [`?detect_clusters`](https://bbuchsbaum.github.io/bosc/reference/detect_clusters.md)
+  for full argument lists
 
 ## References
 
@@ -494,4 +580,4 @@ MATLAB toolbox. Please cite:
 > Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 > behavioural and hippocampal responses in humans specifically during
 > memory-dependent tasks. *Nature Communications*, 12, 7048.
-> <https://doi.org/10.1038/s41467-021-25959-7>
+> <https://doi.org/10.1038/s41467-021-27323-3>

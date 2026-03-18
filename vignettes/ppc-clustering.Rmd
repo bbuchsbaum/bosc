@@ -1,12 +1,13 @@
 ---
 title: PPC Analysis and Cluster Detection
 output: rmarkdown::html_vignette
-vignette: >
+vignette: |
   %\VignetteIndexEntry{PPC Analysis and Cluster Detection}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 params:
   family: red
+  preset: homage
 css: albers.css
 resource_files:
 - albers.css
@@ -14,12 +15,13 @@ resource_files:
 includes:
   in_header: |-
     <script src="albers.js"></script>
-    <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('palette-red');});</script>
+    <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('palette-lapis');});</script>
 
 ---
 
 ```{r setup, include=FALSE}
 if (requireNamespace("ggplot2", quietly = TRUE) && requireNamespace("albersdown", quietly = TRUE)) ggplot2::theme_set(albersdown::theme_albers(params$family))
+if (requireNamespace("ggplot2", quietly = TRUE)) ggplot2::theme_set(ggplot2::theme_minimal())
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -92,9 +94,21 @@ phases_random <- matrix(
 # Compute PPC along trial dimension (dim = 1)
 ppc_consistent <- pairwise_phase_consistency(phases_consistent, dim = 1)
 ppc_random <- pairwise_phase_consistency(phases_random, dim = 1)
+mean_ppc_consistent <- mean(ppc_consistent)
+mean_ppc_random <- mean(ppc_random)
 
-cat("PPC (consistent phases):", round(mean(ppc_consistent), 3), "\n")
-cat("PPC (random phases):", round(mean(ppc_random), 3), "\n")
+stopifnot(
+  all(is.finite(ppc_consistent)),
+  all(is.finite(ppc_random)),
+  all(ppc_consistent <= 1),
+  all(ppc_consistent >= -1),
+  all(ppc_random <= 1),
+  all(ppc_random >= -1),
+  mean_ppc_consistent > mean_ppc_random
+)
+
+cat("PPC (consistent phases):", round(mean_ppc_consistent, 3), "\n")
+cat("PPC (random phases):", round(mean_ppc_random, 3), "\n")
 ```
 
 ```{r plot-ppc-comparison, echo=FALSE, fig.cap="PPC values across time points: consistent phases (blue) vs random phases (grey).", fig.height=3}
@@ -140,6 +154,15 @@ cat("Resultant length:", round(circ_r(phases_at_response), 3), "\n")
 
 # Rayleigh test
 ray <- circ_rayleigh(phases_at_response)
+stopifnot(
+  all(is.finite(phases_at_response)),
+  all(phases_at_response >= -pi),
+  all(phases_at_response <= pi),
+  is.finite(ray$pval),
+  ray$pval >= 0,
+  ray$pval <= 1
+)
+
 cat("Rayleigh p-value:", format(ray$pval, digits = 3), "\n")
 ```
 
@@ -179,6 +202,19 @@ cat("Rayleigh p-value:", format(rayleigh$pval, digits = 3), "\n")
 
 # V-test against expected direction of 0
 vtest <- circ_vtest(angles, dir = 0)
+stopifnot(
+  is.finite(mu),
+  is.finite(r),
+  r >= 0,
+  r <= 1,
+  is.finite(rayleigh$pval),
+  rayleigh$pval >= 0,
+  rayleigh$pval <= 1,
+  is.finite(vtest$pval),
+  vtest$pval >= 0,
+  vtest$pval <= 1
+)
+
 cat("V-test p-value:", format(vtest$pval, digits = 3), "\n")
 ```
 
@@ -222,6 +258,13 @@ effect <- array(
   dim = c(n_subjects, n_freq, n_time)
 )
 
+stopifnot(
+  all(dim(baseline) == c(n_subjects, n_freq, n_time)),
+  all(dim(effect) == c(n_subjects, n_freq, n_time)),
+  all(is.finite(baseline)),
+  all(is.finite(effect))
+)
+
 cat("Data dimensions:", dim(effect), "(subjects x freq x time)\n")
 ```
 
@@ -232,12 +275,14 @@ neural effect that cluster detection should recover.
 ```{r simulate-tf-effect}
 # Add effect cluster (theta band: rows 5-10, time 15-25)
 effect[, 5:10, 15:25] <- effect[, 5:10, 15:25] + 1.5
+effect_mean <- mean(effect[, 5:10, 15:25])
+baseline_mean <- mean(baseline[, 5:10, 15:25])
+
+stopifnot(is.finite(effect_mean), is.finite(baseline_mean), effect_mean > baseline_mean)
 
 cat("Effect magnitude added to rows 5:10, times 15:25\n")
-cat("Mean in effect region (effect):",
-    round(mean(effect[, 5:10, 15:25]), 3), "\n")
-cat("Mean in effect region (baseline):",
-    round(mean(baseline[, 5:10, 15:25]), 3), "\n")
+cat("Mean in effect region (effect):", round(effect_mean, 3), "\n")
+cat("Mean in effect region (baseline):", round(baseline_mean, 3), "\n")
 ```
 
 ### Computing T-scores
@@ -246,6 +291,13 @@ cat("Mean in effect region (baseline):",
 # Paired t-test across subjects (dimension 1)
 tres <- paired_tscore(effect, baseline, dim = 1)
 t_matrix <- matrix(tres$t, nrow = n_freq, ncol = n_time)
+signal_window <- t_matrix[5:10, 15:25]
+
+stopifnot(
+  all(dim(t_matrix) == c(n_freq, n_time)),
+  all(is.finite(t_matrix)),
+  mean(signal_window) > 0
+)
 
 cat("T-score range:", round(range(t_matrix, na.rm = TRUE), 2), "\n")
 cat("Max t-score location: freq", which.max(apply(t_matrix, 1, max)),
@@ -277,12 +329,22 @@ clusters <- detect_clusters(
   time_axis = time_axis
 )
 
+stopifnot(is.list(clusters))
+
 cat("Number of clusters found:", length(clusters), "\n")
 
 # Examine clusters
 if (length(clusters) > 0) {
   for (i in seq_along(clusters)) {
     cl <- clusters[[i]]
+    stopifnot(
+      length(cl$freqs) > 0,
+      length(cl$times) > 0,
+      all(is.finite(cl$freqs)),
+      all(is.finite(cl$times)),
+      is.finite(cl$sumZscore),
+      is.finite(cl$peakZscore)
+    )
     cat(sprintf("\nCluster %d:\n", i))
     cat(sprintf("  Frequency: %.1f - %.1f Hz\n", min(cl$freqs), max(cl$freqs)))
     cat(sprintf("  Time: %.2f - %.2f s\n", min(cl$times), max(cl$times)))
@@ -339,6 +401,15 @@ p_matrix <- 2 * pt(-abs(t_matrix), df = df)
 
 # Apply Benjamini-Hochberg FDR correction
 fdr_result <- fdr_bh(as.vector(p_matrix), q = 0.05)
+stopifnot(
+  all(is.finite(p_matrix)),
+  all(p_matrix >= 0),
+  all(p_matrix <= 1),
+  length(fdr_result$h) == length(p_matrix),
+  is.finite(fdr_result$crit_p),
+  fdr_result$crit_p >= 0,
+  fdr_result$crit_p <= 1
+)
 
 cat("Total tests:", length(p_matrix), "\n")
 cat("Significant after FDR:", sum(fdr_result$h), "\n")
@@ -360,6 +431,14 @@ null_distribution <- rnorm(1000, mean = 10, sd = 3)
 
 # Compute p-values
 result <- nonparam_pval(observed_stats, null_distribution)
+stopifnot(
+  length(result$p) == length(observed_stats),
+  length(result$h) == length(observed_stats),
+  all(is.finite(result$p)),
+  all(result$p >= 0),
+  all(result$p <= 1)
+)
+
 cat("Observed values:", observed_stats, "\n")
 cat("P-values:", round(result$p, 4), "\n")
 cat("Significant (alpha=0.05):", result$h, "\n")
@@ -380,6 +459,11 @@ reference <- array(rnorm(100 * 4 * 5), dim = c(100, 4, 5))
 
 # Compute U-scores (position in null distribution)
 u_result <- u_score_matrix(observed, reference, alpha = 0.05)
+stopifnot(
+  all(dim(u_result$Z) == dim(observed)),
+  all(dim(u_result$sgnf) == dim(observed)),
+  all(is.finite(u_result$Z))
+)
 
 cat("Significant elements:", sum(u_result$sgnf != 0), "of", length(observed), "\n")
 ```
@@ -413,6 +497,7 @@ ppc_incorrect <- array(
 # 2. Statistical comparison
 diff_t <- paired_tscore(ppc_correct, ppc_incorrect, dim = 1)$t
 diff_matrix <- matrix(diff_t, nrow = n_freq, ncol = n_time)
+stopifnot(all(dim(diff_matrix) == c(n_freq, n_time)), all(is.finite(diff_matrix)))
 
 # 3. Cluster detection
 freq_ax <- seq(2, 30, length.out = n_freq)
@@ -426,6 +511,7 @@ sig_clusters <- detect_clusters(
   freq_axis = freq_ax,
   time_axis = time_ax
 )
+stopifnot(is.list(sig_clusters))
 
 # 4. Report
 cat("=== PPC: Correct vs Incorrect Trials ===\n")
@@ -476,4 +562,4 @@ MATLAB toolbox. Please cite:
 > Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 > behavioural and hippocampal responses in humans specifically during
 > memory-dependent tasks. *Nature Communications*, 12, 7048.
-> <https://doi.org/10.1038/s41467-021-25959-7>
+> <https://doi.org/10.1038/s41467-021-27323-3>

@@ -69,7 +69,11 @@ devtools::test("bosc")
 
 This package is an R port of the MATLAB toolbox developed for:
 
-**Ter Wal, M.**, Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L., Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V., Chelvarajah, R., Staresina, B., Hanslmayr, S., & Wimber, M. (2021). Theta rhythmicity governs the timing of behavioural and hippocampal responses in humans specifically during memory-dependent tasks. *Nature Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-25959-7>
+**Ter Wal, M.**, Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L., Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V., Chelvarajah, R., Staresina, B., Hanslmayr, S., & Wimber, M. (2021). Theta rhythmicity governs the timing of behavioural and hippocampal responses in humans specifically during memory-dependent tasks. *Nature Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-27323-3>
+
+Dense-sampling trial-to-spectrum workflows in the grouped APIs and examples are also motivated by:
+
+**Biba, T. M.**, Decker, A., Herrmann, B., Fukuda, K., Katz, C. N., Valiante, T. A., & Duncan, K. (2026). Episodic memory encoding fluctuates at a theta rhythm of 3-10 Hz. *Nature Human Behaviour*. <https://doi.org/10.1038/s41562-026-02416-5>
 
 - **Original MATLAB code**: <https://github.com/marijeterwal/behavioral-oscillations>
 - **Datasets**: <https://doi.org/10.6084/m9.figshare.c.5192567>
@@ -82,5 +86,5 @@ This package is an R port of the MATLAB toolbox developed for:
 
 <!-- albersdown:theme-note:start -->
 ## Albers theme
-This package uses the albersdown theme. Existing vignette theme hooks are replaced so `albers.css` and local `albers.js` render consistently on CRAN and GitHub Pages. The palette family is provided via `params$family` (default 'red'). The pkgdown site uses `template: { package: albersdown }`.
+This package uses the albersdown theme. Existing vignette theme hooks are replaced so `albers.css` and local `albers.js` render consistently on CRAN and GitHub Pages. The palette family is provided via `params$family` (default 'lapis'). The pkgdown site uses `template: { package: albersdown }`.
 <!-- albersdown:theme-note:end -->

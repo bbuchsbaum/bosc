@@ -46,6 +46,12 @@ n_noise <- 50
 noise_times <- sample(setdiff(seq_len(n_samples), spike_times), n_noise)
 sig[noise_times] <- 1
 
+stopifnot(
+  all(sig %in% c(0, 1)),
+  sum(sig) > 0,
+  length(spike_times) > 0
+)
+
 cat("Total spikes:", sum(sig), "\n")
 #> Total spikes: 100
 cat("Periodic spikes:", length(spike_times), "\n")
@@ -62,8 +68,9 @@ Synthetic spike train with 10 Hz periodicity.
 
 ## Computing the Oscillation Score
 
-The [`oscillation_score()`](../reference/oscillation_score.md) function
-computes the oscillation score through these steps:
+The
+[`oscillation_score()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md)
+function computes the oscillation score through these steps:
 
 1.  Computing the autocorrelogram of the signal
 2.  Removing the central peak (to focus on periodicity, not spike width)
@@ -80,10 +87,21 @@ result <- oscillation_score(
   warnings = TRUE
 )
 
+stopifnot(
+  is.finite(result$oscore),
+  result$oscore > 0,
+  is.finite(result$fosc),
+  result$fosc >= 5,
+  result$fosc <= 20,
+  length(result$flim) == 2,
+  all(is.finite(result$flim)),
+  result$flim[1] < result$flim[2]
+)
+
 cat("Oscillation Score:", round(result$oscore, 3), "\n")
 #> Oscillation Score: 45.446
 cat("Peak Frequency:", round(result$fosc, 2), "Hz\n")
-#> Peak Frequency: 10.26 Hz
+#> Peak Frequency: 10.25 Hz
 cat("Effective frequency limits:", round(result$flim, 2), "Hz\n")
 #> Effective frequency limits: 5 20 Hz
 ```
@@ -122,18 +140,31 @@ surrogates <- oscillation_score_surrogates(
 )
 
 # Compute z-score against null distribution
-mean_sur <- mean(surrogates$oscore_rp, na.rm = TRUE)
-sd_sur <- sd(surrogates$oscore_rp, na.rm = TRUE)
+valid_sur <- surrogates$oscore_rp[is.finite(surrogates$oscore_rp)]
+mean_sur <- mean(valid_sur)
+sd_sur <- sd(valid_sur)
 z_score <- (result$oscore - mean_sur) / sd_sur
+p_upper <- pnorm(z_score, lower.tail = FALSE)
+
+stopifnot(
+  length(valid_sur) >= 80,
+  is.finite(mean_sur),
+  is.finite(sd_sur),
+  sd_sur > 0,
+  is.finite(z_score),
+  is.finite(p_upper),
+  p_upper >= 0,
+  p_upper <= 1
+)
 
 cat("Surrogate mean:", round(mean_sur, 3), "\n")
-#> Surrogate mean: 4.174
+#> Surrogate mean: 4.171
 cat("Surrogate SD:", round(sd_sur, 3), "\n")
-#> Surrogate SD: 2.505
+#> Surrogate SD: 2.513
 cat("Z-score:", round(z_score, 2), "\n")
-#> Z-score: 16.48
-cat("P-value (one-tailed):", round(pnorm(-abs(z_score)), 4), "\n")
-#> P-value (one-tailed): 0
+#> Z-score: 16.42
+cat("P-value (upper-tail):", format(p_upper, digits = 4), "\n")
+#> P-value (upper-tail): 6.521e-61
 ```
 
 ![Observed oscillation score (red line) against the surrogate null
@@ -170,13 +201,23 @@ results <- lapply(names(bands), function(band_name) {
 })
 
 results_df <- do.call(rbind, results)
+alpha_row <- results_df[results_df$band == "alpha", ]
+stopifnot(
+  nrow(results_df) == length(bands),
+  nrow(alpha_row) == 1,
+  is.finite(alpha_row$oscore),
+  is.finite(alpha_row$fosc),
+  alpha_row$fosc >= 8,
+  alpha_row$fosc <= 12
+)
+
 results_df_print <- results_df
 num_cols <- vapply(results_df_print, is.numeric, logical(1))
 results_df_print[num_cols] <- lapply(results_df_print[num_cols], round, 3)
 print(results_df_print)
 #>    band req_fmin req_fmax eff_fmin eff_fmax oscore  fosc
-#> 1 theta        4        8        4    8.000  8.025 6.354
-#> 2 alpha        8       12        8   12.000 43.998 9.785
+#> 1 theta        4        8        4    8.000  8.025 6.348
+#> 2 alpha        8       12        8   12.000 43.998 9.766
 #> 3  beta       12       30       12   20.412     NA    NA
 ```
 
@@ -184,7 +225,8 @@ As expected, the alpha band (8-12 Hz) shows the highest oscillation
 score since our synthetic signal has 10 Hz periodicity.
 
 `beta` can legitimately return `NA` for `oscore`/`fosc` here.
-Internally, [`oscillation_score()`](../reference/oscillation_score.md)
+Internally,
+[`oscillation_score()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md)
 constrains the requested band to an effective range based on the data
 support:
 
@@ -205,8 +247,9 @@ our 10 Hz signal) shows the strongest score.
 ## Narrowband Hilbert Analysis
 
 To extract instantaneous phase and amplitude at a specific frequency,
-use [`narrowband_hilbert()`](../reference/narrowband_hilbert.md). This
-is essential for phase-locking analyses.
+use
+[`narrowband_hilbert()`](https://bbuchsbaum.github.io/bosc/reference/narrowband_hilbert.md).
+This is essential for phase-locking analyses.
 
 ``` r
 # Create a continuous oscillatory signal for demonstration
@@ -220,13 +263,25 @@ nb <- narrowband_hilbert(
   freqlim = c(8, 12)
 )
 
+# Validate narrowband output before interpreting phase/amplitude.
+amp <- Mod(nb$analytic)
+phases <- Arg(nb$analytic)
+stopifnot(
+  length(nb$analytic) == length(continuous_sig),
+  length(nb$filtered) == length(continuous_sig),
+  all(is.finite(Re(nb$analytic))),
+  all(is.finite(Im(nb$analytic))),
+  all(is.finite(amp)),
+  mean(amp) > 0,
+  all(is.finite(phases)),
+  all(phases >= -pi),
+  all(phases <= pi)
+)
+
 cat("Analytic signal length:", length(nb$analytic), "\n")
 #> Analytic signal length: 2001
-cat("Mean amplitude:", round(mean(Mod(nb$analytic)), 3), "\n")
+cat("Mean amplitude:", round(mean(amp), 3), "\n")
 #> Mean amplitude: 0.936
-
-# Phase extraction
-phases <- Arg(nb$analytic)
 cat("Phase range:", round(range(phases), 2), "radians\n")
 #> Phase range: -3.14 3.14 radians
 ```
@@ -242,8 +297,8 @@ component (middle), and instantaneous phase (bottom).
 
 If your data consists of event times (in seconds) rather than a binary
 signal, use
-[`make_continuous_trace()`](../reference/make_continuous_trace.md) to
-convert to a continuous time series:
+[`make_continuous_trace()`](https://bbuchsbaum.github.io/bosc/reference/make_continuous_trace.md)
+to convert to a continuous time series:
 
 ``` r
 # Event times in seconds
@@ -254,6 +309,14 @@ trace <- make_continuous_trace(
   events = event_times,
   dt = 0.001,  # 1 ms bins
   sd_smooth = 0.005  # 5 ms Gaussian smoothing
+)
+
+stopifnot(
+  length(trace$signal) > 0,
+  length(trace$tspan) == length(trace$signal),
+  all(is.finite(trace$signal)),
+  all(is.finite(trace$tspan)),
+  all(diff(trace$tspan) > 0)
 )
 
 cat("Trace length:", length(trace$signal), "samples\n")
@@ -268,18 +331,31 @@ trace_result <- oscillation_score(
   flim = c(5, 20),
   warnings = FALSE
 )
-cat("Oscillation score (smoothed):", round(trace_result$oscore, 3), "\n")
-#> Oscillation score (smoothed): 94.746
+
+stopifnot(
+  is.numeric(trace_result$oscore),
+  length(trace_result$oscore) == 1,
+  is.numeric(trace_result$fosc),
+  length(trace_result$fosc) == 1
+)
+if (is.finite(trace_result$oscore) && is.finite(trace_result$fosc)) {
+  stopifnot(trace_result$oscore > 0, trace_result$fosc >= 5, trace_result$fosc <= 20)
+  cat("Oscillation score (smoothed):", round(trace_result$oscore, 3), "\n")
+} else {
+  cat("Oscillation score (smoothed): NA (no stable peak detected in this draw)\n")
+}
+#> Oscillation score (smoothed): 94.682
 ```
 
 ## Next steps
 
 - Test significance with config-driven batch workflows:
-  [`vignette("workflow-wrappers")`](../articles/workflow-wrappers.md)
+  [`vignette("workflow-wrappers")`](https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.md)
 - Analyze phase consistency across trials:
-  [`vignette("ppc-clustering")`](../articles/ppc-clustering.md)
-- See [`?oscillation_score`](../reference/oscillation_score.md) for the
-  full argument list
+  [`vignette("ppc-clustering")`](https://bbuchsbaum.github.io/bosc/articles/ppc-clustering.md)
+- See
+  [`?oscillation_score`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md)
+  for the full argument list
 
 ## References
 
@@ -290,4 +366,4 @@ MATLAB toolbox. Please cite:
 > Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 > behavioural and hippocampal responses in humans specifically during
 > memory-dependent tasks. *Nature Communications*, 12, 7048.
-> <https://doi.org/10.1038/s41467-021-25959-7>
+> <https://doi.org/10.1038/s41467-021-27323-3>

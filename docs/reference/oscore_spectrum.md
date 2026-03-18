@@ -2,8 +2,10 @@
 
 Converts a result containing a spectrum into a long data.frame with
 columns `freq` and `power`. Supports outputs from
-[`oscillation_score`](oscillation_score.md) (fields `freqs`/`flimfft`)
-and [`spectral_peak`](spectral_peak.md) (fields `fxx`/`spectrum`).
+[`oscillation_score`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md)
+(fields `freqs`/`flimfft`) and
+[`spectral_peak`](https://bbuchsbaum.github.io/bosc/reference/spectral_peak.md)
+(fields `fxx`/`spectrum`).
 
 ## Usage
 

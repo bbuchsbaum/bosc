@@ -8,6 +8,10 @@ autocorr_centered(x, method = c("auto", "direct", "fft"))
 }
 \arguments{
 \item{x}{numeric vector.}
+
+\item{method}{autocorrelation backend: \code{"direct"} (explicit summation),
+\code{"fft"} (FFT-based linear autocorrelation), or \code{"auto"}
+(uses \code{"direct"} for short vectors and \code{"fft"} for longer vectors).}
 }
 \value{
 numeric vector of length \code{2*length(x) - 1}.

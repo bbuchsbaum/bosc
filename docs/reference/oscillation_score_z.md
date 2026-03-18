@@ -59,7 +59,7 @@ oscore_z(...)
 - surrogate_method, signal_mode:
 
   passed to
-  [`oscillation_score_surrogates`](oscillation_score_surrogates.md).
+  [`oscillation_score_surrogates`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_surrogates.md).
 
 - fcor:
 
@@ -85,7 +85,7 @@ oscore_z(...)
 - ...:
 
   further arguments passed to
-  [`oscillation_score`](oscillation_score.md).
+  [`oscillation_score`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md).
 
 ## Value
 

@@ -30,6 +30,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/bosc.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -87,7 +88,7 @@ instantaneous phase.</p>
 <h2 id="setup">Setup<a class="anchor" aria-label="anchor" href="#setup"></a>
 </h2>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bbuchsbaum/bosc" class="external-link">bosc</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bbuchsbaum.github.io/bosc/">bosc</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="synthetic-spike-train-example">Synthetic Spike Train Example<a class="anchor" aria-label="anchor" href="#synthetic-spike-train-example"></a>
@@ -112,6 +113,12 @@ to demonstrate the oscillation score computation.</p>
 <span><span class="va">n_noise</span> <span class="op">&lt;-</span> <span class="fl">50</span></span>
 <span><span class="va">noise_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sets.html" class="external-link">setdiff</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_samples</span><span class="op">)</span>, <span class="va">spike_times</span><span class="op">)</span>, <span class="va">n_noise</span><span class="op">)</span></span>
 <span><span class="va">sig</span><span class="op">[</span><span class="va">noise_times</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">sig</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">sig</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">spike_times</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Total spikes:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">sig</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Total spikes: 100</span></span>
@@ -147,10 +154,21 @@ width)</li>
 <span>  warnings <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">oscore</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&gt;=</span> <span class="fl">5</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&lt;=</span> <span class="fl">20</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">flim</span><span class="op">)</span> <span class="op">==</span> <span class="fl">2</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">flim</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">flim</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">&lt;</span> <span class="va">result</span><span class="op">$</span><span class="va">flim</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation Score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Oscillation Score: 45.446</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Peak Frequency:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">fosc</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"Hz\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Peak Frequency: 10.26 Hz</span></span>
+<span><span class="co">#&gt; Peak Frequency: 10.25 Hz</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Effective frequency limits:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">flim</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"Hz\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Effective frequency limits: 5 20 Hz</span></span></code></pre></div>
 </div>
@@ -188,18 +206,31 @@ duration) while destroying temporal structure.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compute z-score against null distribution</span></span>
-<span><span class="va">mean_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">surrogates</span><span class="op">$</span><span class="va">oscore_rp</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="va">sd_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">surrogates</span><span class="op">$</span><span class="va">oscore_rp</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">valid_sur</span> <span class="op">&lt;-</span> <span class="va">surrogates</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">surrogates</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">mean_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">valid_sur</span><span class="op">)</span></span>
+<span><span class="va">sd_sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">valid_sur</span><span class="op">)</span></span>
 <span><span class="va">z_score</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">oscore</span> <span class="op">-</span> <span class="va">mean_sur</span><span class="op">)</span> <span class="op">/</span> <span class="va">sd_sur</span></span>
+<span><span class="va">p_upper</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">pnorm</a></span><span class="op">(</span><span class="va">z_score</span>, lower.tail <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">valid_sur</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">80</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">mean_sur</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">sd_sur</span><span class="op">)</span>,</span>
+<span>  <span class="va">sd_sur</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">z_score</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">p_upper</span><span class="op">)</span>,</span>
+<span>  <span class="va">p_upper</span> <span class="op">&gt;=</span> <span class="fl">0</span>,</span>
+<span>  <span class="va">p_upper</span> <span class="op">&lt;=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Surrogate mean:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">mean_sur</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Surrogate mean: 4.174</span></span>
+<span><span class="co">#&gt; Surrogate mean: 4.171</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Surrogate SD:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">sd_sur</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Surrogate SD: 2.505</span></span>
+<span><span class="co">#&gt; Surrogate SD: 2.513</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Z-score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">z_score</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Z-score: 16.48</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"P-value (one-tailed):"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">pnorm</a></span><span class="op">(</span><span class="op">-</span><span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">z_score</span><span class="op">)</span><span class="op">)</span>, <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; P-value (one-tailed): 0</span></span></code></pre></div>
+<span><span class="co">#&gt; Z-score: 16.42</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"P-value (upper-tail):"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">p_upper</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; P-value (upper-tail): 6.521e-61</span></span></code></pre></div>
 <div class="figure">
 <img src="oscillation-score_files/figure-html/plot-surrogates-1.png" class="r-plt" alt="Observed oscillation score (red line) against the surrogate null distribution." width="576"><p class="caption">
 Observed oscillation score (red line) against the surrogate null
@@ -235,13 +266,23 @@ frequency bands to identify the dominant rhythm:</p>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">results_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">results</span><span class="op">)</span></span>
+<span><span class="va">alpha_row</span> <span class="op">&lt;-</span> <span class="va">results_df</span><span class="op">[</span><span class="va">results_df</span><span class="op">$</span><span class="va">band</span> <span class="op">==</span> <span class="st">"alpha"</span>, <span class="op">]</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">results_df</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">bands</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">alpha_row</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">alpha_row</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">alpha_row</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span>,</span>
+<span>  <span class="va">alpha_row</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&gt;=</span> <span class="fl">8</span>,</span>
+<span>  <span class="va">alpha_row</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&lt;=</span> <span class="fl">12</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="va">results_df_print</span> <span class="op">&lt;-</span> <span class="va">results_df</span></span>
 <span><span class="va">num_cols</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">vapply</a></span><span class="op">(</span><span class="va">results_df_print</span>, <span class="va">is.numeric</span>, <span class="fu"><a href="https://rdrr.io/r/base/logical.html" class="external-link">logical</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">results_df_print</span><span class="op">[</span><span class="va">num_cols</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">results_df_print</span><span class="op">[</span><span class="va">num_cols</span><span class="op">]</span>, <span class="va">round</span>, <span class="fl">3</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">results_df_print</span><span class="op">)</span></span>
 <span><span class="co">#&gt;    band req_fmin req_fmax eff_fmin eff_fmax oscore  fosc</span></span>
-<span><span class="co">#&gt; 1 theta        4        8        4    8.000  8.025 6.354</span></span>
-<span><span class="co">#&gt; 2 alpha        8       12        8   12.000 43.998 9.785</span></span>
+<span><span class="co">#&gt; 1 theta        4        8        4    8.000  8.025 6.348</span></span>
+<span><span class="co">#&gt; 2 alpha        8       12        8   12.000 43.998 9.766</span></span>
 <span><span class="co">#&gt; 3  beta       12       30       12   20.412     NA    NA</span></span></code></pre></div>
 <p>As expected, the alpha band (8-12 Hz) shows the highest oscillation
 score since our synthetic signal has 10 Hz periodicity.</p>
@@ -279,13 +320,25 @@ phase-locking analyses.</p>
 <span>  freqlim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">8</span>, <span class="fl">12</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="co"># Validate narrowband output before interpreting phase/amplitude.</span></span>
+<span><span class="va">amp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/complex.html" class="external-link">Mod</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span></span>
+<span><span class="va">phases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/complex.html" class="external-link">Arg</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">continuous_sig</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">filtered</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">continuous_sig</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/complex.html" class="external-link">Re</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/complex.html" class="external-link">Im</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">amp</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">amp</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phases</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="va">pi</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phases</span> <span class="op">&lt;=</span> <span class="va">pi</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Analytic signal length:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Analytic signal length: 2001</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Mean amplitude:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/complex.html" class="external-link">Mod</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Mean amplitude:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">amp</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Mean amplitude: 0.936</span></span>
-<span></span>
-<span><span class="co"># Phase extraction</span></span>
-<span><span class="va">phases</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/complex.html" class="external-link">Arg</a></span><span class="op">(</span><span class="va">nb</span><span class="op">$</span><span class="va">analytic</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Phase range:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"radians\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Phase range: -3.14 3.14 radians</span></span></code></pre></div>
 <div class="figure">
@@ -312,6 +365,14 @@ continuous time series:</p>
 <span>  sd_smooth <span class="op">=</span> <span class="fl">0.005</span>  <span class="co"># 5 ms Gaussian smoothing</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace</span><span class="op">$</span><span class="va">signal</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace</span><span class="op">$</span><span class="va">tspan</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace</span><span class="op">$</span><span class="va">signal</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">trace</span><span class="op">$</span><span class="va">signal</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">trace</span><span class="op">$</span><span class="va">tspan</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/diff.html" class="external-link">diff</a></span><span class="op">(</span><span class="va">trace</span><span class="op">$</span><span class="va">tspan</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Trace length:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace</span><span class="op">$</span><span class="va">signal</span><span class="op">)</span>, <span class="st">"samples\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Trace length: 4955 samples</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Time span:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/range.html" class="external-link">range</a></span><span class="op">(</span><span class="va">trace</span><span class="op">$</span><span class="va">tspan</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"seconds\n"</span><span class="op">)</span></span>
@@ -324,8 +385,20 @@ continuous time series:</p>
 <span>  flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">20</span><span class="op">)</span>,</span>
 <span>  warnings <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score (smoothed):"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Oscillation score (smoothed): 94.746</span></span></code></pre></div>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">is.numeric</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span> <span class="op">==</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span> <span class="op">&amp;&amp;</span> <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">oscore</span> <span class="op">&gt;</span> <span class="fl">0</span>, <span class="va">trace_result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&gt;=</span> <span class="fl">5</span>, <span class="va">trace_result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&lt;=</span> <span class="fl">20</span><span class="op">)</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score (smoothed):"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">trace_result</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span> <span class="kw">else</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score (smoothed): NA (no stable peak detected in this draw)\n"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span>
+<span><span class="co">#&gt; Oscillation score (smoothed): 94.682</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="next-steps">Next steps<a class="anchor" aria-label="anchor" href="#next-steps"></a>
@@ -348,7 +421,7 @@ MATLAB toolbox. Please cite:</p>
 <blockquote>
 <p>Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 behavioural and hippocampal responses in humans specifically during
-memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-25959-7" class="external-link uri">https://doi.org/10.1038/s41467-021-25959-7</a></p>
+memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-27323-3" class="external-link uri">https://doi.org/10.1038/s41467-021-27323-3</a></p>
 </blockquote>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

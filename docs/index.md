@@ -58,28 +58,28 @@ workflow ergonomics:
 
 - `spectral_peak(fcor = TRUE)` uses an explicit, stable log-log
   fit/predict path in R for improved numerical stability.
-- [`oscillation_score()`](reference/oscillation_score.md) supports
-  explicit `signal_mode`: `event` uses event-rate-based effective bands;
-  `continuous` uses variance-aware checks and Nyquist-limited upper
-  bounds.
-- [`autocorr_centered()`](reference/autocorr_centered.md) now supports
-  both direct and FFT-based linear autocorrelation; `method = "auto"`
-  selects a fast FFT path for longer vectors while preserving centered
-  `xcorr` semantics.
-- [`oscillation_score_surrogates()`](reference/oscillation_score_surrogates.md)
+- [`oscillation_score()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md)
+  supports explicit `signal_mode`: `event` uses event-rate-based
+  effective bands; `continuous` uses variance-aware checks and
+  Nyquist-limited upper bounds.
+- [`autocorr_centered()`](https://bbuchsbaum.github.io/bosc/reference/autocorr_centered.md)
+  now supports both direct and FFT-based linear autocorrelation;
+  `method = "auto"` selects a fast FFT path for longer vectors while
+  preserving centered `xcorr` semantics.
+- [`oscillation_score_surrogates()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_surrogates.md)
   supports explicit `surrogate_method`, including phase-randomized
   surrogates for continuous signals (amplitude-spectrum-preserving
   nulls), in addition to event shuffle/trend.
-- [`oscillation_score_z()`](reference/oscillation_score_z.md) can return
-  bootstrap confidence intervals for the log-Z statistic (`z_ci`) and
-  exposes CI controls (`ci_nboot`, `ci_level`).
-- [`extract_clusters()`](reference/extract_clusters.md) uses a direct
-  8-connectivity flood-fill implementation for consistent
+- [`oscillation_score_z()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_z.md)
+  can return bootstrap confidence intervals for the log-Z statistic
+  (`z_ci`) and exposes CI controls (`ci_nboot`, `ci_level`).
+- [`extract_clusters()`](https://bbuchsbaum.github.io/bosc/reference/extract_clusters.md)
+  uses a direct 8-connectivity flood-fill implementation for consistent
   connected-component assignments.
-- [`circ_rayleigh()`](reference/circ_rayleigh.md) uses weighted sample
-  size (`sum(w)`) in weighted mode.
-- [`paired_tscore()`](reference/paired_tscore.md) uses per-slice
-  effective sample sizes under missing values.
+- [`circ_rayleigh()`](https://bbuchsbaum.github.io/bosc/reference/circ_rayleigh.md)
+  uses weighted sample size (`sum(w)`) in weighted mode.
+- [`paired_tscore()`](https://bbuchsbaum.github.io/bosc/reference/paired_tscore.md)
+  uses per-slice effective sample sizes under missing values.
 - `detect_clusters(qval=...)` computes adjusted p-values, and optional
   `filter_by_q=TRUE` can filter clusters by adjusted significance.
 
@@ -98,7 +98,15 @@ Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V.,
 Chelvarajah, R., Staresina, B., Hanslmayr, S., & Wimber, M. (2021).
 Theta rhythmicity governs the timing of behavioural and hippocampal
 responses in humans specifically during memory-dependent tasks. *Nature
-Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-25959-7>
+Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-27323-3>
+
+Dense-sampling trial-to-spectrum workflows in the grouped APIs and
+examples are also motivated by:
+
+**Biba, T. M.**, Decker, A., Herrmann, B., Fukuda, K., Katz, C. N.,
+Valiante, T. A., & Duncan, K. (2026). Episodic memory encoding
+fluctuates at a theta rhythm of 3-10 Hz. *Nature Human Behaviour*.
+<https://doi.org/10.1038/s41562-026-02416-5>
 
 - **Original MATLAB code**:
   <https://github.com/marijeterwal/behavioral-oscillations>
@@ -116,5 +124,5 @@ Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-25959-7>
 This package uses the albersdown theme. Existing vignette theme hooks
 are replaced so `albers.css` and local `albers.js` render consistently
 on CRAN and GitHub Pages. The palette family is provided via
-`params$family` (default ‘red’). The pkgdown site uses
+`params$family` (default ‘lapis’). The pkgdown site uses
 `template: { package: albersdown }`.

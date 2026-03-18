@@ -1,12 +1,13 @@
 ---
 title: Running Batch Analyses and Extracting Phase
 output: rmarkdown::html_vignette
-vignette: >
+vignette: |
   %\VignetteIndexEntry{Running Batch Analyses and Extracting Phase}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 params:
   family: red
+  preset: homage
 css: albers.css
 resource_files:
 - albers.css
@@ -14,12 +15,13 @@ resource_files:
 includes:
   in_header: |-
     <script src="albers.js"></script>
-    <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('palette-red');});</script>
+    <script>document.addEventListener('DOMContentLoaded',function(){document.body.classList.add('palette-lapis');});</script>
 
 ---
 
 ```{r setup, include=FALSE}
 if (requireNamespace("ggplot2", quietly = TRUE) && requireNamespace("albersdown", quietly = TRUE)) ggplot2::theme_set(albersdown::theme_albers(params$family))
+if (requireNamespace("ggplot2", quietly = TRUE)) ggplot2::theme_set(ggplot2::theme_minimal())
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -73,6 +75,18 @@ result <- oscillation_score_z(
   taper = "hanning"
 )
 
+stopifnot(
+  is.finite(result$oscore),
+  result$oscore > 0,
+  is.finite(result$fosc),
+  result$fosc >= 5,
+  result$fosc <= 20,
+  is.finite(result$z),
+  is.finite(result$pval),
+  result$pval >= 0,
+  result$pval <= 1
+)
+
 cat("Oscillation score:", round(result$oscore, 3), "\n")
 cat("Peak frequency:", round(result$fosc, 2), "Hz\n")
 cat("Z-score:", round(result$z, 2), "\n")
@@ -102,6 +116,13 @@ config <- list(
 
 # Apply to signal
 os <- oscillation_score_config(config, sig)
+stopifnot(
+  is.finite(os$oscore),
+  os$oscore > 0,
+  is.finite(os$fosc),
+  os$fosc >= config$flim[1],
+  os$fosc <= config$flim[2]
+)
 
 cat("Oscillation score:", round(os$oscore, 3), "\n")
 cat("Peak frequency:", round(os$fosc, 2), "Hz\n")
@@ -120,8 +141,13 @@ config_sur <- modifyList(config, list(
 sur <- oscillation_score_surrogates_config(config_sur, sig)
 
 # Compute statistics from surrogate distribution
-z <- (log(os$oscore) - mean(log(sur$oscore_rp), na.rm = TRUE)) /
-     sd(log(sur$oscore_rp), na.rm = TRUE)
+valid_sur <- sur$oscore_rp[is.finite(sur$oscore_rp) & sur$oscore_rp > 0]
+z <- (log(os$oscore) - mean(log(valid_sur))) / sd(log(valid_sur))
+
+stopifnot(
+  length(valid_sur) >= 150,
+  is.finite(z)
+)
 
 cat("Surrogate mean:", round(mean(sur$oscore_rp), 3), "\n")
 cat("Surrogate SD:", round(sd(sur$oscore_rp), 3), "\n")
@@ -147,17 +173,27 @@ subjects <- lapply(1:n_subjects, function(i) {
 })
 
 # Apply same config to all subjects
-results <- lapply(subjects, function(s) {
-  oscillation_score_z(s, fs = 1000, flim = c(5, 20), nrep = 100, tidy = TRUE)
+results <- lapply(seq_along(subjects), function(i) {
+  out <- oscillation_score_z(subjects[[i]], fs = 1000, flim = c(5, 20), nrep = 100)
+  tidy_out <- oscore_tidy(out)
+  tidy_out$subject <- i
+  tidy_out[1, c("subject", "oscore", "fosc", "z", "significant")]
 })
 
 # Combine results
 batch_results <- do.call(rbind, results)
-batch_results$subject <- 1:n_subjects
+stopifnot(
+  nrow(batch_results) == n_subjects,
+  all(c("subject", "oscore", "fosc", "z", "significant") %in% names(batch_results)),
+  all(is.finite(batch_results$oscore)),
+  all(is.finite(batch_results$fosc)),
+  all(is.finite(batch_results$z))
+)
+
 print(batch_results[, c("subject", "oscore", "fosc", "z", "significant")])
 ```
 
-```{r plot-batch, echo=FALSE, fig.cap="Oscillation scores decrease as jitter increases (subjects 1-5). Dashed line shows z = 1.65 significance threshold.", fig.height=3}
+```{r plot-batch, echo=FALSE, fig.cap="Oscillation scores across subjects with significant results highlighted in blue.", fig.height=3}
 par(mar = c(4, 4, 1, 1))
 plot(batch_results$subject, batch_results$oscore, type = "b", pch = 19,
      col = ifelse(batch_results$significant, "#1B75BB", "grey60"),
@@ -187,13 +223,22 @@ phases <- phase_at_events(
   fosc = 10,       # Center frequency
   bandwidth = 1    # +/- 1 Hz band
 )
+ray <- circ_rayleigh(phases)
+stopifnot(
+  length(phases) == length(events),
+  all(is.finite(phases)),
+  all(phases >= -pi),
+  all(phases <= pi),
+  is.finite(ray$pval),
+  ray$pval >= 0,
+  ray$pval <= 1
+)
 
 cat("Phases at events (radians):\n")
 print(round(phases, 2))
 
 # Check phase consistency
 cat("\nMean resultant length:", round(circ_r(phases), 3), "\n")
-ray <- circ_rayleigh(phases)
 cat("Rayleigh p-value:", format(ray$pval, digits = 3), "\n")
 ```
 
@@ -228,11 +273,15 @@ making it easy to combine results across analyses or use with ggplot2/dplyr.
 
 ```{r tidy-oscore}
 # Single result
-oscore_tidy(os)
+os_tidy <- oscore_tidy(os)
+stopifnot(all(c("oscore", "fosc") %in% names(os_tidy)))
+os_tidy
 
 # Can also handle oscillation_score_z output
 z_result <- oscillation_score_z(sig, fs = 1000, flim = c(5, 20), nrep = 50)
-oscore_tidy(z_result)
+z_tidy <- oscore_tidy(z_result)
+stopifnot(all(c("oscore", "fosc", "z", "pval") %in% names(z_tidy)))
+z_tidy
 ```
 
 ### oscore_spectrum: Extract Spectrum Data
@@ -240,14 +289,19 @@ oscore_tidy(z_result)
 ```{r tidy-spectrum}
 # Get spectrum as a data.frame for plotting
 spec_df <- oscore_spectrum(os)
+stopifnot(
+  all(c("freq", "power") %in% names(spec_df)),
+  all(is.finite(spec_df$freq)),
+  all(is.finite(spec_df$power))
+)
+
 head(spec_df)
 
-library(ggplot2)
-ggplot(spec_df, aes(x = freq, y = power)) +
-  geom_line(color = "#1B75BB") +
-  geom_vline(xintercept = os$fosc, linetype = "dashed", color = "red") +
-  labs(x = "Frequency (Hz)", y = "Power") +
-  theme_minimal()
+ggplot2::ggplot(spec_df, ggplot2::aes(x = freq, y = power)) +
+  ggplot2::geom_line(color = "#1B75BB") +
+  ggplot2::geom_vline(xintercept = os$fosc, linetype = "dashed", color = "red") +
+  ggplot2::labs(x = "Frequency (Hz)", y = "Power") +
+  ggplot2::theme_minimal()
 ```
 
 ### clusters_tidy: Cluster Summaries
@@ -278,6 +332,7 @@ clusters <- detect_clusters(
 
 # Convert to tidy summary
 cluster_summary <- clusters_tidy(clusters)
+stopifnot(all(c("cluster", "n_pixels", "freq_min", "time_min") %in% names(cluster_summary)))
 print(cluster_summary[, c("cluster", "n_pixels", "freq_min", "freq_max",
                           "time_min", "time_max", "sumZscore")])
 ```
@@ -289,13 +344,21 @@ For detailed analysis or custom plotting, get all cluster pixels:
 ```{r tidy-pixels, eval=has_imager}
 # Get all pixels from detected clusters
 pixel_df <- clusters_pixels(clusters)
+stopifnot(
+  nrow(pixel_df) > 0,
+  all(c("time", "freq", "Zscore") %in% names(pixel_df)),
+  all(is.finite(pixel_df$time)),
+  all(is.finite(pixel_df$freq)),
+  all(is.finite(pixel_df$Zscore))
+)
+
 head(pixel_df)
 
-ggplot(pixel_df, aes(x = time, y = freq, fill = Zscore)) +
-  geom_tile() +
-  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
-  labs(x = "Time (s)", y = "Frequency (Hz)", fill = "Z-score") +
-  theme_minimal()
+ggplot2::ggplot(pixel_df, ggplot2::aes(x = time, y = freq, fill = Zscore)) +
+  ggplot2::geom_tile() +
+  ggplot2::scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  ggplot2::labs(x = "Time (s)", y = "Frequency (Hz)", fill = "Z-score") +
+  ggplot2::theme_minimal()
 ```
 
 ## Putting it all together
@@ -336,6 +399,17 @@ z_result <- oscillation_score_z(
   alpha = config$alpha,
   taper = config$taper
 )
+stopifnot(
+  is.finite(z_result$oscore),
+  z_result$oscore > 0,
+  is.finite(z_result$fosc),
+  z_result$fosc >= config$flim[1],
+  z_result$fosc <= config$flim[2],
+  is.finite(z_result$z),
+  is.finite(z_result$pval),
+  z_result$pval >= 0,
+  z_result$pval <= 1
+)
 
 # 3. Extract phases at response times
 phases <- phase_at_events(
@@ -344,9 +418,16 @@ phases <- phase_at_events(
   fosc = z_result$fosc,
   bandwidth = 1
 )
+stopifnot(
+  length(phases) == length(event_times),
+  all(is.finite(phases)),
+  all(phases >= -pi),
+  all(phases <= pi)
+)
 
 # 4. Test phase consistency
 ray <- circ_rayleigh(phases)
+stopifnot(is.finite(ray$pval), ray$pval >= 0, ray$pval <= 1)
 
 # 5. Report results
 cat("=== Oscillation Analysis Results ===\n\n")
@@ -386,4 +467,4 @@ MATLAB toolbox. Please cite:
 > Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 > behavioural and hippocampal responses in humans specifically during
 > memory-dependent tasks. *Nature Communications*, 12, 7048.
-> <https://doi.org/10.1038/s41467-021-25959-7>
+> <https://doi.org/10.1038/s41467-021-27323-3>

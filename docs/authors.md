@@ -11,12 +11,12 @@ Source:
 
 Buchsbaum B (2026). *bosc: Behavioral Oscillation Scores and Phase
 Analysis*. R package version 0.0.0.9000,
-<https://github.com/bbuchsbaum/bosc>.
+<https://bbuchsbaum.github.io/bosc/>.
 
     @Manual{,
       title = {bosc: Behavioral Oscillation Scores and Phase Analysis},
       author = {Bradley Buchsbaum},
       year = {2026},
       note = {R package version 0.0.0.9000},
-      url = {https://github.com/bbuchsbaum/bosc},
+      url = {https://bbuchsbaum.github.io/bosc/},
     }

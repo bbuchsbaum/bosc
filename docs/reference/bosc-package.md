@@ -13,7 +13,12 @@ Chelvarajah, R., Staresina, B., Hanslmayr, S., & Wimber, M. (2021).
 Theta rhythmicity governs the timing of behavioural and hippocampal
 responses in humans specifically during memory-dependent tasks. *Nature
 Communications*, 12, 7048.
-[doi:10.1038/s41467-021-25959-7](https://doi.org/10.1038/s41467-021-25959-7)
+[doi:10.1038/s41467-021-27323-3](https://doi.org/10.1038/s41467-021-27323-3)
+
+Biba, T. M., Decker, A., Herrmann, B., Fukuda, K., Katz, C. N.,
+Valiante, T. A., & Duncan, K. (2026). Episodic memory encoding
+fluctuates at a theta rhythm of 3-10 Hz. *Nature Human Behaviour*.
+[doi:10.1038/s41562-026-02416-5](https://doi.org/10.1038/s41562-026-02416-5)
 
 Original MATLAB toolbox:
 <https://github.com/marijeterwal/behavioral-oscillations>

@@ -30,6 +30,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="../articles/bosc.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="active nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -84,7 +85,7 @@ parameters once and apply them across subjects. And
 <code><a href="../reference/phase_at_events.html">phase_at_events()</a></code> handles the full pipeline from event
 times to instantaneous phase.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bbuchsbaum/bosc" class="external-link">bosc</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bbuchsbaum.github.io/bosc/">bosc</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="one-call-score-surrogates-and-significance">One call: score, surrogates, and significance<a class="anchor" aria-label="anchor" href="#one-call-score-surrogates-and-significance"></a>
@@ -111,14 +112,26 @@ testing its significance against surrogates.
 <span>  taper <span class="op">=</span> <span class="st">"hanning"</span></span>
 <span><span class="op">)</span></span>
 <span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">oscore</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&gt;=</span> <span class="fl">5</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&lt;=</span> <span class="fl">20</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">z</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">pval</span> <span class="op">&gt;=</span> <span class="fl">0</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">pval</span> <span class="op">&lt;=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Oscillation score: 1.17</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Peak frequency:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">fosc</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"Hz\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Peak frequency: 7.82 Hz</span></span>
+<span><span class="co">#&gt; Peak frequency: 7.81 Hz</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Z-score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">z</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Z-score: -1.46</span></span>
+<span><span class="co">#&gt; Z-score: -1.47</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"P-value:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">pval</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; P-value: 0.928</span></span>
+<span><span class="co">#&gt; P-value: 0.929</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Significant:"</span>, <span class="va">result</span><span class="op">$</span><span class="va">significant</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Significant: FALSE</span></span></code></pre></div>
 </div>
@@ -146,6 +159,13 @@ convenient to define parameters once and reuse them. The
 <span></span>
 <span><span class="co"># Apply to signal</span></span>
 <span><span class="va">os</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score_config.html">oscillation_score_config</a></span><span class="op">(</span><span class="va">config</span>, <span class="va">sig</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">os</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span>,</span>
+<span>  <span class="va">os</span><span class="op">$</span><span class="va">oscore</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">os</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span>,</span>
+<span>  <span class="va">os</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&gt;=</span> <span class="va">config</span><span class="op">$</span><span class="va">flim</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>  <span class="va">os</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&lt;=</span> <span class="va">config</span><span class="op">$</span><span class="va">flim</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">os</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Oscillation score: 43.858</span></span>
@@ -166,13 +186,18 @@ convenient to define parameters once and reuse them. The
 <span><span class="va">sur</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score_surrogates_config.html">oscillation_score_surrogates_config</a></span><span class="op">(</span><span class="va">config_sur</span>, <span class="va">sig</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Compute statistics from surrogate distribution</span></span>
-<span><span class="va">z</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">os</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span></span>
-<span>     <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">)</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">valid_sur</span> <span class="op">&lt;-</span> <span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">)</span> <span class="op">&amp;</span> <span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">]</span></span>
+<span><span class="va">z</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">os</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span> <span class="op">-</span> <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">valid_sur</span><span class="op">)</span><span class="op">)</span><span class="op">)</span> <span class="op">/</span> <span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">valid_sur</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">valid_sur</span><span class="op">)</span> <span class="op">&gt;=</span> <span class="fl">150</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">z</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Surrogate mean:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Surrogate mean: 4.293</span></span>
+<span><span class="co">#&gt; Surrogate mean: 4.292</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Surrogate SD:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Surrogate SD: 3.128</span></span>
+<span><span class="co">#&gt; Surrogate SD: 3.125</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Log-Z score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">z</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Log-Z score: 3.13</span></span></code></pre></div>
 </div>
@@ -196,24 +221,34 @@ convenient to define parameters once and reuse them. The
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Apply same config to all subjects</span></span>
-<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="va">subjects</span>, <span class="kw">function</span><span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="fu"><a href="../reference/oscillation_score_z.html">oscillation_score_z</a></span><span class="op">(</span><span class="va">s</span>, fs <span class="op">=</span> <span class="fl">1000</span>, flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">20</span><span class="op">)</span>, nrep <span class="op">=</span> <span class="fl">100</span>, tidy <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
+<span><span class="va">results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_along</a></span><span class="op">(</span><span class="va">subjects</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">i</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score_z.html">oscillation_score_z</a></span><span class="op">(</span><span class="va">subjects</span><span class="op">[[</span><span class="va">i</span><span class="op">]</span><span class="op">]</span>, fs <span class="op">=</span> <span class="fl">1000</span>, flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">20</span><span class="op">)</span>, nrep <span class="op">=</span> <span class="fl">100</span><span class="op">)</span></span>
+<span>  <span class="va">tidy_out</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscore_tidy.html">oscore_tidy</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span>  <span class="va">tidy_out</span><span class="op">$</span><span class="va">subject</span> <span class="op">&lt;-</span> <span class="va">i</span></span>
+<span>  <span class="va">tidy_out</span><span class="op">[</span><span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject"</span>, <span class="st">"oscore"</span>, <span class="st">"fosc"</span>, <span class="st">"z"</span>, <span class="st">"significant"</span><span class="op">)</span><span class="op">]</span></span>
 <span><span class="op">}</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># Combine results</span></span>
 <span><span class="va">batch_results</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="va">results</span><span class="op">)</span></span>
-<span><span class="va">batch_results</span><span class="op">$</span><span class="va">subject</span> <span class="op">&lt;-</span> <span class="fl">1</span><span class="op">:</span><span class="va">n_subjects</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">batch_results</span><span class="op">)</span> <span class="op">==</span> <span class="va">n_subjects</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject"</span>, <span class="st">"oscore"</span>, <span class="st">"fosc"</span>, <span class="st">"z"</span>, <span class="st">"significant"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">batch_results</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">batch_results</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">batch_results</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">batch_results</span><span class="op">$</span><span class="va">z</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">batch_results</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"subject"</span>, <span class="st">"oscore"</span>, <span class="st">"fosc"</span>, <span class="st">"z"</span>, <span class="st">"significant"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   subject   oscore     fosc        z significant</span></span>
-<span><span class="co">#&gt; 1       1 44.81143 9.775171 4.058299        TRUE</span></span>
-<span><span class="co">#&gt; 2       2 48.91388 9.775171 4.222812        TRUE</span></span>
-<span><span class="co">#&gt; 3       3 40.35858 9.775171 3.303521        TRUE</span></span>
-<span><span class="co">#&gt; 4       4 26.09299 9.775171 2.600084        TRUE</span></span>
-<span><span class="co">#&gt; 5       5 26.60936 9.775171 2.669158        TRUE</span></span></code></pre></div>
+<span><span class="co">#&gt; 1       1 44.81143 9.765625 4.082184        TRUE</span></span>
+<span><span class="co">#&gt; 2       2 48.91388 9.765625 4.250712        TRUE</span></span>
+<span><span class="co">#&gt; 3       3 40.35858 9.765625 3.295853        TRUE</span></span>
+<span><span class="co">#&gt; 4       4 26.09299 9.765625 2.609394        TRUE</span></span>
+<span><span class="co">#&gt; 5       5 26.60936 9.765625 2.670983        TRUE</span></span></code></pre></div>
 <div class="figure">
-<img src="workflow-wrappers_files/figure-html/plot-batch-1.png" class="r-plt" alt="Oscillation scores decrease as jitter increases (subjects 1-5). Dashed line shows z = 1.65 significance threshold." width="576"><p class="caption">
-Oscillation scores decrease as jitter increases (subjects 1-5). Dashed
-line shows z = 1.65 significance threshold.
+<img src="workflow-wrappers_files/figure-html/plot-batch-1.png" class="r-plt" alt="Oscillation scores across subjects with significant results highlighted in blue." width="576"><p class="caption">
+Oscillation scores across subjects with significant results highlighted
+in blue.
 </p>
 </div>
 </div>
@@ -240,19 +275,28 @@ at specific event times (e.g., button presses, stimulus onsets).
 <span>  fosc <span class="op">=</span> <span class="fl">10</span>,       <span class="co"># Center frequency</span></span>
 <span>  bandwidth <span class="op">=</span> <span class="fl">1</span>    <span class="co"># +/- 1 Hz band</span></span>
 <span><span class="op">)</span></span>
+<span><span class="va">ray</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/circ_rayleigh.html">circ_rayleigh</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">events</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phases</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="va">pi</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phases</span> <span class="op">&lt;=</span> <span class="va">pi</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">ray</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span>,</span>
+<span>  <span class="va">ray</span><span class="op">$</span><span class="va">pval</span> <span class="op">&gt;=</span> <span class="fl">0</span>,</span>
+<span>  <span class="va">ray</span><span class="op">$</span><span class="va">pval</span> <span class="op">&lt;=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Phases at events (radians):\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Phases at events (radians):</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">phases</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] -0.01  0.00  0.00 -0.01 -0.01 -0.01  0.02  0.13  1.52</span></span>
+<span><span class="co">#&gt; [1] 0.06 0.07 0.06 0.06 0.05 0.05 0.07 0.18 1.52</span></span>
 <span></span>
 <span><span class="co"># Check phase consistency</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"\nMean resultant length:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/circ_r.html">circ_r</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; Mean resultant length: 0.902</span></span>
-<span><span class="va">ray</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/circ_rayleigh.html">circ_rayleigh</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Mean resultant length: 0.908</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Rayleigh p-value:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">ray</span><span class="op">$</span><span class="va">pval</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rayleigh p-value: 2.93e-05</span></span></code></pre></div>
+<span><span class="co">#&gt; Rayleigh p-value: 1.46e-05</span></span></code></pre></div>
 <div class="figure">
 <img src="workflow-wrappers_files/figure-html/plot-event-phases-1.png" class="r-plt" alt="Phase distribution at event times. Clustering indicates phase-locked behavioral responses." width="576"><p class="caption">
 Phase distribution at event times. Clustering indicates phase-locked
@@ -283,36 +327,45 @@ data.frames, making it easy to combine results across analyses or use
 with ggplot2/dplyr. ### oscore_tidy: Oscillation Score Summaries</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Single result</span></span>
-<span><span class="fu"><a href="../reference/oscore_tidy.html">oscore_tidy</a></span><span class="op">(</span><span class="va">os</span><span class="op">)</span></span>
+<span><span class="va">os_tidy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscore_tidy.html">oscore_tidy</a></span><span class="op">(</span><span class="va">os</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"oscore"</span>, <span class="st">"fosc"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">os_tidy</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">os_tidy</span></span>
 <span><span class="co">#&gt;     oscore     fosc     fmin     fmax</span></span>
-<span><span class="co">#&gt; 1 43.85796 10.13431 1.681614 10.65022</span></span>
+<span><span class="co">#&gt; 1 43.85796 10.13184 1.681614 10.65022</span></span>
 <span></span>
 <span><span class="co"># Can also handle oscillation_score_z output</span></span>
 <span><span class="va">z_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score_z.html">oscillation_score_z</a></span><span class="op">(</span><span class="va">sig</span>, fs <span class="op">=</span> <span class="fl">1000</span>, flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">20</span><span class="op">)</span>, nrep <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/oscore_tidy.html">oscore_tidy</a></span><span class="op">(</span><span class="va">z_result</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    oscore     fosc fmin     fmax        z      pval significant</span></span>
-<span><span class="co">#&gt; 1 4.90813 7.331378    5 10.50972 0.334394 0.3690411       FALSE</span></span></code></pre></div>
+<span><span class="va">z_tidy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscore_tidy.html">oscore_tidy</a></span><span class="op">(</span><span class="va">z_result</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"oscore"</span>, <span class="st">"fosc"</span>, <span class="st">"z"</span>, <span class="st">"pval"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">z_tidy</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">z_tidy</span></span>
+<span><span class="co">#&gt;    oscore     fosc fmin     fmax         z      pval significant</span></span>
+<span><span class="co">#&gt; 1 4.90813 7.324219    5 10.50972 0.3146127 0.3765279       FALSE</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="oscore_spectrum-extract-spectrum-data">oscore_spectrum: Extract Spectrum Data<a class="anchor" aria-label="anchor" href="#oscore_spectrum-extract-spectrum-data"></a>
 </h3>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get spectrum as a data.frame for plotting</span></span>
 <span><span class="va">spec_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscore_spectrum.html">oscore_spectrum</a></span><span class="op">(</span><span class="va">os</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"freq"</span>, <span class="st">"power"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">spec_df</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">spec_df</span><span class="op">$</span><span class="va">freq</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">spec_df</span><span class="op">$</span><span class="va">power</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">spec_df</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       freq        power</span></span>
-<span><span class="co">#&gt; 1 1.709402 1.338058e-04</span></span>
-<span><span class="co">#&gt; 2 1.831502 1.166433e-04</span></span>
-<span><span class="co">#&gt; 3 1.953602 9.469540e-05</span></span>
-<span><span class="co">#&gt; 4 2.075702 8.186402e-05</span></span>
-<span><span class="co">#&gt; 5 2.197802 7.682177e-05</span></span>
-<span><span class="co">#&gt; 6 2.319902 6.915301e-05</span></span>
+<span><span class="co">#&gt; 1 1.708984 1.338058e-04</span></span>
+<span><span class="co">#&gt; 2 1.831055 1.166433e-04</span></span>
+<span><span class="co">#&gt; 3 1.953125 9.469540e-05</span></span>
+<span><span class="co">#&gt; 4 2.075195 8.186402e-05</span></span>
+<span><span class="co">#&gt; 5 2.197266 7.682177e-05</span></span>
+<span><span class="co">#&gt; 6 2.319336 6.915301e-05</span></span>
 <span></span>
-<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://ggplot2.tidyverse.org" class="external-link">ggplot2</a></span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">spec_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">freq</span>, y <span class="op">=</span> <span class="va">power</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#1B75BB"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">os</span><span class="op">$</span><span class="va">fosc</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Frequency (Hz)"</span>, y <span class="op">=</span> <span class="st">"Power"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">spec_df</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">freq</span>, y <span class="op">=</span> <span class="va">power</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#1B75BB"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_abline.html" class="external-link">geom_vline</a></span><span class="op">(</span>xintercept <span class="op">=</span> <span class="va">os</span><span class="op">$</span><span class="va">fosc</span>, linetype <span class="op">=</span> <span class="st">"dashed"</span>, color <span class="op">=</span> <span class="st">"red"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Frequency (Hz)"</span>, y <span class="op">=</span> <span class="st">"Power"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-wrappers_files/figure-html/tidy-spectrum-1.png" class="r-plt" alt="" width="576"></p>
 </div>
 <div class="section level3">
@@ -344,6 +397,7 @@ format:</p>
 <span></span>
 <span><span class="co"># Convert to tidy summary</span></span>
 <span><span class="va">cluster_summary</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clusters_tidy.html">clusters_tidy</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cluster"</span>, <span class="st">"n_pixels"</span>, <span class="st">"freq_min"</span>, <span class="st">"time_min"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">cluster_summary</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/print.html" class="external-link">print</a></span><span class="op">(</span><span class="va">cluster_summary</span><span class="op">[</span>, <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"cluster"</span>, <span class="st">"n_pixels"</span>, <span class="st">"freq_min"</span>, <span class="st">"freq_max"</span>,</span>
 <span>                          <span class="st">"time_min"</span>, <span class="st">"time_max"</span>, <span class="st">"sumZscore"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   cluster n_pixels freq_min freq_max  time_min  time_max sumZscore</span></span>
@@ -356,6 +410,14 @@ format:</p>
 <div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Get all pixels from detected clusters</span></span>
 <span><span class="va">pixel_df</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/clusters_pixels.html">clusters_pixels</a></span><span class="op">(</span><span class="va">clusters</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">pixel_df</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"time"</span>, <span class="st">"freq"</span>, <span class="st">"Zscore"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">pixel_df</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">pixel_df</span><span class="op">$</span><span class="va">time</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">pixel_df</span><span class="op">$</span><span class="va">freq</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">pixel_df</span><span class="op">$</span><span class="va">Zscore</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">pixel_df</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   cluster      time      freq   Zscore pAdj</span></span>
 <span><span class="co">#&gt; 1       1 0.1103448  9.368421 2.899204   NA</span></span>
@@ -365,11 +427,11 @@ format:</p>
 <span><span class="co">#&gt; 5       1 0.1448276 12.315789 3.129383   NA</span></span>
 <span><span class="co">#&gt; 6       1 0.1793103  9.368421 3.600278   NA</span></span>
 <span></span>
-<span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pixel_df</span>, <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">freq</span>, fill <span class="op">=</span> <span class="va">Zscore</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>low <span class="op">=</span> <span class="st">"blue"</span>, mid <span class="op">=</span> <span class="st">"white"</span>, high <span class="op">=</span> <span class="st">"red"</span>, midpoint <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time (s)"</span>, y <span class="op">=</span> <span class="st">"Frequency (Hz)"</span>, fill <span class="op">=</span> <span class="st">"Z-score"</span><span class="op">)</span> <span class="op">+</span></span>
-<span>  <span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">pixel_df</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">time</span>, y <span class="op">=</span> <span class="va">freq</span>, fill <span class="op">=</span> <span class="va">Zscore</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_tile.html" class="external-link">geom_tile</a></span><span class="op">(</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_gradient.html" class="external-link">scale_fill_gradient2</a></span><span class="op">(</span>low <span class="op">=</span> <span class="st">"blue"</span>, mid <span class="op">=</span> <span class="st">"white"</span>, high <span class="op">=</span> <span class="st">"red"</span>, midpoint <span class="op">=</span> <span class="fl">0</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/labs.html" class="external-link">labs</a></span><span class="op">(</span>x <span class="op">=</span> <span class="st">"Time (s)"</span>, y <span class="op">=</span> <span class="st">"Frequency (Hz)"</span>, fill <span class="op">=</span> <span class="st">"Z-score"</span><span class="op">)</span> <span class="op">+</span></span>
+<span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggtheme.html" class="external-link">theme_minimal</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p><img src="workflow-wrappers_files/figure-html/tidy-pixels-1.png" class="r-plt" alt="" width="576"></p>
 </div>
 </div>
@@ -411,6 +473,17 @@ format:</p>
 <span>  alpha <span class="op">=</span> <span class="va">config</span><span class="op">$</span><span class="va">alpha</span>,</span>
 <span>  taper <span class="op">=</span> <span class="va">config</span><span class="op">$</span><span class="va">taper</span></span>
 <span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">z_result</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span>,</span>
+<span>  <span class="va">z_result</span><span class="op">$</span><span class="va">oscore</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">z_result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span>,</span>
+<span>  <span class="va">z_result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&gt;=</span> <span class="va">config</span><span class="op">$</span><span class="va">flim</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>,</span>
+<span>  <span class="va">z_result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&lt;=</span> <span class="va">config</span><span class="op">$</span><span class="va">flim</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">z_result</span><span class="op">$</span><span class="va">z</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">z_result</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span>,</span>
+<span>  <span class="va">z_result</span><span class="op">$</span><span class="va">pval</span> <span class="op">&gt;=</span> <span class="fl">0</span>,</span>
+<span>  <span class="va">z_result</span><span class="op">$</span><span class="va">pval</span> <span class="op">&lt;=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 3. Extract phases at response times</span></span>
 <span><span class="va">phases</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/phase_at_events.html">phase_at_events</a></span><span class="op">(</span></span>
@@ -419,9 +492,16 @@ format:</p>
 <span>  fosc <span class="op">=</span> <span class="va">z_result</span><span class="op">$</span><span class="va">fosc</span>,</span>
 <span>  bandwidth <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">event_times</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phases</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="va">pi</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phases</span> <span class="op">&lt;=</span> <span class="va">pi</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 4. Test phase consistency</span></span>
 <span><span class="va">ray</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/circ_rayleigh.html">circ_rayleigh</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">ray</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span>, <span class="va">ray</span><span class="op">$</span><span class="va">pval</span> <span class="op">&gt;=</span> <span class="fl">0</span>, <span class="va">ray</span><span class="op">$</span><span class="va">pval</span> <span class="op">&lt;=</span> <span class="fl">1</span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 5. Report results</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"=== Oscillation Analysis Results ===\n\n"</span><span class="op">)</span></span>
@@ -432,7 +512,7 @@ format:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  O-score: %.3f\n"</span>, <span class="va">z_result</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   O-score: 50.978</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Peak frequency: %.2f Hz\n"</span>, <span class="va">z_result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Peak frequency: 7.82 Hz</span></span>
+<span><span class="co">#&gt;   Peak frequency: 7.81 Hz</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Z-score: %.2f\n"</span>, <span class="va">z_result</span><span class="op">$</span><span class="va">z</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Z-score: 3.44</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  P-value: %.4f\n"</span>, <span class="va">z_result</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span><span class="op">)</span></span>
@@ -443,9 +523,9 @@ format:</p>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Phase Consistency:\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Phase Consistency:</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Mean phase: %.2f rad\n"</span>, <span class="fu"><a href="../reference/circ_mean.html">circ_mean</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Mean phase: 0.07 rad</span></span>
+<span><span class="co">#&gt;   Mean phase: 0.12 rad</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Resultant length: %.3f\n"</span>, <span class="fu"><a href="../reference/circ_r.html">circ_r</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="co">#&gt;   Resultant length: 0.904</span></span>
+<span><span class="co">#&gt;   Resultant length: 0.906</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sprintf.html" class="external-link">sprintf</a></span><span class="op">(</span><span class="st">"  Rayleigh p-value: %.4f\n"</span>, <span class="va">ray</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   Rayleigh p-value: 0.0000</span></span></code></pre></div>
 <div class="figure">
@@ -477,7 +557,7 @@ MATLAB toolbox. Please cite:</p>
 <blockquote>
 <p>Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 behavioural and hippocampal responses in humans specifically during
-memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-25959-7" class="external-link uri">https://doi.org/10.1038/s41467-021-25959-7</a></p>
+memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-27323-3" class="external-link uri">https://doi.org/10.1038/s41467-021-27323-3</a></p>
 </blockquote>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

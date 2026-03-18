@@ -11,6 +11,8 @@ spectral_peak(
   fs,
   flim = NULL,
   fcor = FALSE,
+  pad_to = NULL,
+  spectrum = c("amplitude", "raw_power"),
   taper = c("none", "hann", "hanning")
 )
 ```
@@ -32,6 +34,17 @@ spectral_peak(
 - fcor:
 
   logical; apply crude 1/f correction.
+
+- pad_to:
+
+  optional integer length for zero-padding before the FFT. When `NULL`,
+  no zero-padding is applied.
+
+- spectrum:
+
+  spectrum scaling. `"amplitude"` returns the current normalized
+  single-sided amplitude spectrum. `"raw_power"` returns raw FFT power
+  `|FFT(x)|^2` on the retained positive-frequency bins.
 
 - taper:
 

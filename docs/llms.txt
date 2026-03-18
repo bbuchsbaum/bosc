@@ -58,28 +58,28 @@ workflow ergonomics:
 
 - `spectral_peak(fcor = TRUE)` uses an explicit, stable log-log
   fit/predict path in R for improved numerical stability.
-- [`oscillation_score()`](reference/oscillation_score.md) supports
-  explicit `signal_mode`: `event` uses event-rate-based effective bands;
-  `continuous` uses variance-aware checks and Nyquist-limited upper
-  bounds.
-- [`autocorr_centered()`](reference/autocorr_centered.md) now supports
-  both direct and FFT-based linear autocorrelation; `method = "auto"`
-  selects a fast FFT path for longer vectors while preserving centered
-  `xcorr` semantics.
-- [`oscillation_score_surrogates()`](reference/oscillation_score_surrogates.md)
+- [`oscillation_score()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md)
+  supports explicit `signal_mode`: `event` uses event-rate-based
+  effective bands; `continuous` uses variance-aware checks and
+  Nyquist-limited upper bounds.
+- [`autocorr_centered()`](https://bbuchsbaum.github.io/bosc/reference/autocorr_centered.md)
+  now supports both direct and FFT-based linear autocorrelation;
+  `method = "auto"` selects a fast FFT path for longer vectors while
+  preserving centered `xcorr` semantics.
+- [`oscillation_score_surrogates()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_surrogates.md)
   supports explicit `surrogate_method`, including phase-randomized
   surrogates for continuous signals (amplitude-spectrum-preserving
   nulls), in addition to event shuffle/trend.
-- [`oscillation_score_z()`](reference/oscillation_score_z.md) can return
-  bootstrap confidence intervals for the log-Z statistic (`z_ci`) and
-  exposes CI controls (`ci_nboot`, `ci_level`).
-- [`extract_clusters()`](reference/extract_clusters.md) uses a direct
-  8-connectivity flood-fill implementation for consistent
+- [`oscillation_score_z()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_z.md)
+  can return bootstrap confidence intervals for the log-Z statistic
+  (`z_ci`) and exposes CI controls (`ci_nboot`, `ci_level`).
+- [`extract_clusters()`](https://bbuchsbaum.github.io/bosc/reference/extract_clusters.md)
+  uses a direct 8-connectivity flood-fill implementation for consistent
   connected-component assignments.
-- [`circ_rayleigh()`](reference/circ_rayleigh.md) uses weighted sample
-  size (`sum(w)`) in weighted mode.
-- [`paired_tscore()`](reference/paired_tscore.md) uses per-slice
-  effective sample sizes under missing values.
+- [`circ_rayleigh()`](https://bbuchsbaum.github.io/bosc/reference/circ_rayleigh.md)
+  uses weighted sample size (`sum(w)`) in weighted mode.
+- [`paired_tscore()`](https://bbuchsbaum.github.io/bosc/reference/paired_tscore.md)
+  uses per-slice effective sample sizes under missing values.
 - `detect_clusters(qval=...)` computes adjusted p-values, and optional
   `filter_by_q=TRUE` can filter clusters by adjusted significance.
 
@@ -98,7 +98,15 @@ Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V.,
 Chelvarajah, R., Staresina, B., Hanslmayr, S., & Wimber, M. (2021).
 Theta rhythmicity governs the timing of behavioural and hippocampal
 responses in humans specifically during memory-dependent tasks. *Nature
-Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-25959-7>
+Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-27323-3>
+
+Dense-sampling trial-to-spectrum workflows in the grouped APIs and
+examples are also motivated by:
+
+**Biba, T. M.**, Decker, A., Herrmann, B., Fukuda, K., Katz, C. N.,
+Valiante, T. A., & Duncan, K. (2026). Episodic memory encoding
+fluctuates at a theta rhythm of 3-10 Hz. *Nature Human Behaviour*.
+<https://doi.org/10.1038/s41562-026-02416-5>
 
 - **Original MATLAB code**:
   <https://github.com/marijeterwal/behavioral-oscillations>
@@ -116,100 +124,136 @@ Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-25959-7>
 This package uses the albersdown theme. Existing vignette theme hooks
 are replaced so `albers.css` and local `albers.js` render consistently
 on CRAN and GitHub Pages. The palette family is provided via
-`params$family` (default ‘red’). The pkgdown site uses
+`params$family` (default ‘lapis’). The pkgdown site uses
 `template: { package: albersdown }`.
 
 # Package index
 
 ## Signal and O-score
 
-- [`make_continuous_trace()`](make_continuous_trace.md) : Make a
-  continuous trace from event times
-- [`autocorr_centered()`](autocorr_centered.md) : Centered
-  autocorrelation (unnormalized)
-- [`spectral_peak()`](spectral_peak.md) : Find spectral peak within
-  bounds
-- [`oscillation_score()`](oscillation_score.md) : Oscillation Score for
-  binary or continuous data
-- [`oscillation_score_surrogates()`](oscillation_score_surrogates.md) :
-  Surrogate oscillation scores (shuffle or trend-preserving)
+- [`make_continuous_trace()`](https://bbuchsbaum.github.io/bosc/reference/make_continuous_trace.md)
+  : Make a continuous trace from event times
+- [`autocorr_centered()`](https://bbuchsbaum.github.io/bosc/reference/autocorr_centered.md)
+  : Centered autocorrelation (unnormalized)
+- [`spectral_peak()`](https://bbuchsbaum.github.io/bosc/reference/spectral_peak.md)
+  : Find spectral peak within bounds
+- [`oscillation_score()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md)
+  : Oscillation Score for binary or continuous data
+- [`oscillation_score_surrogates()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_surrogates.md)
+  : Surrogate oscillation scores (shuffle or trend-preserving)
 
 ## Workflow Wrappers
 
-- [`oscillation_score_z()`](oscillation_score_z.md)
-  [`oscore_z()`](oscillation_score_z.md) : Oscillation score with
-  surrogate log-Z
-- [`oscillation_score_config()`](oscillation_score_config.md)
-  [`oscillation_score_cfg()`](oscillation_score_config.md) :
-  Configuration-list wrapper for oscillation scores
-- [`oscillation_score_surrogates_config()`](oscillation_score_surrogates_config.md)
-  [`oscillation_score_stats()`](oscillation_score_surrogates_config.md)
+- [`oscillation_score_z()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_z.md)
+  [`oscore_z()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_z.md)
+  : Oscillation score with surrogate log-Z
+- [`oscillation_score_config()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_config.md)
+  [`oscillation_score_cfg()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_config.md)
+  : Configuration-list wrapper for oscillation scores
+- [`oscillation_score_surrogates_config()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_surrogates_config.md)
+  [`oscillation_score_stats()`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score_surrogates_config.md)
   : Configuration-list wrapper for surrogate O-scores
-- [`phase_at_events()`](phase_at_events.md) : Extract narrowband phase
-  at event times
+- [`phase_at_events()`](https://bbuchsbaum.github.io/bosc/reference/phase_at_events.md)
+  : Extract narrowband phase at event times
 
 ## Tidy Helpers
 
-- [`oscore_tidy()`](oscore_tidy.md) : Tidy summary of oscillation score
-  results
-- [`oscore_spectrum()`](oscore_spectrum.md) : Tidy spectrum from
-  oscillation score or spectral peak output
-- [`clusters_tidy()`](clusters_tidy.md) : Tidy summary of detected
-  clusters
-- [`clusters_pixels()`](clusters_pixels.md) : Tidy per-pixel cluster
-  data
+- [`oscore_tidy()`](https://bbuchsbaum.github.io/bosc/reference/oscore_tidy.md)
+  : Tidy summary of oscillation score results
+- [`oscore_spectrum()`](https://bbuchsbaum.github.io/bosc/reference/oscore_spectrum.md)
+  : Tidy spectrum from oscillation score or spectral peak output
+- [`clusters_tidy()`](https://bbuchsbaum.github.io/bosc/reference/clusters_tidy.md)
+  : Tidy summary of detected clusters
+- [`clusters_pixels()`](https://bbuchsbaum.github.io/bosc/reference/clusters_pixels.md)
+  : Tidy per-pixel cluster data
 
 ## Phase and Hilbert
 
-- [`narrowband_hilbert()`](narrowband_hilbert.md) : Narrowband filtering
-  and Hilbert transform
+- [`narrowband_hilbert()`](https://bbuchsbaum.github.io/bosc/reference/narrowband_hilbert.md)
+  : Narrowband filtering and Hilbert transform
 
 ## Circular Statistics
 
-- [`circ_mean()`](circ_mean.md) : Circular Mean Direction
-- [`circ_r()`](circ_r.md) : Mean Resultant Vector Length
-- [`circ_rayleigh()`](circ_rayleigh.md) : Rayleigh Test for
-  Non-uniformity
-- [`circ_vtest()`](circ_vtest.md) : V-test for Non-uniformity with
-  Specified Mean Direction
+- [`circ_mean()`](https://bbuchsbaum.github.io/bosc/reference/circ_mean.md)
+  : Circular Mean Direction
+- [`circ_r()`](https://bbuchsbaum.github.io/bosc/reference/circ_r.md) :
+  Mean Resultant Vector Length
+- [`circ_rayleigh()`](https://bbuchsbaum.github.io/bosc/reference/circ_rayleigh.md)
+  : Rayleigh Test for Non-uniformity
+- [`circ_vtest()`](https://bbuchsbaum.github.io/bosc/reference/circ_vtest.md)
+  : V-test for Non-uniformity with Specified Mean Direction
 
 ## PPC and Statistical Testing
 
-- [`pairwise_phase_consistency()`](pairwise_phase_consistency.md) :
-  Pairwise Phase Consistency (1D)
-- [`u_score_matrix()`](u_score_matrix.md) : Mann-Whitney U Z-score per
-  element vs. reference repeats
-- [`paired_tscore()`](paired_tscore.md) : Paired t-score along a
-  dimension
-- [`nonparam_pval()`](nonparam_pval.md) : Non-parametric p-values vs
-  reference
-- [`fdr_bh()`](fdr_bh.md) : FDR Correction (Benjamini-Hochberg)
+- [`pairwise_phase_consistency()`](https://bbuchsbaum.github.io/bosc/reference/pairwise_phase_consistency.md)
+  : Pairwise Phase Consistency (1D)
+- [`u_score_matrix()`](https://bbuchsbaum.github.io/bosc/reference/u_score_matrix.md)
+  : Mann-Whitney U Z-score per element vs. reference repeats
+- [`paired_tscore()`](https://bbuchsbaum.github.io/bosc/reference/paired_tscore.md)
+  : Paired t-score along a dimension
+- [`nonparam_pval()`](https://bbuchsbaum.github.io/bosc/reference/nonparam_pval.md)
+  : Non-parametric p-values vs reference
+- [`fdr_bh()`](https://bbuchsbaum.github.io/bosc/reference/fdr_bh.md) :
+  FDR Correction (Benjamini-Hochberg)
 
 ## Clustering
 
-- [`extract_clusters()`](extract_clusters.md) : Connected component
-  labeling for thresholded data
-- [`detect_clusters()`](detect_clusters.md) : Detect clusters with
-  optional splitting
+- [`extract_clusters()`](https://bbuchsbaum.github.io/bosc/reference/extract_clusters.md)
+  : Connected component labeling for thresholded data
+- [`detect_clusters()`](https://bbuchsbaum.github.io/bosc/reference/detect_clusters.md)
+  : Detect clusters with optional splitting
+
+## Grouped Data Preparation
+
+- [`align_time_bins()`](https://bbuchsbaum.github.io/bosc/reference/align_time_bins.md)
+  : Align observed times to a target bin grid
+- [`residualize_trials()`](https://bbuchsbaum.github.io/bosc/reference/residualize_trials.md)
+  : Residualize trial-wise responses against nuisance terms
+- [`aggregate_by_bin()`](https://bbuchsbaum.github.io/bosc/reference/aggregate_by_bin.md)
+  : Aggregate trial values into regularized bins
+
+## Grouped Analysis
+
+- [`group_spectrum()`](https://bbuchsbaum.github.io/bosc/reference/group_spectrum.md)
+  : Grouped spectrum for binned subject-level series
+- [`group_spectrum_test()`](https://bbuchsbaum.github.io/bosc/reference/group_spectrum_test.md)
+  : Grouped spectrum with resampled null testing
+- [`group_tfr()`](https://bbuchsbaum.github.io/bosc/reference/group_tfr.md)
+  : Grouped time-frequency map via narrowband Hilbert decomposition
+- [`group_tfr_test()`](https://bbuchsbaum.github.io/bosc/reference/group_tfr_test.md)
+  : Grouped time-frequency map with resampled null testing
+- [`group_phase_consistency()`](https://bbuchsbaum.github.io/bosc/reference/group_phase_consistency.md)
+  : Grouped phase consistency over bins
+- [`group_phase_difference()`](https://bbuchsbaum.github.io/bosc/reference/group_phase_difference.md)
+  : Grouped phase difference over bins
 
 ## Plotting
 
-- [`plot_spectrum()`](plot_spectrum.md) : Plot spectrum
-- [`plot_phase_hist()`](plot_phase_hist.md) : Plot phase histogram
-- [`plot_simplebox()`](plot_simplebox.md) : Simple Box Plot by Group
-- [`plot_cluster_heatmap()`](plot_cluster_heatmap.md) : Plot Cluster
-  Heatmap
+- [`plot_spectrum()`](https://bbuchsbaum.github.io/bosc/reference/plot_spectrum.md)
+  : Plot spectrum
+- [`plot_phase_hist()`](https://bbuchsbaum.github.io/bosc/reference/plot_phase_hist.md)
+  : Plot phase histogram
+- [`plot_simplebox()`](https://bbuchsbaum.github.io/bosc/reference/plot_simplebox.md)
+  : Simple Box Plot by Group
+- [`plot_cluster_heatmap()`](https://bbuchsbaum.github.io/bosc/reference/plot_cluster_heatmap.md)
+  : Plot Cluster Heatmap
 
 ## I/O
 
-- [`read_mat()`](read_mat.md) : Load MATLAB .mat files (wrapper)
-- [`open_hdf5()`](open_hdf5.md) : Load HDF5 files (wrapper)
+- [`read_mat()`](https://bbuchsbaum.github.io/bosc/reference/read_mat.md)
+  : Load MATLAB .mat files (wrapper)
+- [`open_hdf5()`](https://bbuchsbaum.github.io/bosc/reference/open_hdf5.md)
+  : Load HDF5 files (wrapper)
 
 # Articles
 
 ### All vignettes
 
-- [Get started with bosc](bosc.md):
-- [Oscillation Score Analysis](oscillation-score.md):
-- [PPC Analysis and Cluster Detection](ppc-clustering.md):
-- [Running Batch Analyses and Extracting Phase](workflow-wrappers.md):
+- [Get started with
+  bosc](https://bbuchsbaum.github.io/bosc/articles/bosc.md):
+- [Oscillation Score
+  Analysis](https://bbuchsbaum.github.io/bosc/articles/oscillation-score.md):
+- [PPC Analysis and Cluster
+  Detection](https://bbuchsbaum.github.io/bosc/articles/ppc-clustering.md):
+- [Running Batch Analyses and Extracting
+  Phase](https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.md):

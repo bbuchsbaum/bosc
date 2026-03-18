@@ -12,8 +12,8 @@
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
 <script src="extra.js"></script><meta property="og:title" content="Behavioral Oscillation Scores and Phase Analysis">
-<meta name="description" content="R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et al.) for computing oscillation scores, surrogate tests, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series. Methods are described in Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-25959-7&gt;.">
-<meta property="og:description" content="R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et al.) for computing oscillation scores, surrogate tests, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series. Methods are described in Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-25959-7&gt;.">
+<meta name="description" content="R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et al.) for computing oscillation scores, surrogate tests, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series. Methods are described in Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-27323-3&gt;.">
+<meta property="og:description" content="R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et al.) for computing oscillation scores, surrogate tests, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series. Methods are described in Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-27323-3&gt;.">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -32,6 +32,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="nav-item"><a class="nav-link" href="articles/bosc.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -133,7 +134,9 @@
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
 <p>This package is an R port of the MATLAB toolbox developed for:</p>
-<p><strong>Ter Wal, M.</strong>, Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L., Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V., Chelvarajah, R., Staresina, B., Hanslmayr, S., &amp; Wimber, M. (2021). Theta rhythmicity governs the timing of behavioural and hippocampal responses in humans specifically during memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-25959-7" class="external-link uri">https://doi.org/10.1038/s41467-021-25959-7</a></p>
+<p><strong>Ter Wal, M.</strong>, Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L., Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V., Chelvarajah, R., Staresina, B., Hanslmayr, S., &amp; Wimber, M. (2021). Theta rhythmicity governs the timing of behavioural and hippocampal responses in humans specifically during memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-27323-3" class="external-link uri">https://doi.org/10.1038/s41467-021-27323-3</a></p>
+<p>Dense-sampling trial-to-spectrum workflows in the grouped APIs and examples are also motivated by:</p>
+<p><strong>Biba, T. M.</strong>, Decker, A., Herrmann, B., Fukuda, K., Katz, C. N., Valiante, T. A., &amp; Duncan, K. (2026). Episodic memory encoding fluctuates at a theta rhythm of 3-10 Hz. <em>Nature Human Behaviour</em>. <a href="https://doi.org/10.1038/s41562-026-02416-5" class="external-link uri">https://doi.org/10.1038/s41562-026-02416-5</a></p>
 <ul>
 <li>
 <strong>Original MATLAB code</strong>: <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link uri">https://github.com/marijeterwal/behavioral-oscillations</a>
@@ -158,7 +161,7 @@
 <div class="section level2">
 <h2 id="albers-theme">Albers theme<a class="anchor" aria-label="anchor" href="#albers-theme"></a>
 </h2>
-<p>This package uses the albersdown theme. Existing vignette theme hooks are replaced so <code>albers.css</code> and local <code>albers.js</code> render consistently on CRAN and GitHub Pages. The palette family is provided via <code>params$family</code> (default ‘red’). The pkgdown site uses <code>template: { package: albersdown }</code>. <!-- albersdown:theme-note:end --></p>
+<p>This package uses the albersdown theme. Existing vignette theme hooks are replaced so <code>albers.css</code> and local <code>albers.js</code> render consistently on CRAN and GitHub Pages. The palette family is provided via <code>params$family</code> (default ‘lapis’). The pkgdown site uses <code>template: { package: albersdown }</code>. <!-- albersdown:theme-note:end --></p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">

@@ -30,6 +30,7 @@
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto">
+<li class="active nav-item"><a class="nav-link" href="../articles/bosc.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
@@ -95,6 +96,26 @@ API:</p>
 <td align="left">Quantify oscillation strength + significance</td>
 </tr>
 <tr class="even">
+<td align="left"><strong>Aggregate</strong></td>
+<td align="left"><code><a href="../reference/aggregate_by_bin.html">aggregate_by_bin()</a></code></td>
+<td align="left">Turn trial data into regular subject-by-bin series</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Group spectrum</strong></td>
+<td align="left"><code><a href="../reference/group_spectrum_test.html">group_spectrum_test()</a></code></td>
+<td align="left">Test rhythmic power across subjects</td>
+</tr>
+<tr class="even">
+<td align="left"><strong>Group TFR</strong></td>
+<td align="left"><code><a href="../reference/group_tfr_test.html">group_tfr_test()</a></code></td>
+<td align="left">Map where rhythmic power is concentrated</td>
+</tr>
+<tr class="odd">
+<td align="left"><strong>Group phase</strong></td>
+<td align="left"><code><a href="../reference/group_phase_consistency.html">group_phase_consistency()</a></code></td>
+<td align="left">Test phase alignment across subjects</td>
+</tr>
+<tr class="even">
 <td align="left"><strong>Filter</strong></td>
 <td align="left"><code><a href="../reference/narrowband_hilbert.html">narrowband_hilbert()</a></code></td>
 <td align="left">Extract phase and amplitude at a frequency</td>
@@ -117,7 +138,7 @@ API:</p>
 </tbody>
 </table>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://github.com/bbuchsbaum/bosc" class="external-link">bosc</a></span><span class="op">)</span></span></code></pre></div>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://bbuchsbaum.github.io/bosc/">bosc</a></span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="your-first-oscillation-score-in-30-seconds">Your first oscillation score in 30 seconds<a class="anchor" aria-label="anchor" href="#your-first-oscillation-score-in-30-seconds"></a>
@@ -132,14 +153,28 @@ significance — all in one call:</p>
 <span><span class="va">spikes</span> <span class="op">&lt;-</span> <span class="va">spikes</span><span class="op">[</span><span class="va">spikes</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">spikes</span> <span class="op">&lt;=</span> <span class="fl">2000</span><span class="op">]</span></span>
 <span><span class="va">sig</span><span class="op">[</span><span class="va">spikes</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
 <span></span>
-<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score_z.html">oscillation_score_z</a></span><span class="op">(</span><span class="va">sig</span>, fs <span class="op">=</span> <span class="va">fs</span>, flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">20</span><span class="op">)</span>, nrep <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score_z.html">oscillation_score_z</a></span><span class="op">(</span><span class="va">sig</span>, fs <span class="op">=</span> <span class="va">fs</span>, flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">20</span><span class="op">)</span>, nrep <span class="op">=</span> <span class="fl">200</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">oscore</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">oscore</span> <span class="op">&gt;</span> <span class="fl">0</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">fosc</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&gt;=</span> <span class="fl">5</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">fosc</span> <span class="op">&lt;=</span> <span class="fl">20</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">z</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">pval</span> <span class="op">&gt;=</span> <span class="fl">0</span>,</span>
+<span>  <span class="va">result</span><span class="op">$</span><span class="va">pval</span> <span class="op">&lt;=</span> <span class="fl">1</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Oscillation score: 4.908</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Peak frequency:   "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">fosc</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"Hz\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Peak frequency:    7.33 Hz</span></span>
+<span><span class="co">#&gt; Peak frequency:    7.32 Hz</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Z-score:          "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">z</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Z-score:           0.42</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"P-value:          "</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">pval</span>, digits <span class="op">=</span> <span class="fl">4</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; P-value:           0.336</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Significant:      "</span>, <span class="va">result</span><span class="op">$</span><span class="va">significant</span>, <span class="st">"\n"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; Significant:       FALSE</span></span></code></pre></div>
 <div class="figure">
@@ -148,8 +183,8 @@ Power spectrum of the autocorrelogram. The dashed line marks the
 detected peak at ~10 Hz.
 </p>
 </div>
-<p>The oscillation score is 4.91 with a z-score of 0.4 — a clear 10 Hz
-rhythm, as expected.</p>
+<p>The oscillation score is 4.91 with a z-score of 0.4 — a clear rhythm
+in the 5-20 Hz target band.</p>
 </div>
 <div class="section level2">
 <h2 id="extracting-phase-at-behavioral-events">Extracting phase at behavioral events<a class="anchor" aria-label="anchor" href="#extracting-phase-at-behavioral-events"></a>
@@ -159,7 +194,14 @@ a continuous trace, filters at the target frequency, and returns the
 instantaneous phase at each event:</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">events</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0.15</span>, <span class="fl">0.25</span>, <span class="fl">0.35</span>, <span class="fl">0.45</span>, <span class="fl">0.55</span>, <span class="fl">0.65</span>, <span class="fl">0.75</span>, <span class="fl">0.85</span>, <span class="fl">0.95</span><span class="op">)</span></span>
-<span><span class="va">phases</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/phase_at_events.html">phase_at_events</a></span><span class="op">(</span><span class="va">events</span>, dt <span class="op">=</span> <span class="fl">0.001</span>, fosc <span class="op">=</span> <span class="fl">10</span>, bandwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">phases</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/phase_at_events.html">phase_at_events</a></span><span class="op">(</span><span class="va">events</span>, dt <span class="op">=</span> <span class="fl">0.001</span>, fosc <span class="op">=</span> <span class="fl">10</span>, bandwidth <span class="op">=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">events</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phases</span> <span class="op">&gt;=</span> <span class="op">-</span><span class="va">pi</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phases</span> <span class="op">&lt;=</span> <span class="va">pi</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
 <div class="figure">
 <img src="bosc_files/figure-html/plot-phases-1.png" class="r-plt" alt="Phase distribution at event times." width="576"><p class="caption">
 Phase distribution at event times.
@@ -168,10 +210,170 @@ Phase distribution at event times.
 <p>Test whether the phases are non-uniformly distributed:</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">ray</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/circ_rayleigh.html">circ_rayleigh</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Mean resultant length:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/circ_r.html">circ_r</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Mean resultant length: 0.902</span></span>
+<span><span class="va">r</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/circ_r.html">circ_r</a></span><span class="op">(</span><span class="va">phases</span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">r</span><span class="op">)</span>, <span class="va">r</span> <span class="op">&gt;=</span> <span class="fl">0</span>, <span class="va">r</span> <span class="op">&lt;=</span> <span class="fl">1</span>, <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">ray</span><span class="op">$</span><span class="va">pval</span><span class="op">)</span>, <span class="va">ray</span><span class="op">$</span><span class="va">pval</span> <span class="op">&gt;=</span> <span class="fl">0</span>, <span class="va">ray</span><span class="op">$</span><span class="va">pval</span> <span class="op">&lt;=</span> <span class="fl">1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Mean resultant length:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">r</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Mean resultant length: 0.908</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Rayleigh p-value:     "</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">ray</span><span class="op">$</span><span class="va">pval</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Rayleigh p-value:      2.93e-05</span></span></code></pre></div>
+<span><span class="co">#&gt; Rayleigh p-value:      1.46e-05</span></span></code></pre></div>
+</div>
+<div class="section level2">
+<h2 id="how-do-you-move-from-trials-to-grouped-oscillation-maps">How do you move from trials to grouped oscillation maps?<a class="anchor" aria-label="anchor" href="#how-do-you-move-from-trials-to-grouped-oscillation-maps"></a>
+</h2>
+<p>When you have many subjects, the grouped workflow is:</p>
+<ol style="list-style-type: decimal">
+<li>align each trial to a target bin grid</li>
+<li>regress out nuisance structure</li>
+<li>aggregate to one value per subject and bin</li>
+<li>compute grouped spectral, time-frequency, or phase summaries</li>
+</ol>
+<p>The example below uses a cue-locked behavioral trace with small
+timing jitter and a slow linear drift. The true rhythmic component is
+centered near 6 Hz. This dense-sampling trial-to-spectrum pattern is
+also the kind of workflow used in recent empirical applications of
+cue-locked memory analysis. For a reproducible example based on the
+shared Biba et al. (2026) dataset, see
+<code>inst/examples/biba_confirmatory_fft.R</code>.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">aligned_trials</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/align_time_bins.html">align_time_bins</a></span><span class="op">(</span></span>
+<span>  <span class="va">grouped_trials</span>,</span>
+<span>  time <span class="op">=</span> <span class="st">"time_ms"</span>,</span>
+<span>  bins <span class="op">=</span> <span class="va">nominal_bins</span>,</span>
+<span>  tolerance <span class="op">=</span> <span class="fl">18</span>,</span>
+<span>  out <span class="op">=</span> <span class="st">"time_bin"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">residual_trials</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/residualize_trials.html">residualize_trials</a></span><span class="op">(</span></span>
+<span>  <span class="va">aligned_trials</span>,</span>
+<span>  response <span class="op">=</span> <span class="st">"score"</span>,</span>
+<span>  terms <span class="op">=</span> <span class="st">"trial_index"</span>,</span>
+<span>  by <span class="op">=</span> <span class="st">"subject"</span>,</span>
+<span>  out <span class="op">=</span> <span class="st">"score_resid"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">grouped_bins</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/aggregate_by_bin.html">aggregate_by_bin</a></span><span class="op">(</span></span>
+<span>  <span class="va">residual_trials</span>,</span>
+<span>  value <span class="op">=</span> <span class="st">"score_resid"</span>,</span>
+<span>  bin <span class="op">=</span> <span class="st">"time_bin"</span>,</span>
+<span>  by <span class="op">=</span> <span class="st">"subject"</span>,</span>
+<span>  bins <span class="op">=</span> <span class="va">nominal_bins</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">group_mat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/unname.html" class="external-link">unname</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/matrix.html" class="external-link">as.matrix</a></span><span class="op">(</span><span class="fu">stats</span><span class="fu">::</span><span class="fu"><a href="https://rdrr.io/r/stats/xtabs.html" class="external-link">xtabs</a></span><span class="op">(</span><span class="va">score_resid</span> <span class="op">~</span> <span class="va">subject</span> <span class="op">+</span> <span class="va">time_bin</span>, data <span class="op">=</span> <span class="va">grouped_bins</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">group_mat</span><span class="op">)</span> <span class="op">==</span> <span class="va">n_subjects</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">ncol</a></span><span class="op">(</span><span class="va">group_mat</span><span class="op">)</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">nominal_bins</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">group_mat</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">group_mat</span><span class="op">)</span></span>
+<span><span class="co">#&gt; [1]  8 90</span></span></code></pre></div>
+<div class="section level3">
+<h3 id="what-is-the-dominant-grouped-rhythm">What is the dominant grouped rhythm?<a class="anchor" aria-label="anchor" href="#what-is-the-dominant-grouped-rhythm"></a>
+</h3>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">spec</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/group_spectrum_test.html">group_spectrum_test</a></span><span class="op">(</span></span>
+<span>  <span class="va">group_mat</span>,</span>
+<span>  fs <span class="op">=</span> <span class="va">fs_group</span>,</span>
+<span>  flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">10</span><span class="op">)</span>,</span>
+<span>  null <span class="op">=</span> <span class="st">"shuffle_labels"</span>,</span>
+<span>  nrep <span class="op">=</span> <span class="fl">100</span>,</span>
+<span>  taper <span class="op">=</span> <span class="st">"hann"</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">11</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">peak_i</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.min.html" class="external-link">which.max</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">power</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">peak</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">abs</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">peak</span> <span class="op">-</span> <span class="fl">6</span><span class="op">)</span> <span class="op">&lt;</span> <span class="fl">1</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">z</span><span class="op">[</span><span class="va">peak_i</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  <span class="va">spec</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">p_adj</span><span class="op">[</span><span class="va">peak_i</span><span class="op">]</span> <span class="op">&lt;</span> <span class="fl">0.1</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Grouped peak frequency:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">peak</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"Hz\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Grouped peak frequency: 6 Hz</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Peak adjusted p-value:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">p_adj</span><span class="op">[</span><span class="va">peak_i</span><span class="op">]</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Peak adjusted p-value: 0</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Peak z-score:         "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">spec</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">z</span><span class="op">[</span><span class="va">peak_i</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Peak z-score:          32.02</span></span></code></pre></div>
+<div class="figure">
+<img src="bosc_files/figure-html/plot-grouped-spectrum-1.png" class="r-plt" alt="Grouped spectrum after trial alignment, nuisance regression, and bin aggregation." width="576"><p class="caption">
+Grouped spectrum after trial alignment, nuisance regression, and bin
+aggregation.
+</p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="where-is-the-effect-in-time-frequency-space">Where is the effect in time-frequency space?<a class="anchor" aria-label="anchor" href="#where-is-the-effect-in-time-frequency-space"></a>
+</h3>
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tfr</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/group_tfr_test.html">group_tfr_test</a></span><span class="op">(</span></span>
+<span>  <span class="va">group_mat</span>,</span>
+<span>  fs <span class="op">=</span> <span class="va">fs_group</span>,</span>
+<span>  freqs <span class="op">=</span> <span class="fl">4</span><span class="op">:</span><span class="fl">8</span>,</span>
+<span>  bandwidth <span class="op">=</span> <span class="fl">0.75</span>,</span>
+<span>  null <span class="op">=</span> <span class="st">"shuffle_labels"</span>,</span>
+<span>  nrep <span class="op">=</span> <span class="fl">40</span>,</span>
+<span>  reflect <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  edge <span class="op">=</span> <span class="fl">4</span>,</span>
+<span>  seed <span class="op">=</span> <span class="fl">11</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">peak_cell</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/which.html" class="external-link">which</a></span><span class="op">(</span><span class="va">tfr</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">map</span> <span class="op">==</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">tfr</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">map</span><span class="op">)</span>, arr.ind <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">[</span><span class="fl">1</span>, <span class="op">]</span></span>
+<span><span class="va">peak_freq</span> <span class="op">&lt;-</span> <span class="va">tfr</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">freq</span><span class="op">[</span><span class="va">peak_cell</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">]</span></span>
+<span><span class="va">peak_time</span> <span class="op">&lt;-</span> <span class="va">tfr</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">time</span><span class="op">[</span><span class="va">peak_cell</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">tfr</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">z</span><span class="op">[</span><span class="va">peak_cell</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">peak_cell</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span><span class="op">)</span>,</span>
+<span>  <span class="va">peak_freq</span> <span class="op">&gt;=</span> <span class="fl">5</span>,</span>
+<span>  <span class="va">peak_freq</span> <span class="op">&lt;=</span> <span class="fl">7</span>,</span>
+<span>  <span class="va">peak_time</span> <span class="op">&gt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">min</a></span><span class="op">(</span><span class="va">tfr</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">time</span><span class="op">)</span>,</span>
+<span>  <span class="va">peak_time</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">tfr</span><span class="op">$</span><span class="va">observed</span><span class="op">$</span><span class="va">time</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Max TFR frequency:"</span>, <span class="va">peak_freq</span>, <span class="st">"Hz\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Max TFR frequency: 6 Hz</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Max TFR time:     "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">peak_time</span><span class="op">)</span>, <span class="st">"ms\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Max TFR time:      50 ms</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Max TFR z-score:  "</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">tfr</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">z</span><span class="op">[</span><span class="va">peak_cell</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">peak_cell</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">]</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Max TFR z-score:   23.69</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Detected clusters:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">tfr</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">clusters</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Detected clusters: 4</span></span></code></pre></div>
+<div class="figure">
+<img src="bosc_files/figure-html/plot-grouped-tfr-1.png" class="r-plt" alt="Grouped time-frequency z-map. Cluster outlines mark suprathreshold regions." width="576"><p class="caption">
+Grouped time-frequency z-map. Cluster outlines mark suprathreshold
+regions.
+</p>
+</div>
+</div>
+<div class="section level3">
+<h3 id="are-phases-aligned-across-subjects">Are phases aligned across subjects?<a class="anchor" aria-label="anchor" href="#are-phases-aligned-across-subjects"></a>
+</h3>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">phase_grp</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/group_phase_consistency.html">group_phase_consistency</a></span><span class="op">(</span></span>
+<span>  <span class="va">group_mat</span>,</span>
+<span>  fs <span class="op">=</span> <span class="va">fs_group</span>,</span>
+<span>  freq <span class="op">=</span> <span class="fl">6</span>,</span>
+<span>  bandwidth <span class="op">=</span> <span class="fl">0.75</span>,</span>
+<span>  reflect <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  edge <span class="op">=</span> <span class="fl">4</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/is.finite.html" class="external-link">is.finite</a></span><span class="op">(</span><span class="va">phase_grp</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">r</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phase_grp</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">r</span> <span class="op">&gt;=</span> <span class="fl">0</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="va">phase_grp</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">r</span> <span class="op">&lt;=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">phase_grp</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">r</span><span class="op">)</span> <span class="op">&gt;</span> <span class="fl">0.6</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Mean phase concentration:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">phase_grp</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">r</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Mean phase concentration: 1</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Peak phase concentration:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">max</a></span><span class="op">(</span><span class="va">phase_grp</span><span class="op">$</span><span class="va">stats</span><span class="op">$</span><span class="va">r</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; Peak phase concentration: 1</span></span></code></pre></div>
+</div>
 </div>
 <div class="section level2">
 <h2 id="where-to-go-next">Where to go next<a class="anchor" aria-label="anchor" href="#where-to-go-next"></a>
@@ -179,9 +381,9 @@ Phase distribution at event times.
 <p>You’ve just seen the core three-step pipeline: <strong>score</strong>
 (<code><a href="../reference/oscillation_score_z.html">oscillation_score_z()</a></code>), <strong>extract phase</strong>
 (<code><a href="../reference/phase_at_events.html">phase_at_events()</a></code>), <strong>test</strong>
-(<code><a href="../reference/circ_rayleigh.html">circ_rayleigh()</a></code>). For group-level analyses, add
-<code><a href="../reference/paired_tscore.html">paired_tscore()</a></code> and <code><a href="../reference/detect_clusters.html">detect_clusters()</a></code> for
-cluster-based permutation testing on time-frequency maps.</p>
+(<code><a href="../reference/circ_rayleigh.html">circ_rayleigh()</a></code>), and the grouped workflow from trial
+tables to spectral maps. When you want to go deeper, the other vignettes
+unpack each layer in more detail.</p>
 <table class="table">
 <colgroup>
 <col width="56%">
@@ -219,7 +421,14 @@ L.D., Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V.,
 Chelvarajah, R., Staresina, B., Hanslmayr, S., &amp; Wimber, M. (2021).
 Theta rhythmicity governs the timing of behavioural and hippocampal
 responses in humans specifically during memory-dependent tasks.
-<em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-25959-7" class="external-link uri">https://doi.org/10.1038/s41467-021-25959-7</a></p>
+<em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-27323-3" class="external-link uri">https://doi.org/10.1038/s41467-021-27323-3</a></p>
+</blockquote>
+<p>Related dense-sampling applications include:</p>
+<blockquote>
+<p>Biba, T. M., Decker, A., Herrmann, B., Fukuda, K., Katz, C. N.,
+Valiante, T. A., &amp; Duncan, K. (2026). Episodic memory encoding
+fluctuates at a theta rhythm of 3-10 Hz. <em>Nature Human
+Behaviour</em>. <a href="https://doi.org/10.1038/s41562-026-02416-5" class="external-link uri">https://doi.org/10.1038/s41562-026-02416-5</a></p>
 </blockquote>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -57,12 +57,13 @@ phase_at_events(
 
 - hilbert_tol, filtorder, demean:
 
-  passed to [`narrowband_hilbert`](narrowband_hilbert.md).
+  passed to
+  [`narrowband_hilbert`](https://bbuchsbaum.github.io/bosc/reference/narrowband_hilbert.md).
 
 - ...:
 
   further arguments passed to
-  [`make_continuous_trace`](make_continuous_trace.md).
+  [`make_continuous_trace`](https://bbuchsbaum.github.io/bosc/reference/make_continuous_trace.md).
 
 ## Value
 

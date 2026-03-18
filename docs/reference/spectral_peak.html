@@ -17,7 +17,8 @@ and returns the frequency of the highest peak within bounds."></head><body>
     </button>
 
     <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto"><li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+      <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/bosc.html">Get started</a></li>
+<li class="active nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/oscillation-score.html">Oscillation Score</a></li>
@@ -52,6 +53,8 @@ and returns the frequency of the highest peak within bounds.</p>
 <span>  <span class="va">fs</span>,</span>
 <span>  flim <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  fcor <span class="op">=</span> <span class="cn">FALSE</span>,</span>
+<span>  pad_to <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  spectrum <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"amplitude"</span>, <span class="st">"raw_power"</span><span class="op">)</span>,</span>
 <span>  taper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"none"</span>, <span class="st">"hann"</span>, <span class="st">"hanning"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div>
     </div>
@@ -74,6 +77,17 @@ and returns the frequency of the highest peak within bounds.</p>
 
 <dt id="arg-fcor">fcor<a class="anchor" aria-label="anchor" href="#arg-fcor"></a></dt>
 <dd><p>logical; apply crude 1/f correction.</p></dd>
+
+
+<dt id="arg-pad-to">pad_to<a class="anchor" aria-label="anchor" href="#arg-pad-to"></a></dt>
+<dd><p>optional integer length for zero-padding before the FFT. When
+<code>NULL</code>, no zero-padding is applied.</p></dd>
+
+
+<dt id="arg-spectrum">spectrum<a class="anchor" aria-label="anchor" href="#arg-spectrum"></a></dt>
+<dd><p>spectrum scaling. <code>"amplitude"</code> returns the current
+normalized single-sided amplitude spectrum. <code>"raw_power"</code> returns raw
+FFT power <code>|FFT(x)|^2</code> on the retained positive-frequency bins.</p></dd>
 
 
 <dt id="arg-taper">taper<a class="anchor" aria-label="anchor" href="#arg-taper"></a></dt>

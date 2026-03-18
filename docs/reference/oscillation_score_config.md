@@ -1,9 +1,9 @@
 # Configuration-list wrapper for oscillation scores
 
 Accepts a list of parameters (named like
-[`oscillation_score`](oscillation_score.md)) and forwards them to the
-core O-score function. Useful when your analysis builds configs
-programmatically.
+[`oscillation_score`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md))
+and forwards them to the core O-score function. Useful when your
+analysis builds configs programmatically.
 
 ## Usage
 
@@ -29,7 +29,8 @@ oscillation_score_cfg(cfg, signal)
 
 ## Value
 
-list as returned by [`oscillation_score`](oscillation_score.md).
+list as returned by
+[`oscillation_score`](https://bbuchsbaum.github.io/bosc/reference/oscillation_score.md).
 
 ## Details
 

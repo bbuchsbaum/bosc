@@ -9,6 +9,8 @@ spectral_peak(
   fs,
   flim = NULL,
   fcor = FALSE,
+  pad_to = NULL,
+  spectrum = c("amplitude", "raw_power"),
   taper = c("none", "hann", "hanning")
 )
 }
@@ -20,6 +22,13 @@ spectral_peak(
 \item{flim}{optional length-2 frequency bounds \code{c(fmin, fmax)} in Hz.}
 
 \item{fcor}{logical; apply crude 1/f correction.}
+
+\item{pad_to}{optional integer length for zero-padding before the FFT. When
+\code{NULL}, no zero-padding is applied.}
+
+\item{spectrum}{spectrum scaling. \code{"amplitude"} returns the current
+normalized single-sided amplitude spectrum. \code{"raw_power"} returns raw
+FFT power \code{|FFT(x)|^2} on the retained positive-frequency bins.}
 
 \item{taper}{taper to apply; one of \code{"none"}, \code{"hann"}, \code{"hanning"}.}
 }

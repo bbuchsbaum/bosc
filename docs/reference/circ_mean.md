@@ -39,7 +39,8 @@ University Press.
 
 ## See also
 
-[`circ_r`](circ_r.md), [`circ_vtest`](circ_vtest.md)
+[`circ_r`](https://bbuchsbaum.github.io/bosc/reference/circ_r.md),
+[`circ_vtest`](https://bbuchsbaum.github.io/bosc/reference/circ_vtest.md)
 
 ## Examples
 
