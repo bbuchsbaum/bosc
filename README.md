@@ -4,11 +4,14 @@ R port of the [behavioral-oscillations](https://github.com/marijeterwal/behavior
 
 ## Documentation
 
+Full pkgdown site: <https://bbuchsbaum.github.io/bosc/>
+
 ### Vignettes
 
-- **Oscillation Score Analysis** -- Computing oscillation scores, surrogate testing, multi-band analysis, and narrowband Hilbert phase extraction.
-- **PPC Analysis and Cluster Detection** -- Pairwise phase consistency, circular statistics, cluster-based permutation testing on time-frequency maps.
-- **Workflow Wrappers** -- High-level config-driven wrappers, batch analysis, phase-at-events pipeline, and tidy output helpers.
+- [Get started with bosc](https://bbuchsbaum.github.io/bosc/articles/bosc.html) -- End-to-end introduction to the package workflow and core objects.
+- [Oscillation Score Analysis](https://bbuchsbaum.github.io/bosc/articles/oscillation-score.html) -- Computing oscillation scores, surrogate testing, multi-band analysis, and narrowband Hilbert phase extraction.
+- [PPC Analysis and Cluster Detection](https://bbuchsbaum.github.io/bosc/articles/ppc-clustering.html) -- Pairwise phase consistency, circular statistics, cluster-based permutation testing on time-frequency maps.
+- [Workflow Wrappers](https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.html) -- High-level config-driven wrappers, batch analysis, phase-at-events pipeline, and tidy output helpers.
 
 ## Install
 

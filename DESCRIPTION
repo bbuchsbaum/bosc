@@ -11,7 +11,8 @@ Description: R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et
     metrics, clustering, and plotting for behavioral and neural time series.
     Methods are described in Ter Wal et al. (2021) <doi:10.1038/s41467-021-27323-3>.
 License: CC BY 4.0
-URL: https://github.com/bbuchsbaum/bosc
+URL: https://bbuchsbaum.github.io/bosc/, https://github.com/bbuchsbaum/bosc
+BugReports: https://github.com/bbuchsbaum/bosc/issues
 Encoding: UTF-8
 LazyData: false
 Imports:
