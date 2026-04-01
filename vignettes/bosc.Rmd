@@ -130,9 +130,46 @@ The oscillation score is `r round(result$oscore, 2)` with a z-score of
 
 ## Extracting phase at behavioral events
 
-Given event times (in seconds), `phase_at_events()` builds a continuous
-trace, filters at the target frequency, and returns the instantaneous phase
-at each event:
+`phase_at_events()` does not need a special object. It just needs a numeric
+vector of event times on a common time axis, usually one RT per trial.
+
+In a behavioral study, that usually means the latency from a common alignment
+event, such as cue onset or stimulus onset, to the response on each trial.
+If your RTs already live in a vector, use that vector directly. If your data
+are in a trial-wise data frame with one row per trial, extract the RT column
+after subsetting to the trials you want to analyze. If the RTs are stored in
+milliseconds, convert them to seconds first, because both `events` and `dt`
+are in seconds. If your table stores absolute timestamps instead of latencies,
+subtract the alignment time first so each trial contributes a comparable RT.
+
+Here are the two most common setups:
+
+```{r event-inputs}
+rt_ms <- c(412, 438, 521, 547, 603, 618)
+
+trial_data <- data.frame(
+  trial = seq_along(rt_ms),
+  correct = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE),
+  rt_ms = rt_ms
+)
+
+events_from_vector <- rt_ms / 1000
+events_from_df <- subset(trial_data, correct)$rt_ms / 1000
+
+stopifnot(
+  is.numeric(events_from_vector),
+  all(events_from_vector > 0),
+  is.numeric(events_from_df),
+  all(events_from_df > 0)
+)
+
+events_from_df
+```
+
+If you have multiple subjects or conditions, do this extraction separately for
+each subset rather than pooling everything into one vector. Once you have a
+numeric RT vector in seconds, the call is the same. Here `dt = 0.001` means a
+1 ms sampling grid for the continuous trace:
 
 ```{r phase-events}
 events <- c(0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95)
