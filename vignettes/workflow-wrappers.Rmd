@@ -57,13 +57,13 @@ The most common workflow is computing an oscillation score and testing its
 significance against surrogates. `oscillation_score_z()` does this in one call:
 
 ```{r quick-start}
-# Generate a signal with 10 Hz periodicity
-set.seed(42)
-fs <- 1000
+# Generate a clean 10 Hz event train
+fs <- 1024
 sig <- numeric(fs * 2)
-spike_times <- seq(50, 1950, by = 100) + round(rnorm(20, sd = 5))
-spike_times <- spike_times[spike_times > 0 & spike_times <= length(sig)]
+spike_times <- seq(52, 1996, by = 102)
 sig[spike_times] <- 1
+
+# This example is intentionally regular so the detected peak lands at 10 Hz.
 
 # One-call analysis: compute oscore, surrogates, and z-score
 result <- oscillation_score_z(

@@ -86,15 +86,14 @@ grouped_trials <- do.call(rbind, trial_list)
 
 ## Your first oscillation score in 30 seconds
 
-Create a signal with 10 Hz periodicity, compute the score, and test
-significance — all in one call:
+Create a simple 10 Hz event train, compute the score, and test significance
+all in one call. This example is intentionally clean so the detected peak
+lands at 10 Hz, making the basic workflow easy to interpret:
 
 ```{r first-score}
-set.seed(42)
-fs <- 1000
-sig <- numeric(2000)
-spikes <- seq(50, 1950, by = 100) + round(rnorm(20, sd = 5))
-spikes <- spikes[spikes > 0 & spikes <= 2000]
+fs <- 1024
+sig <- numeric(2048)
+spikes <- seq(52, 1996, by = 102)
 sig[spikes] <- 1
 
 result <- oscillation_score_z(sig, fs = fs, flim = c(5, 20), nrep = 200)
@@ -120,13 +119,16 @@ cat("P-value:          ", format(result$pval, digits = 4), "\n")
 cat("Significant:      ", result$significant, "\n")
 ```
 
-```{r plot-first-spectrum, echo=FALSE, fig.cap="Power spectrum of the autocorrelogram. The dashed line marks the detected peak at ~10 Hz.", fig.height=3}
+```{r plot-first-spectrum, echo=FALSE, fig.cap="Power spectrum of the autocorrelogram. The dashed line marks the detected peak at 10 Hz.", fig.height=3}
 sp <- spectral_peak(sig, fs = fs, flim = c(1, 50))
 plot_spectrum(sp$fxx, sp$spectrum, peak = result$fosc)
 ```
 
 The oscillation score is `r round(result$oscore, 2)` with a z-score of
-`r round(result$z, 1)` — a clear rhythm in the 5-20 Hz target band.
+`r round(result$z, 1)` — clear evidence for rhythmic structure in the 5-20 Hz
+target band. Because this toy signal is perfectly regular, the detected peak
+lands exactly at 10 Hz. Real behavioral data are usually noisier, so small
+departures from the nominal frequency are normal in practice.
 
 ## Extracting phase at behavioral events
 
