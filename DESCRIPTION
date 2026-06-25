@@ -1,16 +1,20 @@
 Package: bosc
 Type: Package
 Title: Behavioral Oscillation Scores and Phase Analysis
-Version: 0.0.0.9000
+Version: 0.1.0
+Depends: R (>= 4.1.0)
 Authors@R: c(
     person("Bradley", "Buchsbaum", role = c("aut", "cre"),
            email = "brad.buchsbaum@gmail.com")
     )
-Description: R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et
-    al.) for computing oscillation scores, surrogate tests, phase analyses, PPC
-    metrics, clustering, and plotting for behavioral and neural time series.
-    Methods are described in Ter Wal et al. (2021) <doi:10.1038/s41467-021-27323-3>.
-License: CC BY 4.0
+Description: Implements behavioral oscillation scoring, surrogate testing,
+    phase analysis, pairwise phase consistency (PPC) metrics, clustering, and
+    plotting for behavioral and neural time series. Core methods follow Ter Wal
+    et al. (2021) and the behavioral-oscillations reference software, with
+    grouped trial-level and subject-level spectral and time-frequency workflows
+    for dense behavioral sampling. See Ter Wal et al. (2021)
+    <doi:10.1038/s41467-021-27323-3>.
+License: CC BY 4.0 + file LICENSE
 URL: https://bbuchsbaum.github.io/bosc/, https://github.com/bbuchsbaum/bosc
 BugReports: https://github.com/bbuchsbaum/bosc/issues
 Encoding: UTF-8

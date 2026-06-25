@@ -115,9 +115,9 @@ clusters_tidy <- function(clusters) {
 
   rows <- lapply(seq_along(clusters), function(i) {
     cl <- clusters[[i]]
-    pAdj <- cl$pAdj
-    if (is.null(pAdj)) pAdj <- rep(NA_real_, length(cl$Zscores))
-    pAdj_valid <- pAdj[is.finite(pAdj)]
+    p_adj <- cl$pAdj
+    if (is.null(p_adj)) p_adj <- rep(NA_real_, length(cl$Zscores))
+    p_adj_valid <- p_adj[is.finite(p_adj)]
     data.frame(
       cluster = i,
       blobID = cl$blobID,
@@ -132,7 +132,7 @@ clusters_tidy <- function(clusters) {
       peakZscore = cl$peakZscore,
       sumZscore = cl$sumZscore,
       peakpAdj = if (!is.null(cl$peakpAdj)) cl$peakpAdj else NA_real_,
-      minpAdj = if (length(pAdj_valid) == 0) NA_real_ else min(pAdj_valid),
+      minpAdj = if (length(p_adj_valid) == 0) NA_real_ else min(p_adj_valid),
       stringsAsFactors = FALSE
     )
   })
@@ -166,13 +166,13 @@ clusters_pixels <- function(clusters) {
   dfs <- lapply(seq_along(clusters), function(i) {
     cl <- clusters[[i]]
     n <- length(cl$Zscores)
-    pAdj <- if (!is.null(cl$pAdj)) cl$pAdj else rep(NA_real_, n)
+    p_adj <- if (!is.null(cl$pAdj)) cl$pAdj else rep(NA_real_, n)
     data.frame(
       cluster = i,
       time = cl$times,
       freq = cl$freqs,
       Zscore = cl$Zscores,
-      pAdj = pAdj,
+      pAdj = p_adj,
       stringsAsFactors = FALSE
     )
   })

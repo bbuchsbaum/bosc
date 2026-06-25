@@ -1,4 +1,16 @@
-linters: with_defaults(
-  line_length_linter(120),
-  object_usage_linter = NULL
-)
+linters: linters_with_defaults(
+  line_length_linter = line_length_linter(120L),
+  object_usage_linter = NULL,
+  object_length_linter = NULL,
+  object_name_linter = object_name_linter(
+    c("snake_case", "symbols", "CamelCase"),
+    regexes = c("^R$", "^Z$", "^N$", "^L$", "^U$", "^X$", "^mU$", "^sigU$")
+  ),
+  pipe_consistency_linter = NULL)
+exclusions: list(
+  "inst/examples/biba_confirmatory_fft.R",
+  "R/clustering.R",
+  "vignettes/workflow-wrappers.Rmd",
+  "vignettes/oscillation-score.Rmd",
+  "vignettes/bosc.Rmd",
+  "vignettes/ppc-clustering.Rmd")

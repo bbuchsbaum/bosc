@@ -36,8 +36,7 @@ circ_mean <- function(alpha, w = NULL, dim = 1) {
   }
 
   # For vectors, treat as 1D
-
-if (length(dims) == 0 || (length(dims) == 1 && dims[1] == length(alpha))) {
+  if (length(dims) == 0 || (length(dims) == 1 && dims[1] == length(alpha))) {
     r <- sum(w * exp(1i * alpha))
     return(Arg(r))
   }
@@ -159,10 +158,10 @@ circ_vtest <- function(alpha, dir, w = NULL, d = 0) {
   n <- sum(w)
 
   # Rayleigh's R (equ. 27.1)
-  R <- n * r
+  rayleigh_r <- n * r
 
   # V statistic (equ. 27.5)
-  v <- R * cos(mu - dir)
+  v <- rayleigh_r * cos(mu - dir)
 
   # u statistic (equ. 27.6)
   u <- v * sqrt(2 / n)
@@ -215,10 +214,10 @@ circ_rayleigh <- function(alpha, w = NULL) {
   if (!is.finite(n_eff) || n_eff <= 0) return(list(pval = NA_real_, z = NA_real_))
 
   r <- circ_r(alpha, w)
-  R <- n_eff * r
+  rayleigh_r <- n_eff * r
 
   # Rayleigh's Z
-  z <- R^2 / n_eff
+  z <- rayleigh_r^2 / n_eff
 
   # p-value approximation (Zar, 2010)
   pval <- exp(-z) * (1 + (2 * z - z^2) / (4 * n_eff) -

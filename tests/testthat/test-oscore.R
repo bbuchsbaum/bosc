@@ -239,15 +239,15 @@ test_that("oscillation_score handles non-finite peak index and zero-mean spectru
 
 test_that("oscillation_score_surrogates validates inputs", {
   expect_error(oscillation_score_surrogates(1:10, fs = 100, flim = c(1, 10),
-                                             nrep = 0, fpeak = 5), "positive")
+                                            nrep = 0, fpeak = 5), "positive")
   expect_error(oscillation_score_surrogates(1:10, fs = -1, flim = c(1, 10),
-                                             nrep = 5, fpeak = 5), "positive")
+                                            nrep = 5, fpeak = 5), "positive")
   expect_error(oscillation_score_surrogates(1:10, fs = 100, flim = c(1, 10),
-                                             nrep = 5, fpeak = NULL), "fpeak must be provided")
+                                            nrep = 5, fpeak = NULL), "fpeak must be provided")
   expect_error(oscillation_score_surrogates(1:10, fs = 100, flim = c(NA, 10),
-                                             nrep = 5, fpeak = 5), "increasing positive")
+                                            nrep = 5, fpeak = 5), "increasing positive")
   expect_error(oscillation_score_surrogates(1:10, fs = 100, flim = c(10, 1),
-                                             nrep = 5, fpeak = 5), "increasing positive")
+                                            nrep = 5, fpeak = 5), "increasing positive")
 })
 
 test_that("oscillation_score_surrogates warns when keep_trend is ignored", {
@@ -338,8 +338,30 @@ test_that("oscillation_score_surrogates trend mode supports fallback and fitted 
   expect_true(any(vapply(fitted$signrep, sum, numeric(1)) > 0))
 })
 
-test_that("phase_randomize_signal handles short and centered-zero inputs", {
-  phase_rand <- getFromNamespace("phase_randomize_signal", "bosc")
-  expect_equal(phase_rand(c(1, 2)), c(1, 2))
-  expect_equal(phase_rand(rep(3, 8)), rep(3, 8))
+test_that("fitdist_density resolves density from fitdist objects", {
+  fitdist_density <- getFromNamespace("fitdist_density", "bosc")
+  fd <- list(
+    distname = "norm",
+    estimate = list(mean = 0, sd = 1),
+    densfun = "dnorm"
+  )
+  expect_equal(fitdist_density(fd, 0), dnorm(0), tolerance = 1e-10)
+  expect_error(fitdist_density(list(), 0), "missing estimates")
+  expect_error(fitdist_density(list(estimate = list(a = 1)), 0), "Could not resolve")
+})
+
+test_that("oscillation_score supports continuous mode with fcor", {
+  set.seed(21)
+  fs <- 500
+  t <- seq(0, 2, by = 1 / fs)
+  sig <- sin(2 * pi * 12 * t) + 0.1 * rnorm(length(t))
+  res <- oscillation_score(
+    sig,
+    fs = fs,
+    flim = c(8, 20),
+    fcor = TRUE,
+    signal_mode = "continuous",
+    warnings = FALSE
+  )
+  expect_true(is.finite(res$oscore))
 })

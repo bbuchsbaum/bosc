@@ -104,8 +104,7 @@ test_that("fdr_bh correctly identifies significant tests", {
   expect_true(all(result$adj_p >= pvals))
 })
 
-test_that("fdr_bh handles edge cases",
-{
+test_that("fdr_bh handles edge cases", {
   # All significant
   pvals_all_sig <- rep(0.001, 5)
   result <- fdr_bh(pvals_all_sig, q = 0.05)
@@ -121,7 +120,7 @@ test_that("fdr_bh handles edge cases",
 # --- circ_mean matrix input ---
 
 test_that("circ_mean works on matrix along dim=1", {
-  mat <- matrix(c(0, pi/2, 0, pi/2), nrow = 2, ncol = 2)
+  mat <- matrix(c(0, pi / 2, 0, pi / 2), nrow = 2, ncol = 2)
   result <- circ_mean(mat, dim = 1)
   expect_length(result, 2)
   # Each column is (0, pi/2) -> mean should be pi/4
@@ -129,7 +128,7 @@ test_that("circ_mean works on matrix along dim=1", {
 })
 
 test_that("circ_mean errors on weight dimension mismatch", {
-  angles <- c(0, pi/2, pi)
+  angles <- c(0, pi / 2, pi)
   w <- c(1, 2)  # wrong length
   expect_error(circ_mean(angles, w = w), "dimensions do not match")
 })
@@ -146,12 +145,25 @@ test_that("circ_r works on matrix with d correction", {
 # --- circ_vtest weight mismatch ---
 
 test_that("circ_vtest errors on weight length mismatch", {
-  angles <- c(0, pi/2, pi)
+  angles <- c(0, pi / 2, pi)
   w <- c(1, 2)
   expect_error(circ_vtest(angles, dir = 0, w = w), "dimensions do not match")
 })
 
 # --- fdr_bh single p-value ---
+
+test_that("circ_r applies weighted matrix correction", {
+  mat <- matrix(c(0, 0.1, -0.1, 0), nrow = 2, byrow = TRUE)
+  r0 <- circ_r(mat, d = 0, dim = 1)
+  r1 <- circ_r(mat, d = 0.5, dim = 1)
+  expect_true(all(r1 > r0))
+})
+
+test_that("circ_rayleigh returns NA for invalid weights", {
+  res <- circ_rayleigh(c(0, pi / 2), w = c(0, 0))
+  expect_true(is.na(res$pval))
+  expect_true(is.na(res$z))
+})
 
 test_that("fdr_bh handles single p-value", {
   result <- fdr_bh(0.01, q = 0.05)

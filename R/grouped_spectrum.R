@@ -67,15 +67,15 @@ group_spectrum <- function(x,
         pad_to = pad_to,
         spectrum = spectrum,
         taper = taper,
-      fcor = fcor,
-      average = average,
-      n_subjects = nrow(gx$data),
-      n_bins = ncol(gx$data),
-      measure = gx$measure,
-      bins = gx$bins,
-      subjects = gx$subjects
+        fcor = fcor,
+        average = average,
+        n_subjects = nrow(gx$data),
+        n_bins = ncol(gx$data),
+        measure = gx$measure,
+        bins = gx$bins,
+        subjects = gx$subjects
+      )
     )
-  )
   )
 }
 
@@ -541,7 +541,8 @@ validate_group_sampling <- function(fs, flim, detrend_order = 1L) {
   }
 }
 
-compute_group_spectrum <- function(x, fs, flim, detrend, detrend_order, pad_to = NULL, spectrum = "amplitude", taper, fcor) {
+compute_group_spectrum <- function(x, fs, flim, detrend, detrend_order, pad_to = NULL,
+                                   spectrum = "amplitude", taper, fcor) {
   per_subject <- vector("list", nrow(x))
   freq <- NULL
   for (i in seq_len(nrow(x))) {
@@ -686,7 +687,7 @@ with_seed <- function(seed, expr) {
   }
   on.exit({
     if (old_seed_exists) {
-      assign(".Random.seed", old_seed, envir = .GlobalEnv)
+      assign(".Random.seed", old_seed, envir = .GlobalEnv) # nolint object_name_linter
     } else if (exists(".Random.seed", envir = .GlobalEnv, inherits = FALSE)) {
       rm(".Random.seed", envir = .GlobalEnv)
     }

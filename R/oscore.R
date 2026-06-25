@@ -339,7 +339,7 @@ oscillation_score_surrogates <- function(signal,
       id <- which.max(pvals)
       if (!is.na(pvals[id]) && pvals[id] >= trend_alpha) {
         fd <- fits[[id]]$fd
-        xidx <- seq_len(length(sigq))
+        xidx <- seq_along(sigq)
         pdf_vals <- fitdist_density(fd, xidx)
         pdf_vals[pdf_vals < 0] <- 0
         trace <- numeric(length(sig))
@@ -361,7 +361,7 @@ oscillation_score_surrogates <- function(signal,
       sigrp <- phase_randomize_signal(sigq)
     } else if (surrogate_method == "event_trend" && !is.null(trendfit$pd)) {
       n_events <- max(0L, as.integer(round(sum(pmax(sigq, 0), na.rm = TRUE))))
-      xidx <- seq_len(length(sigq))
+      xidx <- seq_along(sigq)
       pdf_vals <- fitdist_density(trendfit$pd, xidx)
       pdf_vals[pdf_vals < 0] <- 0
       probs <- pdf_vals / max(sum(pdf_vals), .Machine$double.eps)
@@ -429,9 +429,9 @@ phase_randomize_signal <- function(x) {
   if (length(pos) > 0) {
     amp <- Mod(X[pos])
     phi <- stats::runif(length(pos), min = 0, max = 2 * pi)
-    X_pos <- amp * exp(1i * phi)
-    X[pos] <- X_pos
-    X[n - pos + 2] <- Conj(X_pos)
+    x_pos <- amp * exp(1i * phi)
+    X[pos] <- x_pos
+    X[n - pos + 2] <- Conj(x_pos)
   }
 
   X[1] <- Re(X[1])

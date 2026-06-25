@@ -120,6 +120,32 @@ test_that("spectral_peak with flim=NULL returns full spectrum", {
   expect_true(length(sp$fxx) > 0)
 })
 
-test_that("spectral_peak validates fs", {
-  expect_error(spectral_peak(1:10, fs = -1, flim = c(1, 10)), "positive scalar")
+test_that("make_continuous_trace handles all-NA events", {
+  res <- make_continuous_trace(c(NA_real_, NA_real_), dt = 0.1, warn = FALSE)
+  expect_length(res$signal, 0)
+  expect_length(res$tspan, 0)
+})
+
+test_that("make_continuous_trace validates dt and quantlim", {
+  expect_error(make_continuous_trace(c(0, 1), dt = 0), "positive scalar")
+  expect_error(make_continuous_trace(c(0, 1), dt = 0.1, quantlim = 0.5), "length 2")
+})
+
+test_that("internal signal helpers build kernels and convolve", {
+  build_kernel <- getFromNamespace("build_kernel", "bosc")
+  conv_same <- getFromNamespace("conv_same", "bosc")
+  hanning_window <- getFromNamespace("hanning_window", "bosc")
+
+  k <- build_kernel(0.01, sd_smooth = 0.05)
+  expect_true(length(k) > 1)
+  expect_true(all(k >= 0))
+
+  x <- c(0, 1, 0, 1)
+  expect_equal(conv_same(x, c(1)), x)
+  expect_length(hanning_window(8), 8)
+})
+
+test_that("spectral_peak validates pad_to and taper", {
+  expect_error(spectral_peak(1:10, fs = 100, pad_to = 5), "pad_to")
+  expect_error(spectral_peak(1:10, fs = 100, taper = "bad"), "should be one of")
 })

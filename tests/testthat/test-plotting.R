@@ -107,11 +107,44 @@ test_that("plot_cluster_heatmap respects zlim", {
   expect_s3_class(p, "ggplot")
 })
 
+test_that("plotting functions error when ggplot2 is unavailable", {
+  local_mocked_bindings(
+    requireNamespace = function(pkg, quietly = TRUE) pkg != "ggplot2",
+    .package = "base"
+  )
+  expect_error(plot_spectrum(1:5, rep(1, 5)), "ggplot2 required")
+  expect_error(plot_phase_hist(runif(10)), "ggplot2 required")
+  expect_error(plot_simplebox(1:3, 1:3), "ggplot2 required")
+  expect_error(plot_cluster_heatmap(matrix(1:9, 3)), "ggplot2 required")
+})
+
+test_that("plot_simplebox uses default palette for many groups without RColorBrewer", {
+  skip_if_not_installed("ggplot2")
+  local_mocked_bindings(
+    requireNamespace = function(pkg, quietly = TRUE) pkg != "RColorBrewer",
+    .package = "base"
+  )
+  labels <- rep(1:12, each = 5)
+  data <- rnorm(length(labels))
+  p <- plot_simplebox(labels, data)
+  expect_s3_class(p, "ggplot")
+})
+
+test_that("plot_cluster_heatmap falls back without RColorBrewer", {
+  skip_if_not_installed("ggplot2")
+  local_mocked_bindings(
+    requireNamespace = function(pkg, quietly = TRUE) pkg != "RColorBrewer",
+    .package = "base"
+  )
+  mat <- matrix(rnorm(36), 6)
+  p <- plot_cluster_heatmap(mat)
+  expect_s3_class(p, "ggplot")
+})
+
 test_that("plot_cluster_heatmap skips hull for < 3 points", {
   skip_if_not_installed("ggplot2")
   mat <- matrix(0, nrow = 10, ncol = 10)
   mat[5, 5] <- 5
-  # single-pixel cluster: hull should be skipped gracefully
   clusters <- detect_clusters(mat, threshold = 2, method = "extract", smooth = NULL)
   p <- plot_cluster_heatmap(mat, clusters = clusters)
   expect_s3_class(p, "ggplot")

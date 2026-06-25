@@ -555,9 +555,9 @@ h5_file$close_all()
 
 ## References
 
-The algorithms in **bosc** are ported from the
+Core algorithms in **bosc** follow Ter Wal et al. (2021) and the
 [behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
-MATLAB toolbox. Please cite:
+reference software. Please cite:
 
 > Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 > behavioural and hippocampal responses in humans specifically during

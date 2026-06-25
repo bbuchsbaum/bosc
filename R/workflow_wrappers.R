@@ -112,24 +112,24 @@ oscillation_score_stats <- function(cfg, signal) {
 #' @return list (default) or data.frame if \code{tidy=TRUE}.
 #' @export
 oscillation_score_z <- function(signal,
-                     fs,
-                     flim,
-                     nrep = 500,
-                     alpha = 0.05,
-                     keep_trend = FALSE,
-                     trend_dist = c("gamma"),
-                     trend_ddt = NULL,
-                     trend_alpha = 0.05,
-                     surrogate_method = c(
-                       "auto", "event_shuffle", "event_trend", "phase_randomized"
-                     ),
-                     signal_mode = c("auto", "event", "continuous"),
-                     fcor = FALSE,
-                     taper = c("none", "hann", "hanning"),
-                     ci_nboot = 0,
-                     ci_level = 0.95,
-                     tidy = FALSE,
-                     ...) {
+                                fs,
+                                flim,
+                                nrep = 500,
+                                alpha = 0.05,
+                                keep_trend = FALSE,
+                                trend_dist = c("gamma"),
+                                trend_ddt = NULL,
+                                trend_alpha = 0.05,
+                                surrogate_method = c(
+                                  "auto", "event_shuffle", "event_trend", "phase_randomized"
+                                ),
+                                signal_mode = c("auto", "event", "continuous"),
+                                fcor = FALSE,
+                                taper = c("none", "hann", "hanning"),
+                                ci_nboot = 0,
+                                ci_level = 0.95,
+                                tidy = FALSE,
+                                ...) {
   taper <- match.arg(taper)
   surrogate_method <- match.arg(surrogate_method)
   signal_mode <- match.arg(signal_mode)

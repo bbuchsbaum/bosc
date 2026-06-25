@@ -64,8 +64,16 @@ test_that("aggregate_by_bin is invariant to input row order", {
     value = c(10, 20, 11, 21, 30, 31)
   )
 
-  ref <- aggregate_by_bin(dat, value = "value", bin = "bin", by = c("subject", "cond"), bins = 1:2)
-  perm <- aggregate_by_bin(dat[c(6, 3, 1, 5, 2, 4), ], value = "value", bin = "bin", by = c("subject", "cond"), bins = 1:2)
+  ref <- aggregate_by_bin(
+    dat, value = "value", bin = "bin", by = c("subject", "cond"), bins = 1:2
+  )
+  perm <- aggregate_by_bin(
+    dat[c(6, 3, 1, 5, 2, 4), ],
+    value = "value",
+    bin = "bin",
+    by = c("subject", "cond"),
+    bins = 1:2
+  )
 
   expect_equal(ref, perm)
 })

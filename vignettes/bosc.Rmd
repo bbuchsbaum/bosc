@@ -363,10 +363,11 @@ deeper, the other vignettes unpack each layer in more detail.
 
 ## References
 
-**bosc** is an R port of the
+**bosc** implements methods from Ter Wal et al. (2021) in R. If you use this
+package in published work, please cite the original paper and, when
+appropriate, the
 [behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
-MATLAB toolbox. If you use this package in published work, please cite the
-original paper:
+reference software:
 
 > Ter Wal, M., Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L.D.,
 > Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V.,

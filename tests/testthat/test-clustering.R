@@ -72,7 +72,7 @@ test_that("extract_clusters matches reference 8-connectivity on random grids", {
               r2 <- rr + neigh[k, 1]
               c2 <- cc + neigh[k, 2]
               if (r2 >= 2 && r2 <= (nr - 1) && c2 >= 2 && c2 <= (nc - 1) &&
-                  dat[r2, c2] != 0 && out[r2, c2] == 0L) {
+                    dat[r2, c2] != 0 && out[r2, c2] == 0L) {
                 tail <- tail + 1L
                 qr[tail] <- r2
                 qc[tail] <- c2

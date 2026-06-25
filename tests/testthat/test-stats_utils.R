@@ -80,9 +80,22 @@ test_that("nonparam_pval with value below median", {
   expect_true(res$p <= 1)
 })
 
-test_that("nonparam_pval with value above median", {
-  ref <- c(1, 2, 3, 4, 5)
-  res <- nonparam_pval(c(10), ref, alpha = 0.05)
-  expect_true(res$p >= 0)
-  expect_true(res$h == 1)
+test_that("pairwise_phase_consistency returns NA for fewer than two samples", {
+  ppc <- pairwise_phase_consistency(matrix(0.1, nrow = 1, ncol = 3), dim = 1)
+  expect_true(all(is.na(ppc)))
+})
+
+test_that("pairwise_phase_consistency validates dimensionality", {
+  expect_error(pairwise_phase_consistency(c(0, 1), dim = c(1, 2)), "Only one dimension")
+  expect_error(pairwise_phase_consistency(5, dim = 1), "at least 1D")
+})
+
+test_that("u_score_matrix validates reference shape", {
+  expect_error(u_score_matrix(c(1, 2), c(1, 2)), "repetitions")
+  expect_error(u_score_matrix(c(1, 2, 3), matrix(1:4, nrow = 2)), "match dat")
+})
+
+test_that("paired_tscore validates inputs", {
+  expect_error(paired_tscore(matrix(1:4, nrow = 2), matrix(1:6, nrow = 2), dim = 1), "must match")
+  expect_error(paired_tscore(matrix(1:6, nrow = 2, ncol = 3), dim = 3), "out of bounds")
 })

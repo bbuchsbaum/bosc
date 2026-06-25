@@ -6,9 +6,11 @@
 \alias{bosc-package}
 \title{bosc: Behavioral Oscillation Scores and Phase Analysis}
 \description{
-R port of the behavioral-oscillations MATLAB toolbox, providing functions
-for oscillation scoring, surrogate testing, phase analyses, PPC metrics,
-clustering, and visualization for behavioral and neural time series.
+Implements behavioral oscillation scoring, surrogate testing, phase analysis,
+PPC metrics, clustering, and plotting for behavioral and neural time series.
+Core methods follow Ter Wal et al. (2021) and the behavioral-oscillations
+reference software; grouped trial-level and subject-level spectral and
+time-frequency workflows extend those methods for dense behavioral sampling.
 }
 \references{
 Ter Wal, M., Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L.,
@@ -24,12 +26,14 @@ Valiante, T. A., & Duncan, K. (2026). Episodic memory encoding
 fluctuates at a theta rhythm of 3-10 Hz. \emph{Nature Human Behaviour}.
 \doi{10.1038/s41562-026-02416-5}
 
-Original MATLAB toolbox: \url{https://github.com/marijeterwal/behavioral-oscillations}
+Reference MATLAB software: \url{https://github.com/marijeterwal/behavioral-oscillations}
 }
 \seealso{
 Useful links:
 \itemize{
+  \item \url{https://bbuchsbaum.github.io/bosc/}
   \item \url{https://github.com/bbuchsbaum/bosc}
+  \item Report bugs at \url{https://github.com/bbuchsbaum/bosc/issues}
 }
 
 }

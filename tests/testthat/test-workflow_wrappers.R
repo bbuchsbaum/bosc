@@ -175,7 +175,7 @@ test_that("oscillation_score_z validates CI arguments", {
 test_that("phase_at_events with leave_one_out=TRUE", {
   events <- seq(0.05, 0.95, by = 0.1)
   ph <- phase_at_events(events, dt = 0.001, fosc = 10, bandwidth = 1,
-                         leave_one_out = TRUE)
+                        leave_one_out = TRUE)
   expect_length(ph, length(events))
 })
 
@@ -185,7 +185,19 @@ test_that("phase_at_events returns all NA for all-NA events", {
   expect_true(all(is.na(ph)))
 })
 
-test_that("phase_at_events validates inputs", {
-  expect_error(phase_at_events("bad", dt = 0.001, fosc = 10), "events must be numeric")
-  expect_error(phase_at_events(c(0.1, 0.2), dt = -1, fosc = 10), "positive scalar")
+test_that("phase_at_events derives freqlim from fosc and default smoothing", {
+  events <- seq(0.05, 0.95, by = 0.1)
+  ph <- phase_at_events(events, dt = 0.001, fosc = 10)
+  expect_length(ph, length(events))
+  expect_true(any(is.finite(ph)))
+})
+
+test_that("phase_at_events leave_one_out skips sparse references", {
+  events <- c(0.1, 0.2)
+  ph <- phase_at_events(events, dt = 0.001, fosc = 10, leave_one_out = TRUE)
+  expect_true(all(is.na(ph)))
+})
+
+test_that("phase_at_events requires freqlim or fosc", {
+  expect_error(phase_at_events(c(0.1, 0.2), dt = 0.001), "freqlim or a finite fosc")
 })

@@ -51,10 +51,10 @@ u_score_matrix <- function(dat, ref, alpha = 0.05) {
   U <- colSums(ref_mat < matrix(dat_vec, nrow = n2, ncol = length(dat_vec), byrow = TRUE)) + 1
   mU <- n2 / 2
   sigU <- sqrt(n2 * (n2 + 2) / 12)
-  Z <- (U - mU) / sigU
-  Z_arr <- array(Z, dim = dshape)
-  sgnf <- sign(Z_arr) * (abs(Z_arr) >= stats::qnorm(1 - alpha, 0, 1))
-  list(Z = Z_arr, sgnf = sgnf)
+  z_score <- (U - mU) / sigU
+  z_arr <- array(z_score, dim = dshape)
+  sgnf <- sign(z_arr) * (abs(z_arr) >= stats::qnorm(1 - alpha, 0, 1))
+  list(Z = z_arr, sgnf = sgnf)
 }
 
 #' Paired t-score along a dimension

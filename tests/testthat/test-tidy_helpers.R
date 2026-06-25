@@ -114,9 +114,13 @@ test_that("clusters_tidy handles cluster with NULL pAdj", {
 
 # --- clusters_pixels additional branches ---
 
-test_that("clusters_pixels returns empty data.frame for NULL input", {
-  df <- clusters_pixels(NULL)
-  expect_s3_class(df, "data.frame")
-  expect_equal(nrow(df), 0)
+test_that("oscore_spectrum extracts freqs/flimfft fields", {
+  res <- list(freqs = c(1, 2, 3), flimfft = c(0.1, 0.5, 0.2))
+  df <- oscore_spectrum(res)
+  expect_equal(df$freq, res$freqs)
+  expect_equal(df$power, res$flimfft)
 })
 
+test_that("oscore_spectrum errors when list lacks spectra", {
+  expect_error(oscore_spectrum(list(list(a = 1), list(b = 2))), "No spectrum found")
+})

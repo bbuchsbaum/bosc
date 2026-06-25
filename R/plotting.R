@@ -40,7 +40,7 @@ plot_phase_hist <- function(phases, nbins = 12) {
   df <- data.frame(phase = phases)
   ggplot2::ggplot(df, ggplot2::aes(x = phase)) +
     ggplot2::geom_histogram(breaks = breaks, fill = "#1B75BB", color = "white", boundary = -pi) +
-    ggplot2::scale_x_continuous(breaks = c(-pi, -pi/2, 0, pi/2, pi),
+    ggplot2::scale_x_continuous(breaks = c(-pi, -pi / 2, 0, pi / 2, pi),
                                 labels = c("-pi", "-pi/2", "0", "pi/2", "pi")) +
     ggplot2::labs(x = "Phase (rad)", y = "Count") +
     ggplot2::theme_minimal()
@@ -78,7 +78,7 @@ plot_simplebox <- function(labels, data, colors = NULL) {
   n_groups <- length(ulabels)
 
   # Set up colors
- if (is.null(colors)) {
+  if (is.null(colors)) {
     if (requireNamespace("RColorBrewer", quietly = TRUE) && n_groups <= 9) {
       pal <- RColorBrewer::brewer.pal(max(3, n_groups), "Set1")
       colors <- grDevices::col2rgb(pal[seq_len(n_groups)]) / 255
@@ -176,8 +176,8 @@ plot_simplebox <- function(labels, data, colors = NULL) {
 #' mat[8:12, 8:12] <- mat[8:12, 8:12] + 3
 #' plot_cluster_heatmap(mat)
 plot_cluster_heatmap <- function(data, clusters = NULL,
-                                  freq_axis = NULL, time_axis = NULL,
-                                  zlim = NULL, palette = "RdBu") {
+                                 freq_axis = NULL, time_axis = NULL,
+                                 zlim = NULL, palette = "RdBu") {
   if (!requireNamespace("ggplot2", quietly = TRUE)) {
     stop("ggplot2 required for plotting.")
   }
@@ -198,13 +198,13 @@ plot_cluster_heatmap <- function(data, clusters = NULL,
     pal_colors <- rev(RColorBrewer::brewer.pal(11, palette))
     if (!is.null(zlim)) {
       p <- p + ggplot2::scale_fill_gradientn(colors = pal_colors, limits = zlim,
-                                              oob = scales::squish)
+                                             oob = scales::squish)
     } else {
       p <- p + ggplot2::scale_fill_gradientn(colors = pal_colors)
     }
   } else {
     p <- p + ggplot2::scale_fill_gradient2(low = "blue", mid = "white", high = "red",
-                                            midpoint = 0)
+                                           midpoint = 0)
   }
 
   # Add cluster boundaries if provided
@@ -217,9 +217,9 @@ plot_cluster_heatmap <- function(data, clusters = NULL,
           hull_idx <- grDevices::chull(hull_df$time, hull_df$freq)
           hull_pts <- hull_df[c(hull_idx, hull_idx[1]), ]
           p <- p + ggplot2::geom_path(data = hull_pts,
-                                       ggplot2::aes(x = time, y = freq),
-                                       color = "black", linewidth = 0.8,
-                                       inherit.aes = FALSE)
+                                      ggplot2::aes(x = time, y = freq),
+                                      color = "black", linewidth = 0.8,
+                                      inherit.aes = FALSE)
         }
       }
     }

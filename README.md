@@ -1,6 +1,11 @@
 # bosc
 
-R port of the [behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations) MATLAB toolbox (Ter Wal et al.). Provides core functions for oscillation scoring, surrogate testing, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series.
+**bosc** implements behavioral oscillation scoring, phase analysis, and
+clustering for behavioral and neural time series. Core methods follow Ter Wal
+et al. (2021) and the
+[behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
+reference software; grouped trial-level and subject-level spectral workflows
+extend those methods for dense behavioral sampling.
 
 ## Documentation
 
@@ -36,11 +41,15 @@ devtools::install("bosc")
 - Clustering: `extract_clusters`, `detect_clusters` (imager-based watershed/extract, cluster splitting).
 - Plotting: `plot_spectrum`, `plot_phase_hist`.
 
-## Enhancements Relative to MATLAB Reference
+## Relation to the reference MATLAB toolbox
 
-This package closely follows the MATLAB reference implementation, with a few
-small R-oriented enhancements for robustness, configurability, and workflow
-ergonomics:
+**bosc** implements methods from Ter Wal et al. (2021) in R. It is not a
+line-by-line translation of the
+[behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
+MATLAB toolbox: the API, return objects, grouped-analysis workflows, and several
+algorithm extensions are native to this package. The sections below note
+specific places where behavior intentionally differs from the reference
+implementation.
 
 - `spectral_peak(fcor = TRUE)` uses an explicit, stable log-log fit/predict path
   in R for improved numerical stability.
@@ -70,7 +79,9 @@ devtools::test("bosc")
 
 ## References
 
-This package is an R port of the MATLAB toolbox developed for:
+**bosc** implements methods described in Ter Wal et al. (2021). If you use this
+package in published work, please cite that paper and, when appropriate, the
+reference MATLAB software:
 
 **Ter Wal, M.**, Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L., Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V., Chelvarajah, R., Staresina, B., Hanslmayr, S., & Wimber, M. (2021). Theta rhythmicity governs the timing of behavioural and hippocampal responses in humans specifically during memory-dependent tasks. *Nature Communications*, 12, 7048. <https://doi.org/10.1038/s41467-021-27323-3>
 
@@ -79,7 +90,7 @@ Dense-sampling trial-to-spectrum workflows in the grouped APIs and examples are 
 **Biba, T. M.**, Decker, A., Herrmann, B., Fukuda, K., Katz, C. N., Valiante, T. A., & Duncan, K. (2026). Episodic memory encoding fluctuates at a theta rhythm of 3-10 Hz. *Nature Human Behaviour*. <https://doi.org/10.1038/s41562-026-02416-5>
 
 - **Original MATLAB code**: <https://github.com/marijeterwal/behavioral-oscillations>
-- **Datasets**: <https://doi.org/10.6084/m9.figshare.c.5192567>
+- **Datasets**: figshare collection 5192567 (doi:10.6084/m9.figshare.c.5192567)
 - **Video walkthrough** (CNS 2020 poster G183): <https://youtu.be/28kpbGDHLuo>
 
 ## Roadmap

@@ -15,7 +15,9 @@ test_that("oscillation_score increases with oscillation amplitude (synthetic sim
       RTs <- timeline[events]
       mct <- make_continuous_trace(RTs, dt = dt, warn = FALSE)
       os <- oscillation_score(mct$signal, fs = fs, flim = c(1, 20), warnings = FALSE)
-      sur <- oscillation_score_surrogates(mct$signal, fs = fs, flim = c(1, 20), nrep = 10, fpeak = os$fosc, warnings = FALSE)
+      sur <- oscillation_score_surrogates(
+        mct$signal, fs = fs, flim = c(1, 20), nrep = 10, fpeak = os$fosc, warnings = FALSE
+      )
       out[s] <- (log(os$oscore) - mean(log(sur$oscore_rp), na.rm = TRUE)) / sd(log(sur$oscore_rp), na.rm = TRUE)
     }
     out
