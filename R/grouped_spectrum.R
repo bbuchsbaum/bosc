@@ -104,6 +104,12 @@ group_spectrum <- function(x,
 #' @param fcor logical; apply 1/f correction to each subject spectrum.
 #' @param seed optional random seed for reproducible null draws.
 #' @return list with \code{observed}, \code{null}, \code{stats}, and \code{meta}.
+#' @details
+#' Per-frequency p-values use the add-one (Phipson-Smyth) one-sided permutation
+#' estimator \eqn{p = (1 + \#\{null \ge obs\}) / (1 + nrep)}, which is never
+#' exactly zero. The smallest attainable p-value is therefore
+#' \eqn{1 / (1 + nrep)}, so choose \code{nrep} large enough to resolve the
+#' p-values (and any FDR threshold) you need.
 #' @export
 group_spectrum_test <- function(x,
                                 fs,
@@ -164,7 +170,7 @@ group_spectrum_test <- function(x,
     null_power <- matrix(null_power, nrow = length(obs$power), ncol = 1L)
   }
 
-  p <- rowMeans(null_power >= obs$power)
+  p <- empirical_pvalue(obs$power, null_power)
   z <- (obs$power - rowMeans(null_power)) / apply(null_power, 1, stats::sd)
   z[!is.finite(z)] <- NA_real_
   p_adj <- if (p_adjust == "fdr") stats::p.adjust(p, method = "BH") else p
@@ -263,6 +269,10 @@ group_spectrum_test <- function(x,
 #' @return list with \code{observed}, \code{null}, \code{stats}, and
 #'   \code{meta}. The \code{meta} field includes the aggregated observed
 #'   grouped-series object.
+#' @details
+#' Per-frequency p-values use the add-one (Phipson-Smyth) one-sided permutation
+#' estimator \eqn{p = (1 + \#\{null \ge obs\}) / (1 + nrep)}, so the smallest
+#' attainable p-value is \eqn{1 / (1 + nrep)} and never exactly zero.
 #' @references
 #' Biba, T. M., Decker, A., Herrmann, B., Fukuda, K., Katz, C. N.,
 #' Valiante, T. A., & Duncan, K. (2026). Episodic memory encoding
@@ -424,7 +434,7 @@ group_spectrum_test_trials <- function(data,
     null_power <- matrix(null_power, nrow = length(obs$power), ncol = 1L)
   }
 
-  p <- rowMeans(null_power >= obs$power)
+  p <- empirical_pvalue(obs$power, null_power)
   z <- (obs$power - rowMeans(null_power)) / apply(null_power, 1, stats::sd)
   z[!is.finite(z)] <- NA_real_
   p_adj <- if (p_adjust == "fdr") stats::p.adjust(p, method = "BH") else p
@@ -609,6 +619,28 @@ generate_group_spectrum_null <- function(x, method = c("shuffle_labels", "circul
     }
   }
   out
+}
+
+#' Add-one empirical p-value for a permutation null
+#'
+#' Computes the one-sided permutation p-value \eqn{p = (1 + \#\{null \ge obs\}) /
+#' (1 + nrep)}. The add-one (Phipson-Smyth) correction treats the observed
+#' statistic as one of the possible arrangements, so p is never exactly 0 and is
+#' a valid unbiased estimator of the permutation p-value.
+#'
+#' @param obs numeric vector of observed statistics (length equal to
+#'   \code{nrow(null_mat)}).
+#' @param null_mat numeric matrix of null statistics with one row per observed
+#'   statistic and one column per null draw.
+#' @return numeric vector of p-values, one per observed statistic.
+#' @keywords internal
+#' @references
+#'   Phipson B, Smyth GK (2010). Permutation p-values should never be zero.
+#'   Statistical Applications in Genetics and Molecular Biology, 9(1), Article 39.
+empirical_pvalue <- function(obs, null_mat) {
+  nrep <- ncol(null_mat)
+  ge <- rowSums(null_mat >= obs)
+  (1 + ge) / (1 + nrep)
 }
 
 circ_shift_vector <- function(x, k) {

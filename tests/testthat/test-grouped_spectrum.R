@@ -48,14 +48,16 @@ test_that("group_spectrum_test detects oscillatory structure under shuffle null"
     fs = 30,
     flim = c(3, 10),
     null = "shuffle_labels",
-    nrep = 80,
+    # nrep sets the p-value resolution: the add-one estimator has a floor of
+    # 1 / (1 + nrep), so enough draws are needed to clear the FDR threshold.
+    nrep = 300,
     taper = "hann",
     p_adjust = "fdr",
     seed = 55
   )
 
   idx <- which.min(abs(res$observed$freq - 6))
-  expect_equal(dim(res$null$power), c(80L, length(res$observed$freq)))
+  expect_equal(dim(res$null$power), c(300L, length(res$observed$freq)))
   expect_true(is.finite(res$stats$z[idx]))
   expect_lt(res$stats$p_adj[idx], 0.1)
 })

@@ -29,7 +29,11 @@ detect_clusters(
 
 \item{method}{"extract" or "watershed".}
 
-\item{smooth}{optional numeric or length-2 vector for Gaussian smoothing (pixels).}
+\item{smooth}{optional Gaussian smoothing width in pixels. Smoothing is
+isotropic: a scalar sets the standard deviation for both axes. A length-2
+vector is accepted for backward compatibility but only its first element is
+used (a warning is emitted if the two values differ), because the
+underlying \code{imager::isoblur} smoother is isotropic.}
 
 \item{split_clusters}{logical; attempt to split multi-peak clusters.}
 
@@ -55,4 +59,10 @@ list of cluster structs with coordinates and stats.
 }
 \description{
 Detect clusters with optional splitting
+}
+\details{
+Cluster labeling treats the outermost rows and columns as background (see
+\code{\link{extract_clusters}}); clusters touching the matrix edge are not
+detected. Pad \code{data} with a background frame beforehand if edge clusters
+matter.
 }

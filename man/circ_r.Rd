@@ -7,7 +7,9 @@
 circ_r(alpha, w = NULL, d = 0, dim = 1)
 }
 \arguments{
-\item{alpha}{numeric vector or matrix of angles in radians.}
+\item{alpha}{numeric vector or matrix of angles in radians. For vector input,
+non-finite angles (and their weights) are removed before computation; an
+all-invalid vector returns \code{NA}.}
 
 \item{w}{optional weights (same dimensions as \code{alpha}). If NULL, uniform weights.}
 

@@ -60,3 +60,10 @@ Builds a null distribution for the group-average spectrum by resampling each
 subject series, then computes empirical p-values, z-scores, and optional FDR
 correction across frequencies.
 }
+\details{
+Per-frequency p-values use the add-one (Phipson-Smyth) one-sided permutation
+estimator \eqn{p = (1 + \#\{null \ge obs\}) / (1 + nrep)}, which is never
+exactly zero. The smallest attainable p-value is therefore
+\eqn{1 / (1 + nrep)}, so choose \code{nrep} large enough to resolve the
+p-values (and any FDR threshold) you need.
+}

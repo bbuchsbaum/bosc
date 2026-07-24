@@ -486,10 +486,14 @@ unique_group_frame <- function(data, by) {
 }
 
 same_or_na <- function(x, y) {
+  # Returns a plain logical mask (never NA). When y is NA, match NA entries of
+  # x; otherwise match equal, non-NA entries. Guarding against NA in x matters
+  # because the result is used directly as a row index: an NA there would select
+  # spurious all-NA rows.
   if (is.na(y)) {
     is.na(x)
   } else {
-    x == y
+    !is.na(x) & x == y
   }
 }
 

@@ -3,7 +3,9 @@
 #' Computes the mean direction for circular data. Port of MATLAB \code{circ_mean}
 #' from the Circular Statistics Toolbox (Berens, 2009).
 #'
-#' @param alpha numeric vector or matrix of angles in radians.
+#' @param alpha numeric vector or matrix of angles in radians. For vector input,
+#'   non-finite angles (and their weights) are removed before computation; an
+#'   all-invalid vector returns \code{NA}.
 #' @param w optional weights (same dimensions as \code{alpha}). If NULL, uniform weights.
 #' @param dim integer; dimension along which to compute mean (default 1).
 #' @return If \code{alpha} is a vector, returns a single mean direction. If matrix,
@@ -35,9 +37,15 @@ circ_mean <- function(alpha, w = NULL, dim = 1) {
     }
   }
 
-  # For vectors, treat as 1D
+  # For vectors, treat as 1D. Non-finite angles (and their weights) are dropped
+  # so the result stays consistent with circ_r() and circ_rayleigh(), which
+  # also ignore invalid observations.
   if (length(dims) == 0 || (length(dims) == 1 && dims[1] == length(alpha))) {
-    r <- sum(w * exp(1i * alpha))
+    alpha <- as.numeric(alpha)
+    w <- as.numeric(w)
+    valid <- is.finite(alpha) & is.finite(w)
+    if (!any(valid)) return(NA_real_)
+    r <- sum(w[valid] * exp(1i * alpha[valid]))
     return(Arg(r))
   }
 
@@ -52,7 +60,9 @@ circ_mean <- function(alpha, w = NULL, dim = 1) {
 #' concentration (0 = uniform, 1 = perfectly aligned). Port of MATLAB \code{circ_r}
 #' from the Circular Statistics Toolbox (Berens, 2009).
 #'
-#' @param alpha numeric vector or matrix of angles in radians.
+#' @param alpha numeric vector or matrix of angles in radians. For vector input,
+#'   non-finite angles (and their weights) are removed before computation; an
+#'   all-invalid vector returns \code{NA}.
 #' @param w optional weights (same dimensions as \code{alpha}). If NULL, uniform weights.
 #' @param d optional spacing of bin centers for binned data (radians). If provided,
 #'   applies correction factor for bias in estimation of r.
@@ -86,10 +96,16 @@ circ_r <- function(alpha, w = NULL, d = 0, dim = 1) {
     }
   }
 
-  # For vectors
+  # For vectors. Non-finite angles (and their weights) are dropped so the result
+  # stays consistent with circ_mean() and circ_rayleigh(), which also ignore
+  # invalid observations.
   if (length(dims) == 0 || (length(dims) == 1 && dims[1] == length(alpha))) {
-    r_complex <- sum(w * exp(1i * alpha))
-    r <- abs(r_complex) / sum(w)
+    alpha <- as.numeric(alpha)
+    w <- as.numeric(w)
+    valid <- is.finite(alpha) & is.finite(w)
+    if (!any(valid)) return(NA_real_)
+    r_complex <- sum(w[valid] * exp(1i * alpha[valid]))
+    r <- abs(r_complex) / sum(w[valid])
     # Apply binning correction if d != 0
     if (d != 0) {
       c_corr <- d / 2 / sin(d / 2)

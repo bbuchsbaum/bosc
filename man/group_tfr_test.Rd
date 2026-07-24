@@ -57,3 +57,8 @@ list with \code{observed}, \code{null}, \code{stats}, and \code{meta}.
 Computes an empirical null distribution for grouped narrowband amplitude maps
 and returns cell-wise statistics with optional cluster summaries.
 }
+\details{
+Cell-wise p-values use the add-one (Phipson-Smyth) one-sided permutation
+estimator \eqn{p = (1 + \#\{null \ge obs\}) / (1 + nrep)}, which is never
+exactly zero; the smallest attainable p-value is \eqn{1 / (1 + nrep)}.
+}

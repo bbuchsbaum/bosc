@@ -110,6 +110,10 @@ varied across a regular grid and oscillatory structure is tested on the
 resulting subject-by-bin series. The package implementation is generic, but
 the memory-encoding application in Biba et al. (2026) is a concrete example
 of this analysis pattern.
+
+Per-frequency p-values use the add-one (Phipson-Smyth) one-sided permutation
+estimator \eqn{p = (1 + \#\{null \ge obs\}) / (1 + nrep)}, so the smallest
+attainable p-value is \eqn{1 / (1 + nrep)} and never exactly zero.
 }
 \references{
 Biba, T. M., Decker, A., Herrmann, B., Fukuda, K., Katz, C. N.,

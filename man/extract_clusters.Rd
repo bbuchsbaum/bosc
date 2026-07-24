@@ -12,8 +12,17 @@ extract_clusters(data, thres = NULL)
 \item{thres}{numeric threshold; if NULL, assumes binary input.}
 }
 \value{
-integer matrix of labels (0 for below threshold).
+integer matrix of labels (0 for below threshold or on the border).
 }
 \description{
 Thresholds 2D data and labels connected components (8-connectivity).
+}
+\details{
+The outermost rows and columns are treated as background: pixels on the first
+or last row/column are never assigned to a cluster, and cannot bridge two
+interior components. This border convention matches the reference MATLAB
+image-labeling logic. If clusters may legitimately touch the matrix edge, pad
+\code{data} with a background frame (e.g. \code{cbind}/\code{rbind} of a
+below-threshold row/column) before calling. A matrix with fewer than three
+rows or columns has no interior and returns all-zero labels.
 }

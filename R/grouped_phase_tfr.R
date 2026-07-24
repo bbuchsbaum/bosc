@@ -95,6 +95,10 @@ group_tfr <- function(x,
 #' @param cluster_threshold z-threshold used for cluster detection.
 #' @param seed optional random seed.
 #' @return list with \code{observed}, \code{null}, \code{stats}, and \code{meta}.
+#' @details
+#' Cell-wise p-values use the add-one (Phipson-Smyth) one-sided permutation
+#' estimator \eqn{p = (1 + \#\{null \ge obs\}) / (1 + nrep)}, which is never
+#' exactly zero; the smallest attainable p-value is \eqn{1 / (1 + nrep)}.
 #' @export
 group_tfr_test <- function(x,
                            fs,
@@ -168,10 +172,13 @@ group_tfr_test <- function(x,
   z <- (obs$map - null_mean) / null_sd
   z[!is.finite(z)] <- NA_real_
 
+  # Add-one (Phipson-Smyth) one-sided permutation p-value, so cells are never
+  # assigned an exact zero: p = (1 + #{null >= obs}) / (1 + nrep).
   p <- matrix(NA_real_, nrow = nrow(obs$map), ncol = ncol(obs$map))
   for (fi in seq_len(nrow(obs$map))) {
     for (ti in seq_len(ncol(obs$map))) {
-      p[fi, ti] <- mean(null_maps[, fi, ti] >= obs$map[fi, ti])
+      ge <- sum(null_maps[, fi, ti] >= obs$map[fi, ti])
+      p[fi, ti] <- (1 + ge) / (1 + nrep)
     }
   }
   p_adj <- if (p_adjust == "fdr") {

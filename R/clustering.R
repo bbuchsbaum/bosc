@@ -2,9 +2,18 @@
 #'
 #' Thresholds 2D data and labels connected components (8-connectivity).
 #'
+#' @details
+#' The outermost rows and columns are treated as background: pixels on the first
+#' or last row/column are never assigned to a cluster, and cannot bridge two
+#' interior components. This border convention matches the reference MATLAB
+#' image-labeling logic. If clusters may legitimately touch the matrix edge, pad
+#' \code{data} with a background frame (e.g. \code{cbind}/\code{rbind} of a
+#' below-threshold row/column) before calling. A matrix with fewer than three
+#' rows or columns has no interior and returns all-zero labels.
+#'
 #' @param data matrix of values.
 #' @param thres numeric threshold; if NULL, assumes binary input.
-#' @return integer matrix of labels (0 for below threshold).
+#' @return integer matrix of labels (0 for below threshold or on the border).
 #' @export
 extract_clusters <- function(data, thres = NULL) {
   dat <- data
@@ -71,10 +80,20 @@ extract_clusters <- function(data, thres = NULL) {
 
 #' Detect clusters with optional splitting
 #'
+#' @details
+#' Cluster labeling treats the outermost rows and columns as background (see
+#' \code{\link{extract_clusters}}); clusters touching the matrix edge are not
+#' detected. Pad \code{data} with a background frame beforehand if edge clusters
+#' matter.
+#'
 #' @param data matrix of primary values.
 #' @param threshold numeric; binarization threshold.
 #' @param method "extract" or "watershed".
-#' @param smooth optional numeric or length-2 vector for Gaussian smoothing (pixels).
+#' @param smooth optional Gaussian smoothing width in pixels. Smoothing is
+#'   isotropic: a scalar sets the standard deviation for both axes. A length-2
+#'   vector is accepted for backward compatibility but only its first element is
+#'   used (a warning is emitted if the two values differ), because the
+#'   underlying \code{imager::isoblur} smoother is isotropic.
 #' @param split_clusters logical; attempt to split multi-peak clusters.
 #' @param peak_height numeric vector of relative peak heights for splitting.
 #' @param min_new_cluster_size minimum fraction of original cluster to keep split.
@@ -117,9 +136,13 @@ detect_clusters <- function(data,
       stop("The 'imager' package is required for Gaussian smoothing. ",
            "Install it with install.packages('imager').", call. = FALSE)
     }
-    sigma <- if (length(smooth) == 1) c(smooth, smooth) else smooth
+    if (length(smooth) >= 2 && !isTRUE(all.equal(smooth[1], smooth[2]))) {
+      warning("Gaussian smoothing is isotropic; using smooth[1] and ignoring the ",
+              "remaining value(s).", call. = FALSE)
+    }
+    sigma <- smooth[1]
     img <- imager::as.cimg(t(data))
-    img <- imager::isoblur(img, sigma = sigma[1])
+    img <- imager::isoblur(img, sigma = sigma)
     sdata <- t(as.matrix(img))
   } else {
     sdata <- data
