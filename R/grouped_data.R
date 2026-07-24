@@ -367,7 +367,16 @@ aggregate_by_bin <- function(data,
   groups <- unique_group_frame(data, by)
   if (nrow(groups) == 0) groups <- data.frame(.row = 1L)[, FALSE, drop = FALSE]
 
-  rows <- vector("list", nrow(groups) * if (complete) length(bins) else max(1L, length(bins)))
+  # Accumulate output columns in preallocated vectors and assemble a single
+  # data.frame at the end. Building a list of one-row frames and rbind-ing them
+  # is quadratic and dominates runtime when this runs inside permutation-null
+  # loops.
+  max_rows <- nrow(groups) * length(bins)
+  group_idx <- integer(max_rows)
+  bin_vals <- vector(mode = typeof(bins), length = max_rows)
+  out_vals <- rep(NA_real_, max_rows)
+  n_vals <- integer(max_rows)
+  n_nonmissing_vals <- integer(max_rows)
   row_i <- 0L
 
   for (g in seq_len(nrow(groups))) {
@@ -380,24 +389,35 @@ aggregate_by_bin <- function(data,
 
     group_data <- data[group_mask, , drop = FALSE]
     group_bins <- if (complete) bins else sort(unique(group_data[[bin]][!is.na(group_data[[bin]])]))
+    if (length(group_bins) == 0) next
+    group_bin_col <- group_data[[bin]]
+    group_val_col <- group_data[[value]]
     for (b in group_bins) {
-      in_bin <- !is.na(group_data[[bin]]) & group_data[[bin]] == b
-      vals <- group_data[[value]][in_bin]
+      in_bin <- !is.na(group_bin_col) & group_bin_col == b
+      vals <- group_val_col[in_bin]
       n_total <- length(vals)
       n_nonmissing <- sum(!is.na(vals))
       if (na_rm) vals <- vals[!is.na(vals)]
       agg <- if (length(vals) == 0) NA_real_ else as.numeric(fun(vals))
       row_i <- row_i + 1L
-      row <- groups[g, , drop = FALSE]
-      row[[bin]] <- b
-      row[[out]] <- agg
-      row$n <- n_total
-      row$n_nonmissing <- n_nonmissing
-      rows[[row_i]] <- row
+      group_idx[row_i] <- g
+      bin_vals[row_i] <- b
+      out_vals[row_i] <- agg
+      n_vals[row_i] <- n_total
+      n_nonmissing_vals[row_i] <- n_nonmissing
     }
   }
 
-  out_df <- do.call(rbind, rows[seq_len(row_i)])
+  keep <- seq_len(row_i)
+  out_df <- groups[group_idx[keep], , drop = FALSE]
+  bin_vals <- bin_vals[keep]
+  out_vals <- out_vals[keep]
+  n_vals <- n_vals[keep]
+  n_nonmissing_vals <- n_nonmissing_vals[keep]
+  out_df[[bin]] <- bin_vals
+  out_df[[out]] <- out_vals
+  out_df$n <- n_vals
+  out_df$n_nonmissing <- n_nonmissing_vals
   rownames(out_df) <- NULL
   out_df
 }

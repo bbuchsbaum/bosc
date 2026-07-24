@@ -1,5 +1,8 @@
 # Declare global variables used in ggplot2 aes() to avoid R CMD check NOTEs
-utils::globalVariables(c("freq", "power", "phase", "time", "value", "x", "y"))
+utils::globalVariables(c(
+  "freq", "power", "phase", "time", "value", "x", "y",
+  "label", "color", "q05", "q25", "q50", "q75", "q95"
+))
 
 #' Plot spectrum
 #'
@@ -116,38 +119,80 @@ plot_simplebox <- function(labels, data, colors = NULL) {
     }
   })
 
+  # Assemble one data frame per layer type. Constant aesthetics must not be
+  # placed inside aes() referencing the loop variable: ggplot2 evaluates aes
+  # expressions lazily at draw time, so every layer would otherwise resolve to
+  # the final group. Building explicit per-layer data frames keeps each row's
+  # values bound to that row.
+  box_stats <- Filter(function(s) isTRUE(s$show_box), stats_list)
+  box_df <- if (length(box_stats) > 0) {
+    data.frame(
+      label = vapply(box_stats, function(s) as.numeric(s$label), numeric(1)),
+      q05 = vapply(box_stats, function(s) as.numeric(s$q05), numeric(1)),
+      q25 = vapply(box_stats, function(s) as.numeric(s$q25), numeric(1)),
+      q50 = vapply(box_stats, function(s) as.numeric(s$q50), numeric(1)),
+      q75 = vapply(box_stats, function(s) as.numeric(s$q75), numeric(1)),
+      q95 = vapply(box_stats, function(s) as.numeric(s$q95), numeric(1)),
+      color = vapply(box_stats, function(s) s$color, character(1)),
+      stringsAsFactors = FALSE
+    )
+  } else {
+    NULL
+  }
+
+  point_stats <- Filter(
+    function(s) !isTRUE(s$show_box) && !is.null(s$points) && length(s$points) > 0,
+    stats_list
+  )
+  points_df <- if (length(point_stats) > 0) {
+    do.call(rbind, lapply(point_stats, function(s) {
+      data.frame(
+        x = rep(as.numeric(s$label), length(s$points)),
+        y = as.numeric(s$points),
+        color = rep(s$color, length(s$points)),
+        stringsAsFactors = FALSE
+      )
+    }))
+  } else {
+    NULL
+  }
+
   # Build plot
   p <- ggplot2::ggplot() + ggplot2::theme_minimal()
 
-  for (s in stats_list) {
-    if (s$show_box) {
+  if (!is.null(box_df)) {
+    p <- p +
       # 5th-95th percentile line (thin)
-      p <- p + ggplot2::geom_segment(
-        ggplot2::aes(x = s$label, xend = s$label, y = s$q05, yend = s$q95),
-        linewidth = 0.5, color = s$color
-      )
+      ggplot2::geom_segment(
+        data = box_df,
+        ggplot2::aes(x = label, xend = label, y = q05, yend = q95, color = color),
+        linewidth = 0.5
+      ) +
       # 25th-75th percentile line (thick)
-      p <- p + ggplot2::geom_segment(
-        ggplot2::aes(x = s$label, xend = s$label, y = s$q25, yend = s$q75),
-        linewidth = 2, color = s$color
-      )
+      ggplot2::geom_segment(
+        data = box_df,
+        ggplot2::aes(x = label, xend = label, y = q25, yend = q75, color = color),
+        linewidth = 2
+      ) +
       # Median point
-      p <- p + ggplot2::geom_point(
-        ggplot2::aes(x = s$label, y = s$q50),
-        size = 3, color = s$color
+      ggplot2::geom_point(
+        data = box_df,
+        ggplot2::aes(x = label, y = q50, color = color),
+        size = 3
       )
-    } else if (!is.null(s$points) && length(s$points) > 0) {
-      # Individual points for small groups
-      pts_df <- data.frame(x = rep(s$label, length(s$points)), y = s$points)
-      p <- p + ggplot2::geom_point(
-        data = pts_df,
-        ggplot2::aes(x = x, y = y),
-        size = 2, color = s$color
-      )
-    }
+  }
+  if (!is.null(points_df)) {
+    # Individual points for small groups
+    p <- p + ggplot2::geom_point(
+      data = points_df,
+      ggplot2::aes(x = x, y = y, color = color),
+      size = 2
+    )
   }
 
-  p <- p + ggplot2::labs(x = "Group", y = "Value")
+  p <- p +
+    ggplot2::scale_color_identity() +
+    ggplot2::labs(x = "Group", y = "Value")
 
   # Return medians invisibly
   medians <- vapply(stats_list, function(s) {

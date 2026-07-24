@@ -189,10 +189,11 @@ spectral_peak <- function(data,
   if (fcor) {
     valid <- is.finite(corfft) & corfft > 0 & is.finite(fxx) & fxx > 0
     if (sum(valid) >= 2) {
-      # Use explicit x/y vectors so prediction is aligned with the model domain.
-      x <- log10(fxx[valid])
-      y <- log10(corfft[valid])
-      fit <- stats::lm(y ~ x)
+      # Use explicit log-log vectors so prediction is aligned with the model domain.
+      # (Named distinctly from the signal `x` above, which is no longer needed here.)
+      log_f <- log10(fxx[valid])
+      log_p <- log10(corfft[valid])
+      fit <- stats::lm(log_p ~ log_f)
       coef_fit <- stats::coef(fit)
       pos <- is.finite(fxx) & fxx > 0
       trend <- rep(NA_real_, length(fxx))
@@ -246,7 +247,8 @@ conv_same <- function(x, kernel) {
 
 hanning_window <- function(L) {
   if (L <= 1) return(rep(1, L))
-  # Symmetric Hann window matching MATLAB's hann(L) / hanning(L)
+  # Symmetric Hann window matching MATLAB's hann(L) (zero-valued endpoints).
+  # Note: MATLAB's hanning(L) differs slightly (it omits the zero endpoints).
   # Formula: 0.5 * (1 - cos(2*pi*n/(L-1))) for n = 0,1,...,L-1
   n <- seq(0, L - 1)
   0.5 * (1 - cos(2 * pi * n / (L - 1)))
