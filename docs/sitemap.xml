@@ -1,6 +1,7 @@
 <urlset xmlns = 'http://www.sitemaps.org/schemas/sitemap/0.9'>
 <url><loc>https://bbuchsbaum.github.io/bosc/404.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/Architecture.html</loc></url>
+<url><loc>https://bbuchsbaum.github.io/bosc/LICENSE-text.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/articles/bosc.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/articles/index.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/articles/oscillation-score.html</loc></url>
@@ -8,6 +9,7 @@
 <url><loc>https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/authors.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/index.html</loc></url>
+<url><loc>https://bbuchsbaum.github.io/bosc/news/index.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/reference/aggregate_by_bin.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/reference/align_time_bins.html</loc></url>
 <url><loc>https://bbuchsbaum.github.io/bosc/reference/autocorr_centered.html</loc></url>

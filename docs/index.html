@@ -7,13 +7,14 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Behavioral Oscillation Scores and Phase Analysis • bosc</title>
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><link href="extra.css" rel="stylesheet">
-<script src="extra.js"></script><meta property="og:title" content="Behavioral Oscillation Scores and Phase Analysis">
-<meta name="description" content="R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et al.) for computing oscillation scores, surrogate tests, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series. Methods are described in Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-27323-3&gt;.">
-<meta property="og:description" content="R port of the behavioral-oscillations MATLAB toolbox (Ter Wal et al.) for computing oscillation scores, surrogate tests, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series. Methods are described in Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-27323-3&gt;.">
+<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><script src="extra.js"></script><meta property="og:title" content="Behavioral Oscillation Scores and Phase Analysis">
+<meta name="description" content="Implements behavioral oscillation scoring, surrogate testing, phase analysis, pairwise phase consistency (PPC) metrics, clustering, and plotting for behavioral and neural time series. Core methods follow Ter Wal et al. (2021) and the behavioral-oscillations reference software, with grouped trial-level and subject-level spectral and time-frequency workflows for dense behavioral sampling. See Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-27323-3&gt;.">
+<meta property="og:description" content="Implements behavioral oscillation scoring, surrogate testing, phase analysis, pairwise phase consistency (PPC) metrics, clustering, and plotting for behavioral and neural time series. Core methods follow Ter Wal et al. (2021) and the behavioral-oscillations reference software, with grouped trial-level and subject-level spectral and time-frequency workflows for dense behavioral sampling. See Ter Wal et al. (2021) &lt;doi:10.1038/s41467-021-27323-3&gt;.">
+<link href="albers.css" rel="stylesheet">
+<script>window.albersdownDefaults = window.albersdownDefaults || { family: "red", preset: "homage", style: "minimal" };</script><script src="albers.js"></script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -23,7 +24,7 @@
 
     <a class="navbar-brand me-2" href="index.html">bosc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -58,20 +59,23 @@
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header"><h1 id="bosc">bosc<a class="anchor" aria-label="anchor" href="#bosc"></a>
 </h1></div>
-<p>R port of the <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">behavioral-oscillations</a> MATLAB toolbox (Ter Wal et al.). Provides core functions for oscillation scoring, surrogate testing, phase analyses, PPC metrics, clustering, and plotting for behavioral and neural time series.</p>
+<p><strong>bosc</strong> implements behavioral oscillation scoring, phase analysis, and clustering for behavioral and neural time series. Core methods follow Ter Wal et al. (2021) and the <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">behavioral-oscillations</a> reference software; grouped trial-level and subject-level spectral workflows extend those methods for dense behavioral sampling.</p>
 <div class="section level2">
 <h2 id="documentation">Documentation<a class="anchor" aria-label="anchor" href="#documentation"></a>
 </h2>
+<p>Full pkgdown site: <a href="https://bbuchsbaum.github.io/bosc/" class="uri">https://bbuchsbaum.github.io/bosc/</a></p>
 <div class="section level3">
 <h3 id="vignettes">Vignettes<a class="anchor" aria-label="anchor" href="#vignettes"></a>
 </h3>
 <ul>
 <li>
-<strong>Oscillation Score Analysis</strong> – Computing oscillation scores, surrogate testing, multi-band analysis, and narrowband Hilbert phase extraction.</li>
+<a href="https://bbuchsbaum.github.io/bosc/articles/bosc.html">Get started with bosc</a> – End-to-end introduction to the package workflow and core objects.</li>
 <li>
-<strong>PPC Analysis and Cluster Detection</strong> – Pairwise phase consistency, circular statistics, cluster-based permutation testing on time-frequency maps.</li>
+<a href="https://bbuchsbaum.github.io/bosc/articles/oscillation-score.html">Oscillation Score Analysis</a> – Computing oscillation scores, surrogate testing, multi-band analysis, and narrowband Hilbert phase extraction.</li>
 <li>
-<strong>Workflow Wrappers</strong> – High-level config-driven wrappers, batch analysis, phase-at-events pipeline, and tidy output helpers.</li>
+<a href="https://bbuchsbaum.github.io/bosc/articles/ppc-clustering.html">PPC Analysis and Cluster Detection</a> – Pairwise phase consistency, circular statistics, cluster-based permutation testing on time-frequency maps.</li>
+<li>
+<a href="https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.html">Workflow Wrappers</a> – High-level config-driven wrappers, batch analysis, phase-at-events pipeline, and tidy output helpers.</li>
 </ul>
 </div>
 </div>
@@ -100,9 +104,9 @@
 </ul>
 </div>
 <div class="section level2">
-<h2 id="enhancements-relative-to-matlab-reference">Enhancements Relative to MATLAB Reference<a class="anchor" aria-label="anchor" href="#enhancements-relative-to-matlab-reference"></a>
+<h2 id="relation-to-the-reference-matlab-toolbox">Relation to the reference MATLAB toolbox<a class="anchor" aria-label="anchor" href="#relation-to-the-reference-matlab-toolbox"></a>
 </h2>
-<p>This package closely follows the MATLAB reference implementation, with a few small R-oriented enhancements for robustness, configurability, and workflow ergonomics:</p>
+<p><strong>bosc</strong> implements methods from Ter Wal et al. (2021) in R. It is not a line-by-line translation of the <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">behavioral-oscillations</a> MATLAB toolbox: the API, return objects, grouped-analysis workflows, and several algorithm extensions are native to this package. The sections below note specific places where behavior intentionally differs from the reference implementation.</p>
 <ul>
 <li>
 <code>spectral_peak(fcor = TRUE)</code> uses an explicit, stable log-log fit/predict path in R for improved numerical stability.</li>
@@ -133,7 +137,7 @@
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<p>This package is an R port of the MATLAB toolbox developed for:</p>
+<p><strong>bosc</strong> implements methods described in Ter Wal et al. (2021). If you use this package in published work, please cite that paper and, when appropriate, the reference MATLAB software:</p>
 <p><strong>Ter Wal, M.</strong>, Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L., Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V., Chelvarajah, R., Staresina, B., Hanslmayr, S., &amp; Wimber, M. (2021). Theta rhythmicity governs the timing of behavioural and hippocampal responses in humans specifically during memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https://doi.org/10.1038/s41467-021-27323-3" class="external-link uri">https://doi.org/10.1038/s41467-021-27323-3</a></p>
 <p>Dense-sampling trial-to-spectrum workflows in the grouped APIs and examples are also motivated by:</p>
 <p><strong>Biba, T. M.</strong>, Decker, A., Herrmann, B., Fukuda, K., Katz, C. N., Valiante, T. A., &amp; Duncan, K. (2026). Episodic memory encoding fluctuates at a theta rhythm of 3-10 Hz. <em>Nature Human Behaviour</em>. <a href="https://doi.org/10.1038/s41562-026-02416-5" class="external-link uri">https://doi.org/10.1038/s41562-026-02416-5</a></p>
@@ -142,8 +146,7 @@
 <strong>Original MATLAB code</strong>: <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link uri">https://github.com/marijeterwal/behavioral-oscillations</a>
 </li>
 <li>
-<strong>Datasets</strong>: <a href="https://doi.org/10.6084/m9.figshare.c.5192567" class="external-link uri">https://doi.org/10.6084/m9.figshare.c.5192567</a>
-</li>
+<strong>Datasets</strong>: figshare collection 5192567 (<a href="doi:10.6084/m9.figshare.c.5192567" class="uri">doi:10.6084/m9.figshare.c.5192567</a>)</li>
 <li>
 <strong>Video walkthrough</strong> (CNS 2020 poster G183): <a href="https://youtu.be/28kpbGDHLuo" class="external-link uri">https://youtu.be/28kpbGDHLuo</a>
 </li>
@@ -168,13 +171,16 @@
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/bbuchsbaum/bosc/" class="external-link">Browse source code</a></li>
+<li><a href="https://github.com/bbuchsbaum/bosc/issues" class="external-link">Report a bug</a></li>
 </ul>
 </div>
 
 <div class="license">
 <h2 data-toc-skip>License</h2>
 <ul class="list-unstyled">
-<li><a href="https://creativecommons.org/licenses/by/4.0" class="external-link">CC BY 4.0</a></li>
+<li>
+<a href="https://creativecommons.org/licenses/by/4.0" class="external-link">CC BY 4.0</a> + file <a href="LICENSE-text.html">LICENSE</a>
+</li>
 </ul>
 </div>
 
@@ -204,7 +210,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

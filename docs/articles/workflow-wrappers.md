@@ -32,13 +32,13 @@ its significance against surrogates.
 does this in one call:
 
 ``` r
-# Generate a signal with 10 Hz periodicity
-set.seed(42)
-fs <- 1000
+# Generate a clean 10 Hz event train
+fs <- 1024
 sig <- numeric(fs * 2)
-spike_times <- seq(50, 1950, by = 100) + round(rnorm(20, sd = 5))
-spike_times <- spike_times[spike_times > 0 & spike_times <= length(sig)]
+spike_times <- seq(52, 1996, by = 102)
 sig[spike_times] <- 1
+
+# This example is intentionally regular so the detected peak lands at 10 Hz.
 
 # One-call analysis: compute oscore, surrogates, and z-score
 result <- oscillation_score_z(
@@ -63,15 +63,15 @@ stopifnot(
 )
 
 cat("Oscillation score:", round(result$oscore, 3), "\n")
-#> Oscillation score: 1.17
+#> Oscillation score: 43.173
 cat("Peak frequency:", round(result$fosc, 2), "Hz\n")
-#> Peak frequency: 7.81 Hz
+#> Peak frequency: 10 Hz
 cat("Z-score:", round(result$z, 2), "\n")
-#> Z-score: -1.47
+#> Z-score: 3.17
 cat("P-value:", format(result$pval, digits = 3), "\n")
-#> P-value: 0.929
+#> P-value: 0.000758
 cat("Significant:", result$significant, "\n")
-#> Significant: FALSE
+#> Significant: TRUE
 ```
 
 ## How do you run the same analysis across subjects?
@@ -106,9 +106,9 @@ stopifnot(
 )
 
 cat("Oscillation score:", round(os$oscore, 3), "\n")
-#> Oscillation score: 43.858
+#> Oscillation score: 40.925
 cat("Peak frequency:", round(os$fosc, 2), "Hz\n")
-#> Peak frequency: 10.13 Hz
+#> Peak frequency: 9.77 Hz
 ```
 
 ### Adding surrogates to your config
@@ -133,11 +133,11 @@ stopifnot(
 )
 
 cat("Surrogate mean:", round(mean(sur$oscore_rp), 3), "\n")
-#> Surrogate mean: 4.292
+#> Surrogate mean: 4.488
 cat("Surrogate SD:", round(sd(sur$oscore_rp), 3), "\n")
-#> Surrogate SD: 3.125
+#> Surrogate SD: 3.374
 cat("Log-Z score:", round(z, 2), "\n")
-#> Log-Z score: 3.13
+#> Log-Z score: 2.58
 ```
 
 ### Processing multiple subjects
@@ -274,16 +274,16 @@ with ggplot2/dplyr. \### oscore_tidy: Oscillation Score Summaries
 os_tidy <- oscore_tidy(os)
 stopifnot(all(c("oscore", "fosc") %in% names(os_tidy)))
 os_tidy
-#>     oscore     fosc     fmin     fmax
-#> 1 43.85796 10.13184 1.681614 10.65022
+#>     oscore     fosc     fmin    fmax
+#> 1 40.92534 9.765625 1.631321 10.3317
 
 # Can also handle oscillation_score_z output
 z_result <- oscillation_score_z(sig, fs = 1000, flim = c(5, 20), nrep = 50)
 z_tidy <- oscore_tidy(z_result)
 stopifnot(all(c("oscore", "fosc", "z", "pval") %in% names(z_tidy)))
 z_tidy
-#>    oscore     fosc fmin     fmax         z      pval significant
-#> 1 4.90813 7.324219    5 10.50972 0.3146127 0.3765279       FALSE
+#>     oscore     fosc fmin     fmax        z        pval significant
+#> 1 31.60867 9.765625    5 10.30397 3.038308 0.001189554        TRUE
 ```
 
 ### oscore_spectrum: Extract Spectrum Data
@@ -299,12 +299,12 @@ stopifnot(
 
 head(spec_df)
 #>       freq        power
-#> 1 1.708984 1.338058e-04
-#> 2 1.831055 1.166433e-04
-#> 3 1.953125 9.469540e-05
-#> 4 2.075195 8.186402e-05
-#> 5 2.197266 7.682177e-05
-#> 6 2.319336 6.915301e-05
+#> 1 1.708984 1.157580e-04
+#> 2 1.831055 9.268441e-05
+#> 3 1.953125 7.546343e-05
+#> 4 2.075195 7.301113e-05
+#> 5 2.197266 7.169845e-05
+#> 6 2.319336 6.306718e-05
 
 ggplot2::ggplot(spec_df, ggplot2::aes(x = freq, y = power)) +
   ggplot2::geom_line(color = "#1B75BB") +
@@ -499,9 +499,9 @@ detected peak frequency.
 
 ## References
 
-The algorithms in **bosc** are ported from the
+Core algorithms in **bosc** follow Ter Wal et al. (2021) and the
 [behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
-MATLAB toolbox. Please cite:
+reference software. Please cite:
 
 > Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 > behavioural and hippocampal responses in humans specifically during

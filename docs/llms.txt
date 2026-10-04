@@ -1,23 +1,33 @@
 # bosc
 
-R port of the
+**bosc** implements behavioral oscillation scoring, phase analysis, and
+clustering for behavioral and neural time series. Core methods follow
+Ter Wal et al. (2021) and the
 [behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
-MATLAB toolbox (Ter Wal et al.). Provides core functions for oscillation
-scoring, surrogate testing, phase analyses, PPC metrics, clustering, and
-plotting for behavioral and neural time series.
+reference software; grouped trial-level and subject-level spectral
+workflows extend those methods for dense behavioral sampling.
 
 ## Documentation
 
+Full pkgdown site: <https://bbuchsbaum.github.io/bosc/>
+
 ### Vignettes
 
-- **Oscillation Score Analysis** – Computing oscillation scores,
-  surrogate testing, multi-band analysis, and narrowband Hilbert phase
-  extraction.
-- **PPC Analysis and Cluster Detection** – Pairwise phase consistency,
-  circular statistics, cluster-based permutation testing on
-  time-frequency maps.
-- **Workflow Wrappers** – High-level config-driven wrappers, batch
-  analysis, phase-at-events pipeline, and tidy output helpers.
+- [Get started with
+  bosc](https://bbuchsbaum.github.io/bosc/articles/bosc.html) –
+  End-to-end introduction to the package workflow and core objects.
+- [Oscillation Score
+  Analysis](https://bbuchsbaum.github.io/bosc/articles/oscillation-score.html)
+  – Computing oscillation scores, surrogate testing, multi-band
+  analysis, and narrowband Hilbert phase extraction.
+- [PPC Analysis and Cluster
+  Detection](https://bbuchsbaum.github.io/bosc/articles/ppc-clustering.html)
+  – Pairwise phase consistency, circular statistics, cluster-based
+  permutation testing on time-frequency maps.
+- [Workflow
+  Wrappers](https://bbuchsbaum.github.io/bosc/articles/workflow-wrappers.html)
+  – High-level config-driven wrappers, batch analysis, phase-at-events
+  pipeline, and tidy output helpers.
 
 ## Install
 
@@ -50,11 +60,15 @@ package manager before `install.packages("imager")`.
   watershed/extract, cluster splitting).
 - Plotting: `plot_spectrum`, `plot_phase_hist`.
 
-## Enhancements Relative to MATLAB Reference
+## Relation to the reference MATLAB toolbox
 
-This package closely follows the MATLAB reference implementation, with a
-few small R-oriented enhancements for robustness, configurability, and
-workflow ergonomics:
+**bosc** implements methods from Ter Wal et al. (2021) in R. It is not a
+line-by-line translation of the
+[behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
+MATLAB toolbox: the API, return objects, grouped-analysis workflows, and
+several algorithm extensions are native to this package. The sections
+below note specific places where behavior intentionally differs from the
+reference implementation.
 
 - `spectral_peak(fcor = TRUE)` uses an explicit, stable log-log
   fit/predict path in R for improved numerical stability.
@@ -91,7 +105,9 @@ devtools::test("bosc")
 
 ## References
 
-This package is an R port of the MATLAB toolbox developed for:
+**bosc** implements methods described in Ter Wal et al. (2021). If you
+use this package in published work, please cite that paper and, when
+appropriate, the reference MATLAB software:
 
 **Ter Wal, M.**, Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L.,
 Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V.,
@@ -110,7 +126,8 @@ fluctuates at a theta rhythm of 3-10 Hz. *Nature Human Behaviour*.
 
 - **Original MATLAB code**:
   <https://github.com/marijeterwal/behavioral-oscillations>
-- **Datasets**: <https://doi.org/10.6084/m9.figshare.c.5192567>
+- **Datasets**: figshare collection 5192567
+  (<doi:10.6084/m9.figshare.c.5192567>)
 - **Video walkthrough** (CNS 2020 poster G183):
   <https://youtu.be/28kpbGDHLuo>
 
