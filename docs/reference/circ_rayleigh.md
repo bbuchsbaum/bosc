@@ -42,19 +42,19 @@ Zar JH (2010). Biostatistical Analysis. 5th ed. Prentice Hall.
 uniform_angles <- runif(100, 0, 2*pi)
 circ_rayleigh(uniform_angles)
 #> $pval
-#> [1] 0.1835458
+#> [1] 0.2807517
 #> 
 #> $z
-#> [1] 1.696592
+#> [1] 1.272614
 #> 
 
 # Concentrated data - expect low p-value
 concentrated <- rnorm(100, mean = 0, sd = 0.3)
 circ_rayleigh(concentrated)
 #> $pval
-#> [1] 3.258676e-38
+#> [1] 3.029581e-38
 #> 
 #> $z
-#> [1] 91.50884
+#> [1] 91.58534
 #> 
 ```

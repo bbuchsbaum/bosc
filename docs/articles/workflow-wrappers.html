@@ -7,11 +7,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <title>Running Batch Analyses and Extracting Phase • bosc</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><link href="../extra.css" rel="stylesheet">
-<script src="../extra.js"></script><meta property="og:title" content="Running Batch Analyses and Extracting Phase">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><script src="../extra.js"></script><meta property="og:title" content="Running Batch Analyses and Extracting Phase">
+<link href="../albers.css" rel="stylesheet">
+<script>window.albersdownDefaults = window.albersdownDefaults || { family: "red", preset: "homage", style: "minimal" };</script><script src="../albers.js"></script>
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -21,7 +22,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">bosc</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.0.0.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -94,13 +95,13 @@ times to instantaneous phase.</p>
 testing its significance against surrogates.
 <code><a href="../reference/oscillation_score_z.html">oscillation_score_z()</a></code> does this in one call:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># Generate a signal with 10 Hz periodicity</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></span>
-<span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fl">1000</span></span>
+<code class="sourceCode R"><span><span class="co"># Generate a clean 10 Hz event train</span></span>
+<span><span class="va">fs</span> <span class="op">&lt;-</span> <span class="fl">1024</span></span>
 <span><span class="va">sig</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric</a></span><span class="op">(</span><span class="va">fs</span> <span class="op">*</span> <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="va">spike_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">50</span>, <span class="fl">1950</span>, by <span class="op">=</span> <span class="fl">100</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fl">20</span>, sd <span class="op">=</span> <span class="fl">5</span><span class="op">)</span><span class="op">)</span></span>
-<span><span class="va">spike_times</span> <span class="op">&lt;-</span> <span class="va">spike_times</span><span class="op">[</span><span class="va">spike_times</span> <span class="op">&gt;</span> <span class="fl">0</span> <span class="op">&amp;</span> <span class="va">spike_times</span> <span class="op">&lt;=</span> <span class="fu"><a href="https://rdrr.io/r/base/length.html" class="external-link">length</a></span><span class="op">(</span><span class="va">sig</span><span class="op">)</span><span class="op">]</span></span>
+<span><span class="va">spike_times</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq</a></span><span class="op">(</span><span class="fl">52</span>, <span class="fl">1996</span>, by <span class="op">=</span> <span class="fl">102</span><span class="op">)</span></span>
 <span><span class="va">sig</span><span class="op">[</span><span class="va">spike_times</span><span class="op">]</span> <span class="op">&lt;-</span> <span class="fl">1</span></span>
+<span></span>
+<span><span class="co"># This example is intentionally regular so the detected peak lands at 10 Hz.</span></span>
 <span></span>
 <span><span class="co"># One-call analysis: compute oscore, surrogates, and z-score</span></span>
 <span><span class="va">result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score_z.html">oscillation_score_z</a></span><span class="op">(</span></span>
@@ -125,15 +126,15 @@ testing its significance against surrogates.
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Oscillation score: 1.17</span></span>
+<span><span class="co">#&gt; Oscillation score: 43.173</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Peak frequency:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">fosc</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"Hz\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Peak frequency: 7.81 Hz</span></span>
+<span><span class="co">#&gt; Peak frequency: 10 Hz</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Z-score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">z</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Z-score: -1.47</span></span>
+<span><span class="co">#&gt; Z-score: 3.17</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"P-value:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/format.html" class="external-link">format</a></span><span class="op">(</span><span class="va">result</span><span class="op">$</span><span class="va">pval</span>, digits <span class="op">=</span> <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; P-value: 0.929</span></span>
+<span><span class="co">#&gt; P-value: 0.000758</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Significant:"</span>, <span class="va">result</span><span class="op">$</span><span class="va">significant</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Significant: FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt; Significant: TRUE</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="how-do-you-run-the-same-analysis-across-subjects">How do you run the same analysis across subjects?<a class="anchor" aria-label="anchor" href="#how-do-you-run-the-same-analysis-across-subjects"></a>
@@ -168,9 +169,9 @@ convenient to define parameters once and reuse them. The
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Oscillation score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">os</span><span class="op">$</span><span class="va">oscore</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Oscillation score: 43.858</span></span>
+<span><span class="co">#&gt; Oscillation score: 40.925</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Peak frequency:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">os</span><span class="op">$</span><span class="va">fosc</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"Hz\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Peak frequency: 10.13 Hz</span></span></code></pre></div>
+<span><span class="co">#&gt; Peak frequency: 9.77 Hz</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="adding-surrogates-to-your-config">Adding surrogates to your config<a class="anchor" aria-label="anchor" href="#adding-surrogates-to-your-config"></a>
@@ -195,11 +196,11 @@ convenient to define parameters once and reuse them. The
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Surrogate mean:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Surrogate mean: 4.292</span></span>
+<span><span class="co">#&gt; Surrogate mean: 4.488</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Surrogate SD:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">sur</span><span class="op">$</span><span class="va">oscore_rp</span><span class="op">)</span>, <span class="fl">3</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Surrogate SD: 3.125</span></span>
+<span><span class="co">#&gt; Surrogate SD: 3.374</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/cat.html" class="external-link">cat</a></span><span class="op">(</span><span class="st">"Log-Z score:"</span>, <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">z</span>, <span class="fl">2</span><span class="op">)</span>, <span class="st">"\n"</span><span class="op">)</span></span>
-<span><span class="co">#&gt; Log-Z score: 3.13</span></span></code></pre></div>
+<span><span class="co">#&gt; Log-Z score: 2.58</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="processing-multiple-subjects">Processing multiple subjects<a class="anchor" aria-label="anchor" href="#processing-multiple-subjects"></a>
@@ -330,16 +331,16 @@ with ggplot2/dplyr. ### oscore_tidy: Oscillation Score Summaries</p>
 <span><span class="va">os_tidy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscore_tidy.html">oscore_tidy</a></span><span class="op">(</span><span class="va">os</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"oscore"</span>, <span class="st">"fosc"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">os_tidy</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">os_tidy</span></span>
-<span><span class="co">#&gt;     oscore     fosc     fmin     fmax</span></span>
-<span><span class="co">#&gt; 1 43.85796 10.13184 1.681614 10.65022</span></span>
+<span><span class="co">#&gt;     oscore     fosc     fmin    fmax</span></span>
+<span><span class="co">#&gt; 1 40.92534 9.765625 1.631321 10.3317</span></span>
 <span></span>
 <span><span class="co"># Can also handle oscillation_score_z output</span></span>
 <span><span class="va">z_result</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscillation_score_z.html">oscillation_score_z</a></span><span class="op">(</span><span class="va">sig</span>, fs <span class="op">=</span> <span class="fl">1000</span>, flim <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">5</span>, <span class="fl">20</span><span class="op">)</span>, nrep <span class="op">=</span> <span class="fl">50</span><span class="op">)</span></span>
 <span><span class="va">z_tidy</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/oscore_tidy.html">oscore_tidy</a></span><span class="op">(</span><span class="va">z_result</span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/stopifnot.html" class="external-link">stopifnot</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/all.html" class="external-link">all</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"oscore"</span>, <span class="st">"fosc"</span>, <span class="st">"z"</span>, <span class="st">"pval"</span><span class="op">)</span> <span class="op"><a href="https://rdrr.io/r/base/match.html" class="external-link">%in%</a></span> <span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">z_tidy</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="va">z_tidy</span></span>
-<span><span class="co">#&gt;    oscore     fosc fmin     fmax         z      pval significant</span></span>
-<span><span class="co">#&gt; 1 4.90813 7.324219    5 10.50972 0.3146127 0.3765279       FALSE</span></span></code></pre></div>
+<span><span class="co">#&gt;     oscore     fosc fmin     fmax        z        pval significant</span></span>
+<span><span class="co">#&gt; 1 31.60867 9.765625    5 10.30397 3.038308 0.001189554        TRUE</span></span></code></pre></div>
 <div class="section level3">
 <h3 id="oscore_spectrum-extract-spectrum-data">oscore_spectrum: Extract Spectrum Data<a class="anchor" aria-label="anchor" href="#oscore_spectrum-extract-spectrum-data"></a>
 </h3>
@@ -354,12 +355,12 @@ with ggplot2/dplyr. ### oscore_tidy: Oscillation Score Summaries</p>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">spec_df</span><span class="op">)</span></span>
 <span><span class="co">#&gt;       freq        power</span></span>
-<span><span class="co">#&gt; 1 1.708984 1.338058e-04</span></span>
-<span><span class="co">#&gt; 2 1.831055 1.166433e-04</span></span>
-<span><span class="co">#&gt; 3 1.953125 9.469540e-05</span></span>
-<span><span class="co">#&gt; 4 2.075195 8.186402e-05</span></span>
-<span><span class="co">#&gt; 5 2.197266 7.682177e-05</span></span>
-<span><span class="co">#&gt; 6 2.319336 6.915301e-05</span></span>
+<span><span class="co">#&gt; 1 1.708984 1.157580e-04</span></span>
+<span><span class="co">#&gt; 2 1.831055 9.268441e-05</span></span>
+<span><span class="co">#&gt; 3 1.953125 7.546343e-05</span></span>
+<span><span class="co">#&gt; 4 2.075195 7.301113e-05</span></span>
+<span><span class="co">#&gt; 5 2.197266 7.169845e-05</span></span>
+<span><span class="co">#&gt; 6 2.319336 6.306718e-05</span></span>
 <span></span>
 <span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/ggplot.html" class="external-link">ggplot</a></span><span class="op">(</span><span class="va">spec_df</span>, <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/aes.html" class="external-link">aes</a></span><span class="op">(</span>x <span class="op">=</span> <span class="va">freq</span>, y <span class="op">=</span> <span class="va">power</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span></span>
 <span>  <span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/geom_path.html" class="external-link">geom_line</a></span><span class="op">(</span>color <span class="op">=</span> <span class="st">"#1B75BB"</span><span class="op">)</span> <span class="op">+</span></span>
@@ -552,8 +553,9 @@ detected peak frequency.
 <div class="section level2">
 <h2 id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
 </h2>
-<p>The algorithms in <strong>bosc</strong> are ported from the <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">behavioral-oscillations</a>
-MATLAB toolbox. Please cite:</p>
+<p>Core algorithms in <strong>bosc</strong> follow Ter Wal et al. (2021)
+and the <a href="https://github.com/marijeterwal/behavioral-oscillations" class="external-link">behavioral-oscillations</a>
+reference software. Please cite:</p>
 <blockquote>
 <p>Ter Wal, M. et al. (2021). Theta rhythmicity governs the timing of
 behavioural and hippocampal responses in humans specifically during
@@ -571,7 +573,7 @@ memory-dependent tasks. <em>Nature Communications</em>, 12, 7048. <a href="https
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.1.</p>
 </div>
 
     </footer>

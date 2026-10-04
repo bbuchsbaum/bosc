@@ -27,15 +27,15 @@ library(bosc)
 
 ## Your first oscillation score in 30 seconds
 
-Create a signal with 10 Hz periodicity, compute the score, and test
-significance — all in one call:
+Create a simple 10 Hz event train, compute the score, and test
+significance all in one call. This example is intentionally clean so the
+detected peak lands at 10 Hz, making the basic workflow easy to
+interpret:
 
 ``` r
-set.seed(42)
-fs <- 1000
-sig <- numeric(2000)
-spikes <- seq(50, 1950, by = 100) + round(rnorm(20, sd = 5))
-spikes <- spikes[spikes > 0 & spikes <= 2000]
+fs <- 1024
+sig <- numeric(2048)
+spikes <- seq(52, 1996, by = 102)
 sig[spikes] <- 1
 
 result <- oscillation_score_z(sig, fs = fs, flim = c(5, 20), nrep = 200)
@@ -55,33 +55,76 @@ stopifnot(
 
 ``` r
 cat("Oscillation score:", round(result$oscore, 3), "\n")
-#> Oscillation score: 4.908
+#> Oscillation score: 31.609
 cat("Peak frequency:   ", round(result$fosc, 2), "Hz\n")
-#> Peak frequency:    7.32 Hz
+#> Peak frequency:    10 Hz
 cat("Z-score:          ", round(result$z, 2), "\n")
-#> Z-score:           0.42
+#> Z-score:           2.84
 cat("P-value:          ", format(result$pval, digits = 4), "\n")
-#> P-value:           0.336
+#> P-value:           0.002262
 cat("Significant:      ", result$significant, "\n")
-#> Significant:       FALSE
+#> Significant:       TRUE
 ```
 
 ![Power spectrum of the autocorrelogram. The dashed line marks the
-detected peak at ~10
+detected peak at 10
 Hz.](bosc_files/figure-html/plot-first-spectrum-1.png)
 
 Power spectrum of the autocorrelogram. The dashed line marks the
-detected peak at ~10 Hz.
+detected peak at 10 Hz.
 
-The oscillation score is 4.91 with a z-score of 0.4 — a clear rhythm in
-the 5-20 Hz target band.
+The oscillation score is 31.61 with a z-score of 2.8 — clear evidence
+for rhythmic structure in the 5-20 Hz target band. Because this toy
+signal is perfectly regular, the detected peak lands exactly at 10 Hz.
+Real behavioral data are usually noisier, so small departures from the
+nominal frequency are normal in practice.
 
 ## Extracting phase at behavioral events
 
-Given event times (in seconds),
 [`phase_at_events()`](https://bbuchsbaum.github.io/bosc/reference/phase_at_events.md)
-builds a continuous trace, filters at the target frequency, and returns
-the instantaneous phase at each event:
+does not need a special object. It just needs a numeric vector of event
+times on a common time axis, usually one RT per trial.
+
+In a behavioral study, that usually means the latency from a common
+alignment event, such as cue onset or stimulus onset, to the response on
+each trial. If your RTs already live in a vector, use that vector
+directly. If your data are in a trial-wise data frame with one row per
+trial, extract the RT column after subsetting to the trials you want to
+analyze. If the RTs are stored in milliseconds, convert them to seconds
+first, because both `events` and `dt` are in seconds. If your table
+stores absolute timestamps instead of latencies, subtract the alignment
+time first so each trial contributes a comparable RT.
+
+Here are the two most common setups:
+
+``` r
+rt_ms <- c(412, 438, 521, 547, 603, 618)
+
+trial_data <- data.frame(
+  trial = seq_along(rt_ms),
+  correct = c(TRUE, TRUE, TRUE, FALSE, TRUE, TRUE),
+  rt_ms = rt_ms
+)
+
+events_from_vector <- rt_ms / 1000
+events_from_df <- subset(trial_data, correct)$rt_ms / 1000
+
+stopifnot(
+  is.numeric(events_from_vector),
+  all(events_from_vector > 0),
+  is.numeric(events_from_df),
+  all(events_from_df > 0)
+)
+
+events_from_df
+#> [1] 0.412 0.438 0.521 0.603 0.618
+```
+
+If you have multiple subjects or conditions, do this extraction
+separately for each subset rather than pooling everything into one
+vector. Once you have a numeric RT vector in seconds, the call is the
+same. Here `dt = 0.001` means a 1 ms sampling grid for the continuous
+trace:
 
 ``` r
 events <- c(0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75, 0.85, 0.95)
@@ -289,10 +332,11 @@ want to go deeper, the other vignettes unpack each layer in more detail.
 
 ## References
 
-**bosc** is an R port of the
+**bosc** implements methods from Ter Wal et al. (2021) in R. If you use
+this package in published work, please cite the original paper and, when
+appropriate, the
 [behavioral-oscillations](https://github.com/marijeterwal/behavioral-oscillations)
-MATLAB toolbox. If you use this package in published work, please cite
-the original paper:
+reference software:
 
 > Ter Wal, M., Linde-Domingo, J., Lifanov, J., Roux, F., Kolibius, L.D.,
 > Gollwitzer, S., Lang, J., Hamer, H., Rollings, D., Sawlani, V.,
