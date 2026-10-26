@@ -15,6 +15,11 @@ NULL
 #' @param quantlim optional length-2 numeric vector of quantile bounds to trim the trace.
 #' @param warn logical; emit warnings on dropped points.
 #' @return list with \code{signal} (numeric vector) and \code{tspan} (time axis).
+#' @examples
+#' set.seed(1)
+#' events <- sort(stats::runif(200, 0, 10))
+#' trace <- make_continuous_trace(events, dt = 0.002, sd_smooth = 0.01)
+#' length(trace$signal)
 #' @export
 make_continuous_trace <- function(events,
                                   dt,
@@ -65,6 +70,10 @@ make_continuous_trace <- function(events,
 
   kernel <- build_kernel(dt, sd_smooth = sd_smooth, width_block = width_block)
   signal <- conv_same(counts, kernel)
+  # FFT roundoff leaves ~1e-16 residue (including tiny negatives) where the
+  # trace should be exactly zero; remove it so event trains stay non-negative
+  # and sparse (signal_mode = "auto" relies on this).
+  signal[abs(signal) < 1e-12 * max(abs(signal))] <- 0
 
   if (warn && sum(counts) != length(ev)) {
     warning("Some events were not mapped to output bins.")
@@ -83,6 +92,10 @@ make_continuous_trace <- function(events,
 #'   \code{"fft"} (FFT-based linear autocorrelation), or \code{"auto"}
 #'   (uses \code{"direct"} for short vectors and \code{"fft"} for longer vectors).
 #' @return numeric vector of length \code{2*length(x) - 1}.
+#' @examples
+#' x <- sin(2 * pi * 5 * seq(0, 1, by = 0.01))
+#' ac <- autocorr_centered(x)
+#' length(ac)
 #' @export
 autocorr_centered <- function(x, method = c("auto", "direct", "fft")) {
   n <- length(x)
@@ -133,6 +146,11 @@ autocorr_centered <- function(x, method = c("auto", "direct", "fft")) {
 #' @param taper taper to apply; one of \code{"none"}, \code{"hann"}, \code{"hanning"}.
 #' @return list with \code{freq} (peak frequency or NA), \code{fxx} (freq axis),
 #'   and \code{spectrum} (power values aligned with \code{fxx}).
+#' @examples
+#' fs <- 100
+#' x <- sin(2 * pi * 8 * seq(0, 4, by = 1 / fs))
+#' sp <- spectral_peak(x, fs = fs, flim = c(2, 20))
+#' sp$freq
 #' @export
 spectral_peak <- function(data,
                           fs,

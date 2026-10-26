@@ -60,3 +60,10 @@ Builds a null distribution for the group-average spectrum by resampling each
 subject series, then computes empirical p-values, z-scores, and optional FDR
 correction across frequencies.
 }
+\examples{
+set.seed(1)
+bins <- seq(0, 1.2, by = 0.05)
+x <- t(replicate(8, sin(2 * pi * 4 * bins + stats::runif(1, 0, 2 * pi)) + stats::rnorm(length(bins), sd = 0.5)))
+gt <- group_spectrum_test(x, fs = 20, flim = c(1, 9), nrep = 50, seed = 1)
+names(gt)
+}

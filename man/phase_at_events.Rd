@@ -47,3 +47,10 @@ Builds a continuous response trace from event times, narrowband filters it,
 computes the analytic signal, and returns the instantaneous phase at each event.
 Optionally computes leave-one-out phases (excluding each event from the trace).
 }
+\examples{
+set.seed(1)
+tt <- seq(0, 20, by = 0.001)
+events <- tt[stats::runif(length(tt)) < (1 + 0.8 * sin(2 * pi * 6 * tt)) * 0.05]
+ph <- phase_at_events(events, dt = 0.002, fosc = 6)
+length(ph) == length(events)
+}

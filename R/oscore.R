@@ -23,6 +23,14 @@
 #'   \code{"continuous"} uses signal-variance heuristics and Nyquist-limited bounds.
 #' @param plot logical; if TRUE, plots intermediate spectra (optional, requires ggplot2).
 #' @return list with \code{oscore}, \code{fosc}, \code{flim}, \code{flimfft}, \code{freqs}.
+#' @examples
+#' set.seed(1)
+#' tt <- seq(0, 10, by = 0.001)
+#' events <- tt[stats::runif(length(tt)) < (1 + 0.8 * sin(2 * pi * 6 * tt)) * 0.1]
+#' trace <- make_continuous_trace(events, dt = 0.002)
+#' res <- oscillation_score(trace$signal, fs = 500, flim = c(1, 20), warnings = FALSE)
+#' res$fosc
+#' res$oscore
 #' @export
 oscillation_score <- function(signal,
                               fs,
@@ -54,7 +62,7 @@ oscillation_score <- function(signal,
   sig[is.na(sig)] <- 0
 
   if (signal_mode == "auto") {
-    signal_mode <- if (all(sig >= 0, na.rm = TRUE)) "event" else "continuous"
+    signal_mode <- if (is_event_like(sig)) "event" else "continuous"
   }
 
   if (signal_mode == "event") {
@@ -226,6 +234,15 @@ oscillation_score <- function(signal,
 #' @param taper taper applied before FFT; one of \code{"none"}, \code{"hann"}, \code{"hanning"}.
 #' @return list with \code{oscore_rp}, \code{fosc_rp}, \code{trendfit},
 #'   \code{surrogate_method}, \code{signal_mode}, and (optionally) \code{signrep}.
+#' @examples
+#' set.seed(1)
+#' tt <- seq(0, 5, by = 0.001)
+#' events <- tt[stats::runif(length(tt)) < (1 + 0.8 * sin(2 * pi * 6 * tt)) * 0.1]
+#' trace <- make_continuous_trace(events, dt = 0.002)
+#' res <- oscillation_score(trace$signal, fs = 500, flim = c(1, 20), warnings = FALSE)
+#' sur <- oscillation_score_surrogates(trace$signal, fs = 500, flim = c(1, 20),
+#'                                     nrep = 5, fpeak = res$fosc, warnings = FALSE)
+#' summary(sur$oscore_rp)
 #' @export
 oscillation_score_surrogates <- function(signal,
                                          fs,
@@ -256,7 +273,7 @@ oscillation_score_surrogates <- function(signal,
   sig <- as.numeric(signal)
   sig[is.na(sig)] <- 0
   if (signal_mode == "auto") {
-    signal_mode <- if (all(sig >= 0, na.rm = TRUE)) "event" else "continuous"
+    signal_mode <- if (is_event_like(sig)) "event" else "continuous"
   }
 
   if (surrogate_method == "auto") {
@@ -461,4 +478,10 @@ fitdist_density <- function(fd, x) {
   }
 
   do.call(densfun, c(list(x), as.list(fd$estimate)))
+}
+
+# Non-negative up to floating-point roundoff (e.g. FFT-convolved event counts).
+is_event_like <- function(sig) {
+  tol <- sqrt(.Machine$double.eps) * max(abs(sig), 0, na.rm = TRUE)
+  all(sig >= -tol, na.rm = TRUE)
 }

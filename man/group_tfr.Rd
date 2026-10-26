@@ -45,3 +45,10 @@ Computes a grouped time-frequency amplitude map by filtering each subject
 series at a sequence of center frequencies and averaging the resulting
 narrowband amplitudes.
 }
+\examples{
+set.seed(1)
+bins <- seq(0, 2, by = 0.05)
+x <- t(replicate(6, sin(2 * pi * 4 * bins) + stats::rnorm(length(bins), sd = 0.5)))
+tfr <- group_tfr(x, fs = 20, freqs = c(3, 4, 5))
+names(tfr)
+}

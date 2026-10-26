@@ -5,6 +5,11 @@
 #' @param data matrix of values.
 #' @param thres numeric threshold; if NULL, assumes binary input.
 #' @return integer matrix of labels (0 for below threshold).
+#' @examples
+#' m <- matrix(0, 10, 10)
+#' m[3:5, 3:5] <- 3
+#' cl <- extract_clusters(m, thres = 1)
+#' length(cl)
 #' @export
 extract_clusters <- function(data, thres = NULL) {
   dat <- data

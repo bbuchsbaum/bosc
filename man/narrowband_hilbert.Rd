@@ -27,3 +27,10 @@ Filters data in a narrow frequency band and computes the analytic signal via
 the Hilbert transform. Mirrors MATLAB \code{narrowbandHilbert} with stability
 checks and optional demeaning.
 }
+\examples{
+fs <- 100
+tt <- seq(0, 4, by = 1 / fs)
+x <- sin(2 * pi * 10 * tt) + 0.5 * sin(2 * pi * 30 * tt)
+nb <- narrowband_hilbert(x, fs = fs, freqlim = c(8, 12))
+names(nb)
+}

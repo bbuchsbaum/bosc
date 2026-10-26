@@ -326,6 +326,9 @@ permute_trial_labels <- function(data,
 #' @param out optional output column name. Defaults to \code{value}.
 #' @return data.frame with grouping columns, \code{bin}, the aggregated value,
 #'   and count columns \code{n} and \code{n_nonmissing}.
+#' @examples
+#' d <- data.frame(bin = rep(1:4, each = 3), y = c(1, 2, 3, 2, 3, 4, 3, 4, 5, 4, 5, 6))
+#' aggregate_by_bin(d, value = "y", bin = "bin")
 #' @export
 aggregate_by_bin <- function(data,
                              value,

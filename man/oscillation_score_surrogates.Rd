@@ -61,3 +61,13 @@ list with \code{oscore_rp}, \code{fosc_rp}, \code{trendfit},
 Generates surrogate signals and computes oscillation scores for reference distributions.
 Fixes edge cases from the MATLAB implementation (e.g., negative p-values, missing sums).
 }
+\examples{
+set.seed(1)
+tt <- seq(0, 5, by = 0.001)
+events <- tt[stats::runif(length(tt)) < (1 + 0.8 * sin(2 * pi * 6 * tt)) * 0.1]
+trace <- make_continuous_trace(events, dt = 0.002)
+res <- oscillation_score(trace$signal, fs = 500, flim = c(1, 20), warnings = FALSE)
+sur <- oscillation_score_surrogates(trace$signal, fs = 500, flim = c(1, 20),
+                                    nrep = 5, fpeak = res$fosc, warnings = FALSE)
+summary(sur$oscore_rp)
+}

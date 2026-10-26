@@ -17,3 +17,11 @@ Converts an \code{\link{oscillation_score}} or \code{\link{oscillation_score_z}}
 result into a one-row data.frame. If a list of results is provided, returns one
 row per element.
 }
+\examples{
+set.seed(1)
+tt <- seq(0, 10, by = 0.001)
+events <- tt[stats::runif(length(tt)) < (1 + 0.8 * sin(2 * pi * 6 * tt)) * 0.1]
+trace <- make_continuous_trace(events, dt = 0.002)
+res <- oscillation_score(trace$signal, fs = 500, flim = c(1, 20), warnings = FALSE)
+oscore_tidy(res)
+}

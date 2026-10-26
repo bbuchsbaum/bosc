@@ -16,6 +16,12 @@
 #' @param edge number of bins to trim from each edge after filtering.
 #' @param filtorder,demean,tol passed to \code{\link{narrowband_hilbert}}.
 #' @return list with \code{observed} and \code{meta}.
+#' @examples
+#' set.seed(1)
+#' bins <- seq(0, 2, by = 0.05)
+#' x <- t(replicate(6, sin(2 * pi * 4 * bins) + stats::rnorm(length(bins), sd = 0.5)))
+#' tfr <- group_tfr(x, fs = 20, freqs = c(3, 4, 5))
+#' names(tfr)
 #' @export
 group_tfr <- function(x,
                       fs,
@@ -249,6 +255,12 @@ group_tfr_test <- function(x,
 #' @param bandwidth half-bandwidth in Hz.
 #' @param detrend,reflect,edge,filtorder,demean,tol preprocessing controls.
 #' @return list with \code{observed}, \code{stats}, and \code{meta}.
+#' @examples
+#' set.seed(1)
+#' bins <- seq(0, 2, by = 0.05)
+#' x <- t(replicate(6, sin(2 * pi * 4 * bins) + stats::rnorm(length(bins), sd = 0.5)))
+#' pc <- group_phase_consistency(x, fs = 20, freq = 4)
+#' names(pc)
 #' @export
 group_phase_consistency <- function(x,
                                     fs,

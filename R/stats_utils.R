@@ -5,6 +5,10 @@
 #' @param data array of angles (radians).
 #' @param dim integer; dimension along which to compute PPC.
 #' @return array of PPC values with the chosen dimension collapsed.
+#' @examples
+#' set.seed(1)
+#' phases <- matrix(stats::rnorm(50, sd = 0.5), nrow = 50, ncol = 2)
+#' pairwise_phase_consistency(phases, dim = 1)
 #' @export
 pairwise_phase_consistency <- function(data, dim = 1) {
   if (length(dim) != 1) stop("Only one dimension supported.")
@@ -109,6 +113,9 @@ paired_tscore <- function(dat1, dat2 = NULL, dim = 1) {
 #' reference values). Ties at the observed value are excluded from the tail
 #' count by construction.
 #' @return list with \code{h} significance (0/1) and \code{p} p-values.
+#' @examples
+#' set.seed(1)
+#' nonparam_pval(c(0.5, 3), stats::rnorm(200))
 #' @export
 nonparam_pval <- function(data, ref, alpha = 0.05) {
   vals <- sort(ref)

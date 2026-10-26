@@ -17,3 +17,8 @@ array of PPC values with the chosen dimension collapsed.
 \description{
 Bias-free PPC for angle data along a chosen dimension.
 }
+\examples{
+set.seed(1)
+phases <- matrix(stats::rnorm(50, sd = 0.5), nrow = 50, ncol = 2)
+pairwise_phase_consistency(phases, dim = 1)
+}

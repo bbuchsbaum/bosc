@@ -40,3 +40,9 @@ and \code{spectrum} (power values aligned with \code{fxx}).
 Computes the FFT power spectrum (single-sided), optional 1/f correction,
 and returns the frequency of the highest peak within bounds.
 }
+\examples{
+fs <- 100
+x <- sin(2 * pi * 8 * seq(0, 4, by = 1 / fs))
+sp <- spectral_peak(x, fs = fs, flim = c(2, 20))
+sp$freq
+}

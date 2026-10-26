@@ -36,3 +36,10 @@ list with \code{observed}, \code{stats}, and \code{meta}.
 Computes per-bin phase concentration across subjects after narrowband Hilbert
 decomposition of subject-level series.
 }
+\examples{
+set.seed(1)
+bins <- seq(0, 2, by = 0.05)
+x <- t(replicate(6, sin(2 * pi * 4 * bins) + stats::rnorm(length(bins), sd = 0.5)))
+pc <- group_phase_consistency(x, fs = 20, freq = 4)
+names(pc)
+}

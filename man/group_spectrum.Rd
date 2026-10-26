@@ -50,3 +50,10 @@ list with \code{observed} and \code{meta} fields.
 Computes per-subject spectra and their group average for a regular matrix of
 subject-by-bin values or a grouped-series object.
 }
+\examples{
+set.seed(1)
+bins <- seq(0, 1.2, by = 0.05)
+x <- t(replicate(8, sin(2 * pi * 4 * bins + stats::runif(1, 0, 2 * pi)) + stats::rnorm(length(bins), sd = 0.5)))
+gs <- group_spectrum(x, fs = 20, flim = c(1, 9))
+names(gs)
+}

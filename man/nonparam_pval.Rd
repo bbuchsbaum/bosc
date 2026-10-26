@@ -27,3 +27,7 @@ while values at or above the median use the upper tail (strictly larger
 reference values). Ties at the observed value are excluded from the tail
 count by construction.
 }
+\examples{
+set.seed(1)
+nonparam_pval(c(0.5, 3), stats::rnorm(200))
+}

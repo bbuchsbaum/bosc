@@ -110,6 +110,13 @@ oscillation_score_stats <- function(cfg, signal) {
 #' @param ... further arguments passed to \code{\link{oscillation_score}}.
 #' @param tidy logical; if TRUE return a one-row data.frame.
 #' @return list (default) or data.frame if \code{tidy=TRUE}.
+#' @examples
+#' set.seed(1)
+#' tt <- seq(0, 10, by = 0.001)
+#' events <- tt[stats::runif(length(tt)) < (1 + 0.8 * sin(2 * pi * 6 * tt)) * 0.1]
+#' trace <- make_continuous_trace(events, dt = 0.002)
+#' z <- oscillation_score_z(trace$signal, fs = 500, flim = c(1, 20), nrep = 10)
+#' str(z, max.level = 1)
 #' @export
 oscillation_score_z <- function(signal,
                                 fs,
@@ -288,6 +295,12 @@ oscore_z <- function(...) {
 #' @param hilbert_tol,filtorder,demean passed to \code{\link{narrowband_hilbert}}.
 #' @param ... further arguments passed to \code{\link{make_continuous_trace}}.
 #' @return numeric vector of phases (radians), same length as \code{events}.
+#' @examples
+#' set.seed(1)
+#' tt <- seq(0, 20, by = 0.001)
+#' events <- tt[stats::runif(length(tt)) < (1 + 0.8 * sin(2 * pi * 6 * tt)) * 0.05]
+#' ph <- phase_at_events(events, dt = 0.002, fosc = 6)
+#' length(ph) == length(events)
 #' @export
 phase_at_events <- function(events,
                             dt,

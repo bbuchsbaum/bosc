@@ -36,3 +36,9 @@ list with \code{signal} (numeric vector) and \code{tspan} (time axis).
 Converts discrete event times to a continuous time series with optional smoothing
 and quantile trimming (behavior inspired by the MATLAB \code{makeContinuousTrace}).
 }
+\examples{
+set.seed(1)
+events <- sort(stats::runif(200, 0, 10))
+trace <- make_continuous_trace(events, dt = 0.002, sd_smooth = 0.01)
+length(trace$signal)
+}

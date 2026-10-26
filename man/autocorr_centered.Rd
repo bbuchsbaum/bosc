@@ -20,3 +20,8 @@ numeric vector of length \code{2*length(x) - 1}.
 Computes an unnormalized autocorrelation with zero lag at the center,
 equivalent to MATLAB \code{xcorr(x)}.
 }
+\examples{
+x <- sin(2 * pi * 5 * seq(0, 1, by = 0.01))
+ac <- autocorr_centered(x)
+length(ac)
+}

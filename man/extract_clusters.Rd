@@ -17,3 +17,9 @@ integer matrix of labels (0 for below threshold).
 \description{
 Thresholds 2D data and labels connected components (8-connectivity).
 }
+\examples{
+m <- matrix(0, 10, 10)
+m[3:5, 3:5] <- 3
+cl <- extract_clusters(m, thres = 1)
+length(cl)
+}
